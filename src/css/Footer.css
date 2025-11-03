@@ -1,0 +1,25 @@
+.footer-image {
+    width: 10%;
+    padding: 1%;
+}
+
+.footer-selected {
+    background-color: #373737;
+    border-radius: 0.5rem;
+}
+
+.footer-add-publication {
+    background-color: #7F7F7F;
+    border-radius: 0.5rem;
+}
+
+.footer {
+  position: sticky;
+  bottom: 0;
+  background-color: #000000;
+  border-top: 1px solid #000000;
+  padding: 0.5rem 0;
+  text-align: center;
+  z-index: 10;
+}
+

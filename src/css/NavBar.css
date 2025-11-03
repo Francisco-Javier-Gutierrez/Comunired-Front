@@ -1,0 +1,18 @@
+.nav-bar-image {
+    width: 10%;
+    padding: 1%;
+}
+
+.logo-image {
+    width: 20%;
+}
+
+.nav-bar {
+  position: sticky;
+  top: 0;
+  background-color: #000000;
+  border-bottom: 1px solid #000000;
+  padding: 0.5rem 0;
+  text-align: center;
+  z-index: 10;
+}

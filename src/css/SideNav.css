@@ -1,0 +1,33 @@
+.logo-image-side-nav {
+    width: 25%;
+}
+
+.side-nav {
+  height: 100dvh;
+  position: sticky;
+  top: 0;
+  padding: 1rem 0;
+}
+
+.side-nav-image {
+  cursor: pointer;
+  width: 15%;
+}
+
+@media (max-width: 992px) {
+    .logo-image-side-nav {
+        width: 30%;
+    }
+}
+
+@media (max-width: 1200px) {
+    .logo-image-side-nav {
+        width: 35%;
+    }
+}
+
+@media (max-width: 1400px) {
+    .logo-image-side-nav {
+        width: 40%;
+    }
+}

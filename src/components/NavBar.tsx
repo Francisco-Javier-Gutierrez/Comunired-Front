@@ -17,7 +17,7 @@ function NavBar() {
                 </>
             ) : (
                 <>
-                    <img className="logo-image mb-5" src="Logo.png" alt="Logo" />
+                    <img className="logo-image-nav mb-5" src="Logo.png" alt="Logo" />
                 </>
             )}
         </div>

@@ -13,3 +13,6 @@ body {
   height: 100%;
 }
 
+.w-20 {
+  width: 20% !important;
+}

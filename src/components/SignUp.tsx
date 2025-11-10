@@ -6,6 +6,7 @@ function SignUp() {
     const [password, setPassword] = useState("");
     const [isValidName, setIsValidName] = useState<boolean | null>(null);
     const [isValidEmail, setIsValidEmail] = useState<boolean | null>(null);
+    const [showPassword, setShowPassword] = useState<boolean | null>(null);
     const [isSendingForm, setIsSendingForm] = useState<boolean | null>(null);
     const [isValidPassword, setIsValidPassword] = useState<boolean | null>(null);
     const [nameMessage, setNameMessage] = useState("Ingrese un nombre de usuario");
@@ -19,6 +20,10 @@ function SignUp() {
         minuscula: /[a-z]/.test(password),
         numero: /\d/.test(password),
         especial: /[@$!%*?&._-]/.test(password),
+    };
+
+    const handleTogglePassword = () => {
+        setShowPassword(prev => !prev);
     };
 
     const validateEmail = (): boolean => {
@@ -108,15 +113,12 @@ function SignUp() {
                 />
 
                 <p className={`text-white ${isValidPassword === false ? "text-error" : ""}`}>{passwordMessage}</p>
-                <input className={`text-input w-100 mb-3 ${isValidPassword === false ? "input-error" : ""}`} type="password" value={password}
-                    onChange={(e) => {
-                        setPassword(e.target.value);
-                        if (isValidPassword === false) {
-                            setIsValidPassword(null);
-                            setPasswordMessage("Ingrese una contraseña");
-                        }
-                    }}
-                />
+                <div className="position-relative mb-3">
+                    <input className={`text-input w-100 ${isValidPassword === false ? "input-error" : ""}`}
+                        type={showPassword ? "text" : "password"} value={password}
+                        onChange={(e) => { setPassword(e.target.value); if (isValidPassword === false) { setIsValidPassword(null); setPasswordMessage("Ingrese su contraseña"); } }} />
+                    <img className="position-absolute end-0 top-50 input-change-image translate-middle-y me-3 cursor-pointer" src={!showPassword ? "Text.svg" : "Password.svg"} alt="Mostrar u ocultar contraseña" onClick={handleTogglePassword} />
+                </div>
 
                 <div className="px-2 pb-2 mb-4 rounded no-select-no-click bg-dark text-white">
                     <p className="mb-2">La contraseña debe contener:</p>

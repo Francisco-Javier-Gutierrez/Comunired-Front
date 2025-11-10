@@ -22,6 +22,10 @@ body {
   width: 30% !important;
 }
 
+.w-40 {
+  width: 40% !important;
+}
+
 .cursor-pointer {
   cursor: pointer;
 }
@@ -72,7 +76,7 @@ body {
 
 .input-error {
   border: 0.05rem solid red !important;
-  outline: -webkit-focus-ring-color red 1px !important;
+  outline: -webkit-focus-ring-color #ff0000 1px !important;
 }
 
 .text-error {
@@ -80,5 +84,14 @@ body {
 }
 
 .loading {
+  width: 1.5rem;
+}
+
+.selected-image {
+  max-height: 90dvh;
+  object-fit: contain;
+}
+
+.input-change-image {
   width: 1.5rem;
 }

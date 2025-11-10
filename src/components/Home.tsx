@@ -2,6 +2,7 @@ import React, { useState } from "react";
 
 function Home() {
     const [imagenSeleccionada, setImagenSeleccionada] = useState<string | null>(null);
+    const [likesActivos, setLikesActivos] = useState<{ [key: string]: boolean }>({});
 
     const publicaciones = [
         {
@@ -27,34 +28,50 @@ function Home() {
         }
     ];
 
+    const handleLikeClick = (id_publicacion: string) => {
+        setLikesActivos(prev => ({
+            ...prev,
+            [id_publicacion]: !prev[id_publicacion]
+        }));
+    };
+
     return (
         <div className="d-flex justify-content-center">
             <div className="w-75 home-container">
-                {publicaciones.map((post) => (
-                    <React.Fragment key={post.id_publicacion}>
-                        <div className="d-flex my-3">
-                            <div><img src={post.usuario.Url_foto_perfil} alt={post.usuario.nombre_usuario} className="cursor-pointer no-select rounded-circle me-1 user-image" onClick={() => setImagenSeleccionada(post.usuario.Url_foto_perfil)} /></div>
-                            <div className="text-white flex-grow-1">
-                                <div className="d-flex align-items-center no-select mb-3"><span className="mb-0">{post.usuario.nombre_usuario}</span></div>
-                                <p className="mb-3">{post.contenido}</p>
-                                {post.url_imagen && (<img src={post.url_imagen} alt="imagen publicación" className="rounded-3 mb-3 w-100 cursor-pointer" onClick={() => setImagenSeleccionada(post.url_imagen)} />)}
-                                <div className="d-flex no-select justify-content-between text-center mt-2">
-                                    <div><img src="Like.svg" width={20} className="me-1 cursor-pointer" alt="Like" />{post.likes.total}</div>
-                                    <div><img src="Comment.svg" width={20} className="me-1 cursor-pointer" alt="Comentarios" />{post.comentarios.total}</div>
-                                    <div><img src="Share.svg" width={20} className="me-1 cursor-pointer" alt="Compartir" />{post.compartidos.total}</div>
+                {publicaciones.map((post) => {
+                    const liked = likesActivos[post.id_publicacion];
+                    return (
+                        <React.Fragment key={post.id_publicacion}>
+                            <div className="d-flex my-3">
+                                <div>
+                                    <img src={post.usuario.Url_foto_perfil} alt={post.usuario.nombre_usuario} className="cursor-pointer no-select rounded-circle me-1 user-image" onClick={() => setImagenSeleccionada(post.usuario.Url_foto_perfil)} />
+                                </div>
+                                <div className="text-white flex-grow-1">
+                                    <div className="d-flex align-items-center no-select mb-3"><span className="mb-0">{post.usuario.nombre_usuario}</span></div>
+                                    <p className="mb-3">{post.contenido}</p>
+                                    {post.url_imagen && (<img src={post.url_imagen} alt="imagen publicación" className="rounded-3 mb-3 w-100 cursor-pointer" onClick={() => setImagenSeleccionada(post.url_imagen)} />)}
+
+                                    <div className="d-flex no-select justify-content-between text-center mt-2">
+                                        <div className="cursor-pointer d-flex align-items-center justify-content-center" onClick={() => handleLikeClick(post.id_publicacion)}>
+                                            <img src={liked ? "Like_active.svg" : "Like.svg"} width={20} className="me-1" alt="Like" />
+                                            <span className={liked ? "text-error" : ""}>{post.likes.total}</span>
+                                        </div>
+                                        <div><img src="Comment.svg" width={20} className="me-1 cursor-pointer" alt="Comentarios" />{post.comentarios.total}</div>
+                                        <div><img src="Share.svg" width={20} className="me-1 cursor-pointer" alt="Compartir" />{post.compartidos.total}</div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <hr className="text-white m-0" />
-                    </React.Fragment>
-                ))}
+                            <hr className="text-white m-0" />
+                        </React.Fragment>
+                    );
+                })}
 
                 {imagenSeleccionada && (
                     <div className="modal fade show d-block" tabIndex={-1} onClick={() => setImagenSeleccionada(null)}>
                         <div className="modal-dialog modal-dialog-centered modal-lg">
                             <div className="modal-content bg-transparent border-0">
                                 <div className="modal-body p-0 text-center position-relative">
-                                    <img src={imagenSeleccionada} alt="Vista ampliada" className="img-fluid rounded-3" style={{ maxHeight: "90vh", objectFit: "contain" }} />
+                                    <img src={imagenSeleccionada} alt="Vista ampliada" className="img-fluid rounded-3 selected-image"/>
                                     <button type="button" className="btn-close position-absolute top-0 end-0 m-3 bg-light rounded-circle" onClick={() => setImagenSeleccionada(null)}></button>
                                 </div>
                             </div>

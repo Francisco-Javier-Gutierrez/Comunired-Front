@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function Home() {
+function Messages() {
     const [imagenSeleccionada, setImagenSeleccionada] = useState<string | null>(null);
 
     const publicaciones = [
@@ -66,4 +66,4 @@ function Home() {
     );
 }
 
-export default Home;
+export default Messages;

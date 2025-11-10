@@ -18,7 +18,8 @@ function SideNav() {
             onClick={() => setIsSearch((prev) => !prev)} />
           <input className={`text-input w-100 cursor-pointer ${!isSearch ? "d-none" : ""}`} type="text" />
           <img className="side-nav-image cursor-pointer" src={`${currentPath === "/messages" ? "Messages_Grey.svg" : "Messages.svg"}`} alt="Messages" />
-          <img className="side-nav-image cursor-pointer footer-add-publication" src="AddPublication.svg" alt="AddPublication" />
+          <img className="side-nav-image cursor-pointer footer-add-publication" src="AddPublication.svg" alt="AddPublication"
+            onClick={() => { window.location.href = "/choose?origin=" + currentPath; }} />
           <img className="side-nav-image cursor-pointer" src={`${currentPath === "/" ? "Home_Grey.svg" : "Home.svg"}`} alt="Home"
             onClick={() => { window.location.href = "/"; }} />
           <img className="side-nav-image cursor-pointer" src={`${currentPath === "/profile" ? "Profile_Grey.svg" : "Profile.svg"}`} alt="ProfileImage"

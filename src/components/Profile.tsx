@@ -39,7 +39,7 @@ function Profile() {
     if (accion === "cerrar") {
       window.location.href = "/login";
     } else if (accion === "eliminar") {
-      alert("Cuenta eliminada correctamente (simulado).");
+      window.location.href = "/login";
     }
     setAccion(null);
   };
@@ -118,17 +118,9 @@ function Profile() {
           <div className="modal-dialog modal-dialog-centered modal-lg">
             <div className="modal-content bg-transparent border-0">
               <div className="modal-body p-0 text-center position-relative">
-                <img
-                  src={imagenSeleccionada}
-                  alt="Vista ampliada"
-                  className="img-fluid rounded-3"
-                  style={{ maxHeight: "90vh", objectFit: "contain" }}
-                />
-                <button
-                  type="button"
-                  className="btn-close position-absolute top-0 end-0 m-3 bg-light rounded-circle"
-                  onClick={() => setImagenSeleccionada(null)}
-                ></button>
+                <img src={imagenSeleccionada} alt="Vista ampliada" className="img-fluid rounded-3 selected-image" />
+                <button type="button" className="btn-close position-absolute top-0 end-0 m-3 bg-light rounded-circle" onClick={() => setImagenSeleccionada(null)}>
+                </button>
               </div>
             </div>
           </div>

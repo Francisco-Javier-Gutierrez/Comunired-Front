@@ -7,6 +7,7 @@ import SideNav from './components/SideNav.tsx'
 import ComuniRed from './ComuniRed.tsx'
 
 const currentPath = window.location.pathname;
+const blockPaths = ["/login", "/signUp"].includes(currentPath);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -16,12 +17,7 @@ createRoot(document.getElementById('root')!).render(
       <Footer />
     </div>
 
-    <div
-      className={`d-none ${currentPath === "/login" || currentPath === "/signUp"
-          ? "d-md-block"
-          : "d-md-flex"
-        }`}
-    >
+    <div className={`d-none ${blockPaths ? "d-md-block" : "d-md-flex"}`}>
       <SideNav />
       <div className="flex-grow-1">
         <ComuniRed />

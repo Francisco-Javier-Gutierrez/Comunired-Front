@@ -10,23 +10,22 @@
 }
 
 .side-nav-image {
-  cursor: pointer;
   width: 15%;
 }
 
-@media (max-width: 992px) {
+@media (min-width: 1200px) {
     .logo-image-side-nav {
         width: 30%;
     }
 }
 
-@media (max-width: 1200px) {
+@media (min-width: 993px) and (max-width: 1199px) {
     .logo-image-side-nav {
         width: 35%;
     }
 }
 
-@media (max-width: 1400px) {
+@media (max-width: 992px) {
     .logo-image-side-nav {
         width: 40%;
     }

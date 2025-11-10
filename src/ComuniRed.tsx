@@ -2,6 +2,7 @@ import './ComuniRed.css'
 import Login from './components/Login'
 import SignUp from './components/SignUp';
 import Home from './components/Home';
+import Profile from './components/Profile';
 import {
   BrowserRouter as Router,
   Routes,
@@ -14,8 +15,9 @@ function ComuniRed() {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/signUp" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/signUp" element={<SignUp />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

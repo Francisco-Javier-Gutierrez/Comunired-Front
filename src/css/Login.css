@@ -1,25 +1,4 @@
-.text-input {
-    background-color: #454545;
-    border-radius: 0.5rem;
-    border: solid 0.05rem #ffffff;
-    color: #ffffff;
-}
-
-.text-input:focus,
-.text-input:focus-visible {
-    outline: none !important;
-    border: solid 0.05rem #7e7e7e; 
-    box-shadow: none; 
-}
-
-.white-button {
-    background-color: #ffffff;
-    color: #000000;
-    border-radius: 0.5rem;   
-    border: #000000;
-}
-
-@media (max-width: 700px) {
+@media (max-width: 768px) {
     .login-container {
         width: 75% !important;
     }

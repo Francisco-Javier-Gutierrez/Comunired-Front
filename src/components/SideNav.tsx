@@ -1,67 +1,30 @@
 import { useState } from "react";
 
 function SideNav() {
-  const showNavBar = !["/login", "/signUp"].includes(location.pathname);
   const currentPath = window.location.pathname;
+  const showSideNav = !["/report", "/publication"].includes(currentPath);
+  const showLogoOnly = ["/login", "/signUp"].includes(currentPath);
   const [isSearch, setIsSearch] = useState<boolean>(false);
 
   return (
-    <div
-      className={`d-flex ${
-        showNavBar ? "flex-column" : "flex-row"
-      } justify-content-around align-items-center w-20 mx-auto py-3 side-nav`}
-    >
-      {showNavBar ? (
+    <div className={`d-flex ${showLogoOnly ? "flex-column" : "flex-column"} justify-content-around align-items-center w-20 mx-auto py-3
+     ${!showLogoOnly && showSideNav ? "side-nav" : ""}`}>
+      {showLogoOnly ? (
+        <img className="logo-image-side-nav" src="Logo.png" alt="Logo" />
+      ) : showSideNav ? (
         <>
-          <img
-            className={`side-nav-image`}
-            src="Logo.png"
-            alt="Logo"
-          />
-          <img
-            className="side-nav-image"
-            src="Search.svg"
-            alt="Search"
-            onClick={() => setIsSearch((prev) => !prev)}
-          />
-          <input
-            className={`text-input w-100 ${!isSearch ? "d-none" : ""}`}
-            type="text"
-          />
-          <img
-            className={`side-nav-image`}
-            src="User.svg"
-            alt="User"
-          />
-          <img
-            className="side-nav-image footer-add-publication"
-            src="AddPublication.svg"
-            alt="AddPublication"
-          />
-          <img
-            className={`side-nav-image ${
-              currentPath === "/" ? "footer-selected p-1" : ""
-            }`}
-            src="Home.svg"
-            alt="Home"
-          />
-          <img
-            className={`side-nav-image ${
-              currentPath === "/add" ? "footer-selected p-1" : ""
-            }`}
-            src="Messages.svg"
-            alt="Messages"
-          />
+          <img className="side-nav-image pb-5" src="Logo.png" alt="Logo" />
+          <img className="side-nav-image pt-5 cursor-pointer" src="Search.svg" alt="Search"
+            onClick={() => setIsSearch((prev) => !prev)} />
+          <input className={`text-input w-100 cursor-pointer ${!isSearch ? "d-none" : ""}`} type="text" />
+          <img className="side-nav-image cursor-pointer" src={`${currentPath === "/messages" ? "Messages_Grey.svg" : "Messages.svg"}`} alt="Messages" />
+          <img className="side-nav-image cursor-pointer footer-add-publication" src="AddPublication.svg" alt="AddPublication" />
+          <img className="side-nav-image cursor-pointer" src={`${currentPath === "/" ? "Home_Grey.svg" : "Home.svg"}`} alt="Home"
+            onClick={() => { window.location.href = "/"; }} />
+          <img className="side-nav-image cursor-pointer" src={`${currentPath === "/profile" ? "Profile_Grey.svg" : "Profile.svg"}`} alt="ProfileImage"
+            onClick={() => { window.location.href = "/profile"; }} />
         </>
-      ) : (
-        <>
-          <img
-            className="logo-image-side-nav mb-5"
-            src="Logo.png"
-            alt="Logo"
-          />
-        </>
-      )}
+      ) : null}
     </div>
   );
 }

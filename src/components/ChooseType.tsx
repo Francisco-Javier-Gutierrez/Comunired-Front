@@ -1,3 +1,5 @@
+import { goTo } from "../utils/globalVariables";
+
 function ChooseType() {
     const params = new URLSearchParams(window.location.search);
     const origin = params.get("origin");
@@ -8,12 +10,13 @@ function ChooseType() {
 
     return (
         <>
-            <img className="footer-image d-md-none mb-5 cursor-pointer" src="Back.svg" alt="Regresar"
-                onClick={() => window.location.href = handleNavigate()} />
+            <img className="footer-image d-md-none my-4 cursor-pointer" src="Back.svg" alt="Regresar"
+                onClick={() => goTo(handleNavigate())} />
 
             <h3 className="text-white my-4">Seleccione el tipo de acción</h3>
             <div className="w-100 d-flex justify-content-around align-items-center">
-                <button className="white-button w-40">
+                <button className="white-button w-40"
+                    onClick={() => goTo("/create-publication")}>
                     <h3>Publicar una opinión o idea</h3>
                 </button>
                 <button className="white-button w-40">

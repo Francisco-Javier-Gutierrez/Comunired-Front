@@ -1,15 +1,14 @@
-function Footer() {
-    const showFooter = !["/login", "/signUp", "/choose"].includes(location.pathname);
-    const currentPath = window.location.pathname;
+import { paths, goTo } from "../utils/globalVariables";
 
+function Footer() {
     return (
-        showFooter && (
-            <div className="d-flex justify-content-around footer align-items-center py-3">
-                <img className={`footer-image cursor-pointer ${currentPath === "/" ? "footer-selected" : ""}`} src="Home.svg" alt="Home"
-                    onClick={() => { window.location.href = "/"; }} />
+        paths.hideFooter && (
+            <div className="d-flex justify-content-around footer no-select align-items-center py-3">
+                <img className={`footer-image cursor-pointer ${paths.currentPath === "/" ? "footer-selected" : ""}`} src="Home.svg" alt="Home"
+                    onClick={() => { goTo("/"); }} />
                 <img className="footer-image cursor-pointer footer-add-publication" src="AddPublication.svg" alt="AddPublication"
-                    onClick={() => { window.location.href = "/choose?origin=" + currentPath; }} />
-                <img className={`footer-image cursor-pointer${currentPath === "/add" ? "footer-selected" : ""}`} src="Messages.svg" alt="Messages" />
+                    onClick={() => { goTo("/choose?origin=" + paths.currentPath) }} />
+                <img className={`footer-image cursor-pointer${paths.currentPath === "/add" ? "footer-selected" : ""}`} src="Messages.svg" alt="Messages" />
             </div>
         )
     );

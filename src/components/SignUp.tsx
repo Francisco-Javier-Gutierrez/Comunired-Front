@@ -1,9 +1,16 @@
+import axios from "axios";
 import { useState } from "react";
+import { goTo } from "../utils/globalVariables";
+import { useUserData } from "../utils/UserStore";
+import { BackendApi } from "../utils/globalVariables";
 
 function SignUp() {
     const [email, setEmail] = useState("");
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const setGlobalEmail = useUserData((state) => state.setEmail);
+    const setGlobalPassword = useUserData((state) => state.setName);
+    const [focusLogin, setFocusLogin] = useState<boolean | null>(null);
     const [isValidName, setIsValidName] = useState<boolean | null>(null);
     const [isValidEmail, setIsValidEmail] = useState<boolean | null>(null);
     const [showPassword, setShowPassword] = useState<boolean | null>(null);
@@ -59,22 +66,48 @@ function SignUp() {
         return true;
     };
 
-    const signUp = () => {
-        console.log("Registrado mi pana");
+    const signUp = async () => {
+        const user = {
+            Correo_electronico: email,
+            Nombre_usuario: username,
+            Contrasena: password
+        }
         setIsSendingForm(true);
-        setTimeout(() => {
-            setIsSendingForm(false);
-            setIsValidName(null)
-            setIsValidEmail(null);
-            setIsValidPassword(null);
-            setPasswordMessage("Ingrese una contraseña");
-            setNameMessage("Ingrese un nombre de usuario");
-            setEmailMessage("Ingrese su correo electrónico");
-            setEmail("");
-            setUsername("");
-            setPassword("");
-            window.location.href = "/profile";
-        }, 1500);
+        await axios.post(BackendApi.signUp_url, user, {
+            headers: { 'Content-Type': 'application/json' }
+        })
+            .then(response => {
+                console.log('Usuario creado:', response.data);
+                setGlobalEmail(email);
+                setGlobalPassword(password);
+                setIsSendingForm(false);
+                setIsValidName(null)
+                setIsValidEmail(null);
+                setIsValidPassword(null);
+                setPasswordMessage("Ingrese una contraseña");
+                setNameMessage("Ingrese un nombre de usuario");
+                setEmailMessage("Ingrese su correo electrónico");
+                setEmail("");
+                setUsername("");
+                setPassword("");
+                //goTo("/profile");
+            })
+            .catch(error => {
+                setIsSendingForm(false);
+
+                const backendError = error.response?.data?.error;
+
+                if (backendError === "Este nombre de usuario ya existe, prueba con otro") {
+                    setNameMessage("Este nombre de usuario ya existe, prueba con otro");
+                    setIsValidName(false);
+                }
+
+                if (backendError === "Este usuario ya existe, prueba iniciar sesión") {
+                    setEmailMessage("Este usuario ya existe, prueba iniciar sesión");
+                    setIsValidEmail(false);
+                    setFocusLogin(true);
+                }
+            });
     };
 
     const handleValidateForm = () => {
@@ -146,7 +179,7 @@ function SignUp() {
                     </div>
                 </div>
 
-                <span><a className="text-white" href="login">¿Ya tienes una cuenta?</a></span>
+                <span><a className={`text-white ${focusLogin === true ? "text-error" : ""}`} href="login">¿Ya tienes una cuenta?</a></span>
 
                 <button className="white-button w-100 my-4" onClick={handleValidateForm}>
                     {!isSendingForm ? (

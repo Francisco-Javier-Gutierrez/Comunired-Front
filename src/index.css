@@ -6,6 +6,7 @@
 @import url('./css/Home.css');
 @import url('./css/SideNav.css');
 @import url('./css/Profile.css');
+@import url('./css/CreatePublication.css');
 
 body {
   margin: 0;
@@ -74,6 +75,36 @@ body {
   box-shadow: none;
 }
 
+.textarea-input {
+  background-color: #454545;
+  border-radius: 0.5rem;
+  border: solid 0.05rem #ffffff;
+  color: #ffffff;
+  width: 100% !important;
+}
+
+.textarea-input:focus,
+.textarea-input:focus-visible {
+  outline: none !important;
+  border: solid 0.05rem #7e7e7e;
+  box-shadow: none;
+}
+
+.textarea-input::-webkit-scrollbar {
+  width: 6px;
+}
+
+.textarea-input::-webkit-scrollbar-thumb {
+  background: #ffffff;
+  border-radius: 20px;
+  visibility: hidden;
+}
+
+.textarea-input:hover::-webkit-scrollbar-thumb,
+.textarea-input:focus::-webkit-scrollbar-thumb {
+  visibility: visible;
+}
+
 .input-error {
   border: 0.05rem solid red !important;
   outline: -webkit-focus-ring-color #ff0000 1px !important;
@@ -81,6 +112,10 @@ body {
 
 .text-error {
   color: red !important;
+}
+
+.text-grey {
+  color: #616161;
 }
 
 .loading {
@@ -94,4 +129,9 @@ body {
 
 .input-change-image {
   width: 1.5rem;
+}
+
+.disabled-form{
+  pointer-events: none;
+  opacity: 0.7;
 }

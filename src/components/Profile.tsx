@@ -1,45 +1,72 @@
+import axios from "axios";
 import React, { useState } from "react";
+import { BackendApi } from "../utils/globalVariables";
+import { goTo } from "../utils/globalVariables";
 
-const UserInfo = {
+const user = {
   nombre: "Francisco_Javi",
   correo_electronico: "franciscoj@gmail.com",
-  Url_foto_perfil: "https://s3.us-east-2.amazonaws.com/franciscojgh.com/Git.svg",
-  publicaciones: [
-    {
-      Correo_electronico_usuario: "franciscoj@gmail.com",
-      Contenido: "Disfrutando del evento de innovación tecnológica en la UTSEM 🚀✨",
-    },
-    {
-      Correo_electronico_usuario: "franciscoj@gmail.com",
-      Contenido: "Nueva actualización del sistema de boletos disponible. ¡Pronto más mejoras! 🎟️",
-      Url_imagen: "https://s3.us-east-2.amazonaws.com/franciscojgh.com/Git.svg",
-    },
-  ],
-  reportes: [
-    {
-      id_reporte: 1,
-      motivo: "Publicación con contenido inapropiado",
-      fecha_reporte: "2025-11-08",
-      estado: "Pendiente",
-      Correo_electronico_usuario: "franciscoj@gmail.com",
-      Correo_electronico_reportado: "usuario_reportado@utsem.edu.mx",
-    },
-  ],
+  url_foto_perfil: "https://s3.us-east-2.amazonaws.com/franciscojgh.com/Git.svg"
 };
 
+const publicaciones = [
+  {
+    Correo_electronico_usuario: "franciscoj@gmail.com",
+    Contenido: "Disfrutando del evento de innovación tecnológica en la UTSEM 🚀✨",
+  },
+  {
+    Correo_electronico_usuario: "franciscoj@gmail.com",
+    Contenido: "Nueva actualización del sistema de boletos disponible. ¡Pronto más mejoras! 🎟️",
+    Url_imagen: "https://s3.us-east-2.amazonaws.com/franciscojgh.com/Git.svg",
+  },
+]
+
+const reportes = [
+  {
+    id_reporte: 1,
+    motivo: "Publicación con contenido inapropiado",
+    fecha_reporte: "2025-11-08",
+    estado: "Pendiente",
+    Correo_electronico_usuario: "franciscoj@gmail.com",
+    Correo_electronico_reportado: "usuario_reportado@utsem.edu.mx",
+  },
+]
+
 function Profile() {
-  const hasPublicaciones = UserInfo.publicaciones && UserInfo.publicaciones.length > 0;
-  const hasReportes = UserInfo.reportes && UserInfo.reportes.length > 0;
+  const hasPublicaciones = publicaciones && publicaciones.length > 0;
+  const hasReportes = reportes && reportes.length > 0;
   const isEmpty = !hasPublicaciones && !hasReportes;
 
   const [imagenSeleccionada, setImagenSeleccionada] = useState<string | null>(null);
   const [accion, setAccion] = useState<string | null>(null);
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (accion === "cerrar") {
-      window.location.href = "/login";
+      await axios.post(BackendApi.logout_url, {}, {
+        headers: { 'Content-Type': 'application/json' },
+        withCredentials: true
+      })
+        .then(response => {
+          console.log('Usuario deslogeado:', response.data);
+          goTo("/");
+        })
+        .catch(error => {
+          const backendError = error.response?.data?.error;
+          console.log(backendError)
+        });
     } else if (accion === "eliminar") {
-      window.location.href = "/login";
+      await axios.post(BackendApi.delete_url, {}, {
+        headers: { 'Content-Type': 'application/json' },
+        withCredentials: true
+      })
+        .then(response => {
+          console.log('Usuario eliminado:', response.data);
+          //goTo("/");
+        })
+        .catch(error => {
+          const backendError = error.response?.data?.error;
+          console.log(backendError)
+        });
     }
     setAccion(null);
   };
@@ -58,9 +85,9 @@ function Profile() {
         </div>
 
         <span className="text-white">Nombre de usuario:</span>
-        <p className="text-white mb-5">{UserInfo.nombre}</p>
+        <p className="text-white mb-5">{user.nombre}</p>
         <span className="text-white">Correo Electrónico:</span>
-        <p className="text-white mb-5">{UserInfo.correo_electronico}</p>
+        <p className="text-white mb-5">{user.correo_electronico}</p>
 
         <div className="py-4 d-flex align-items-center justify-content-around">
           <button className="white-button w-30">Editar perfil</button>
@@ -79,20 +106,20 @@ function Profile() {
 
           {hasPublicaciones && (
             <div className="d-flex w-100 mx-auto flex-column">
-              {UserInfo.publicaciones.map((post, i) => (
+              {publicaciones.map((post, i) => (
                 <React.Fragment key={i}>
                   <div className="d-flex my-3">
                     <div>
                       <img
-                        src={UserInfo.Url_foto_perfil}
-                        alt={UserInfo.nombre}
+                        src={user.url_foto_perfil}
+                        alt={user.nombre}
                         className="cursor-pointer no-select rounded-circle me-1 user-image"
-                        onClick={() => setImagenSeleccionada(UserInfo.Url_foto_perfil)}
+                        onClick={() => setImagenSeleccionada(user.url_foto_perfil)}
                       />
                     </div>
                     <div className="text-white flex-grow-1">
                       <div className="d-flex align-items-center mb-3">
-                        <span className="mb-0 no-select">{UserInfo.nombre}</span>
+                        <span className="mb-0 no-select">{user.nombre}</span>
                       </div>
                       <p className="mb-3">{post.Contenido}</p>
                       {post.Url_imagen && (

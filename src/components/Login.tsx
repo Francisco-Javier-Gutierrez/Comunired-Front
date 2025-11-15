@@ -1,14 +1,22 @@
+import axios from "axios";
 import { useState } from "react";
+import { goTo } from "../utils/globalVariables";
+import { useUserData } from "../utils/UserStore";
+import { BackendApi } from "../utils/globalVariables";
 
 function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [loginFailedMessage, setLoginFailedMessage] = useState("");
     const [isValidEmail, setIsValidEmail] = useState<boolean | null>(null);
     const [showPassword, setShowPassword] = useState<boolean | null>(null);
     const [isSendingForm, setIsSendingForm] = useState<boolean | null>(null);
     const [isValidPassword, setIsValidPassword] = useState<boolean | null>(null);
     const [passwordMessage, setPasswordMessage] = useState("Ingrese su contraseña");
     const [emailMessage, setEmailMessage] = useState("Ingrese su correo electrónico");
+    const setGlobalEmail = useUserData((state) => state.setEmail);
+    const setGlobalPassword = useUserData((state) => state.setName);
+
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -38,30 +46,50 @@ function Login() {
         setShowPassword(prev => !prev);
     };
 
-    const signUp = () => {
-        console.log("Registrado mi pana");
+    const login = async () => {
+        const user = {
+            Correo_electronico: email,
+            Contrasena: password
+        }
         setIsSendingForm(true);
-        setTimeout(() => {
-            setIsSendingForm(false);
-            setIsValidEmail(null);
-            setIsValidPassword(null);
-            setEmailMessage("Ingrese su correo electrónico");
-            setPasswordMessage("Ingrese su contraseña");
-            setEmail("");
-            setPassword("");
-            window.location.href = "/";
-        }, 1500);
+        await axios.post(BackendApi.login_url, user, {
+            headers: { 'Content-Type': 'application/json' }
+        })
+            .then(response => {
+                console.log('Usuario logeado:', response.data);
+                setGlobalEmail(email);
+                setGlobalPassword(password);
+                setIsSendingForm(false);
+                setIsValidEmail(null);
+                setIsValidPassword(null);
+                setPasswordMessage("Ingrese una contraseña");
+                setEmailMessage("Ingrese su correo electrónico");
+                setLoginFailedMessage("");
+                setEmail("");
+                setPassword("");
+                //goTo("/profile");
+            })
+            .catch(error => {
+                setIsSendingForm(false);
+
+                const backendError = error.response?.data?.error;
+
+                if (backendError === "Correo o contraseña incorrectos") {
+                    setLoginFailedMessage("Correo o contraseña incorrectos");
+                }
+            });
     };
 
     const handleValidateForm = () => {
         const emailIsValid = validateEmail();
         const passwordIsValid = validatePassword();
-        if (emailIsValid && passwordIsValid) signUp();
+        if (emailIsValid && passwordIsValid) login();
     };
 
     return (
-        <>
+        <div className={`${isSendingForm ? "disabled-form no-select" : ""}`}>
             <h1 className="text-white text-center mb-5">Iniciar sesión</h1>
+            <h3 className="text-error text-center mb-5">{loginFailedMessage}</h3>
             <div className="login-container w-50 mx-auto">
                 <p className={`text-white ${isValidEmail === false ? "text-error" : ""}`}>{emailMessage}</p>
                 <input className={`text-input w-100 mb-4 ${isValidEmail === false ? "input-error" : ""}`} type="email" value={email}
@@ -81,7 +109,7 @@ function Login() {
                     {!isSendingForm ? "Iniciar sesión" : (<><span>Autenticando...</span><img className="loading ms-3" src="Loading.gif" alt="Cargando ..." /></>)}
                 </button>
             </div>
-        </>
+        </div>
     );
 }
 

@@ -19,7 +19,8 @@ function ChooseType() {
                     onClick={() => goTo("/create-publication")}>
                     <h3>Publicar una opinión o idea</h3>
                 </button>
-                <button className="white-button w-40">
+                <button className="white-button w-40"
+                onClick={() => goTo("/create-report")}>
                     <h3>Realizar y publicar un reporte</h3>
                 </button>
             </div>

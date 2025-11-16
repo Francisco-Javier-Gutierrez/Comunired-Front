@@ -15,7 +15,7 @@ function Login() {
     const [passwordMessage, setPasswordMessage] = useState("Ingrese su contraseña");
     const [emailMessage, setEmailMessage] = useState("Ingrese su correo electrónico");
     const setGlobalEmail = useUserData((state) => state.setEmail);
-    const setGlobalPassword = useUserData((state) => state.setName);
+    const setGlobalName = useUserData((state) => state.setName);
 
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -57,8 +57,8 @@ function Login() {
         })
             .then(response => {
                 console.log('Usuario logeado:', response.data);
-                setGlobalEmail(email);
-                setGlobalPassword(password);
+                setGlobalEmail(response.data.Correo_electronico_usuario);
+                setGlobalName(response.data.nombre_usuario);
                 setIsSendingForm(false);
                 setIsValidEmail(null);
                 setIsValidPassword(null);

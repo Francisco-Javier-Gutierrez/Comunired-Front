@@ -1,11 +1,12 @@
 @import url('bootstrap/dist/css/bootstrap.min.css');
+@import url('./css/Home.css');
 @import url('./css/Login.css');
 @import url('./css/Footer.css');
 @import url('./css/NavBar.css');
 @import url('./css/SignUp.css');
-@import url('./css/Home.css');
 @import url('./css/SideNav.css');
 @import url('./css/Profile.css');
+@import url('./css/CreateReport.css');
 @import url('./css/CreatePublication.css');
 
 body {
@@ -92,6 +93,7 @@ body {
 
 .textarea-input::-webkit-scrollbar {
   width: 6px;
+  cursor: default;
 }
 
 .textarea-input::-webkit-scrollbar-thumb {
@@ -103,6 +105,7 @@ body {
 .textarea-input:hover::-webkit-scrollbar-thumb,
 .textarea-input:focus::-webkit-scrollbar-thumb {
   visibility: visible;
+  cursor: default;
 }
 
 .input-error {
@@ -131,7 +134,11 @@ body {
   width: 1.5rem;
 }
 
-.disabled-form{
+.disabled-form {
   pointer-events: none;
   opacity: 0.7;
+}
+
+.bg-grey {
+  background-color: #454545;
 }

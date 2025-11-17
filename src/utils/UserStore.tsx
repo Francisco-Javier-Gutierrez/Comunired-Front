@@ -17,8 +17,8 @@ export interface UserStore extends UserData {
 export const useUserData = create<UserStore>()(
   persist(
     (set) => ({
-      email: "Francisco",
-      name: null,
+      email: null,
+      name: "Francisco",
       profilePictureUrl: null,
 
       setEmail: (email) => set({ email }),

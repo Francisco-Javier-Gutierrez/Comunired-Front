@@ -1,24 +1,38 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { goTo } from "../utils/globalVariables";
 import { useUserData } from "../utils/UserStore";
 import { usePublicationData } from "../utils/PublicationStore";
+import { useReportData } from "../utils/ReportStore";
 
 function CreatePublication() {
-    const { email, profilePictureUrl } = useUserData();
-    const { setText, setImage } = usePublicationData();
-
+    const { name, profilePictureUrl } = useUserData();
+    const { text, image, setText, setImage } = usePublicationData();
+    const { resetReport } = useReportData();
     const [textMessage, setTextMessage] = useState("");
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const [isValidText, setIsValidText] = useState<boolean | null>(null);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [imageError, setImageError] = useState("");
+    const [isValidImage, setIsValidImage] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        if (text && textareaRef.current) {
+            textareaRef.current.value = text;
+            autoResize();
+        }
+        if (image) {
+            setPreviewImage(image);
+        }
+    }, []);
 
     const goToPreview = () => {
+        resetReport();
         const realText = textareaRef.current?.value || "";
         setText(realText);
         setImage(previewImage);
         console.log(realText)
-        goTo("/preview");
+        goTo("/preview-publication");
     };
 
     const autoResize = () => {
@@ -45,14 +59,28 @@ function CreatePublication() {
     const handleImageSelected = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
+        const maxSize = 2 * 1024 * 1024;
 
-        const url = URL.createObjectURL(file);
-        setPreviewImage(url);
+        if (file.size > maxSize) {
+            setImageError("La imagen es demasiado pesada (máximo 2 MB).");
+            setPreviewImage(null);
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const base64String = reader.result as string;
+            setImageError("");
+            setPreviewImage(base64String);
+        };
+        reader.readAsDataURL(file);
     };
 
     const handleValidatePublication = () => {
         const textIsValid = validateText();
-        textIsValid && goToPreview();
+        if (isValidImage === false) return;
+
+        if (textIsValid) goToPreview();
     };
 
     const validateText = () => {
@@ -77,7 +105,7 @@ function CreatePublication() {
             <div className="no-select my-3">
                 <img src={profilePictureUrl ?? "/Profile.svg"} alt="Foto de perfil" className="rounded-circle me-1 user-image" />
                 <span className="text-white">
-                    {email ?? "Usuario"} &gt; <span className="text-grey">Publicación</span>
+                    {name ?? "Usuario"} &gt; <span className="text-grey">Publicación</span>
                 </span>
             </div>
 
@@ -101,6 +129,7 @@ function CreatePublication() {
 
                 <img src="/AddGif.svg" alt="Agregar Gif" className="create-publication-image cursor-pointer"
                     onClick={openImageSelector} />
+                {imageError && <span className="text-error text-center d-block mt-2">{imageError}</span>}
             </div>
 
             <input type="file" accept="image/*" ref={fileInputRef}

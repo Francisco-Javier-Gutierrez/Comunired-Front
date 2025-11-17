@@ -1,0 +1,56 @@
+.info-report {
+    background-color: #454545;
+    border: solid 0.05rem #ffffff;
+    border-radius: 0.5rem;
+}
+
+.info-image {
+    width: 1.5rem;
+}
+
+.custom-select-container {
+    position: relative;
+    background-color: #454545;
+    border: solid 0.05rem #ffffff;
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+
+.custom-select {
+    appearance: none;
+    width: 100%;
+    padding: 0.1rem;
+    background-color: #454545;
+    color: white;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.custom-select:focus,
+.custom-select:focus-visible,
+.custom-select:active {
+    outline: none !important;
+    border: solid 0.05rem #7e7e7e;
+    box-shadow: none;
+}
+
+.custom-select-container .arrow {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    pointer-events: none;
+    font-size: 1.1rem;
+}
+
+.report-add-image {
+    width: 4rem;
+}
+
+.drag-active {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 2px dashed #ffffff;
+    transition: 0.2s ease-in-out;
+}

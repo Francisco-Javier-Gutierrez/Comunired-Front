@@ -9,8 +9,8 @@ export const BackendApi = {
 
 const currentPath = window.location.pathname;
 export const paths = {
-  hideNavBar: !["/profile", "/report", "/publication", "/choose", "/create-publication"].includes(currentPath),
-  hideFooter: !["/report", "/publication", "/choose", "/create-publication"].includes(currentPath),
+  hideNavBar: !["/profile", "/report", "/publication", "/choose", "/create-publication", "/create-report", "/preview-report", "/preview-publication"].includes(currentPath),
+  hideFooter: !["/report", "/publication", "/choose", "/create-publication", "/create-report", "/preview-report", "/preview-publication"].includes(currentPath),
   showSideNav: !["/report", "/publication"].includes(currentPath),
   showLogoOnly: ["/login", "/signUp"].includes(currentPath),
   currentPath: window.location.pathname
@@ -19,3 +19,8 @@ export const paths = {
 export const goTo = (path: string) => {
   window.location.href = path;
 };
+
+
+export const formatFecha = (fechaISO: string) => new Date(fechaISO).toLocaleDateString("es-MX");
+
+

@@ -1,0 +1,13 @@
+.user-notification-image {
+    width: 1.3rem;
+}
+
+.notification-image {
+    width: 1rem;
+}
+
+.notifications-container {
+    background-color: #8A8A8A;
+    border: none;
+    border-radius: 0.5rem;
+}

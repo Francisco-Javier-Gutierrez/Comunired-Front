@@ -4,10 +4,12 @@ import Login from './components/Login'
 import SignUp from './components/SignUp';
 import Profile from './components/Profile';
 import ChooseType from './components/ChooseType';
+import EditProfile from './components/EditProfile';
 import CreateReport from './components/CreateReport';
+import Notifications from './components/Notifications';
+import PreviewReport from './components/PreviewReport';
 import CreatePublication from './components/CreatePublication';
 import PreviewPublication from './components/PreviewPublication';
-import PreviewReport from './components/PreviewReport';
 
 import {
   BrowserRouter as Router,
@@ -25,8 +27,10 @@ function ComuniRed() {
         <Route path="/signUp" element={<SignUp />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/choose" element={<ChooseType />} />
+        <Route path="/edit-profile" element={<EditProfile />} />
         <Route path="*" element={<Navigate to="/" replace />} />
         <Route path="/create-report" element={<CreateReport />} />
+        <Route path="/notifications" element={<Notifications />} />
         <Route path="/preview-report" element={<PreviewReport />} />
         <Route path="/create-publication" element={<CreatePublication />} />
         <Route path="/preview-publication" element={<PreviewPublication />} />

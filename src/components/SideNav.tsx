@@ -15,7 +15,8 @@ function SideNav() {
           <img className="side-nav-image pt-5 cursor-pointer" src="Search.svg" alt="Search"
             onClick={() => setIsSearch((prev) => !prev)} />
           <input className={`text-input w-100 cursor-pointer ${!isSearch ? "d-none" : ""}`} type="text" />
-          <img className="side-nav-image cursor-pointer" src={`${paths.currentPath === "/messages" ? "Messages_Grey.svg" : "Messages.svg"}`} alt="Messages" />
+          <img className="side-nav-image cursor-pointer" src={`${paths.currentPath === "/messages" ? "Messages_Grey.svg" : "Messages.svg"}`} alt="Messages"
+            onClick={() => { goTo("/notifications") }} />
           <img className="side-nav-image cursor-pointer footer-add-publication" src="AddPublication.svg" alt="AddPublication"
             onClick={() => { goTo("/choose?origin=" + paths.currentPath) }} />
           <img className="side-nav-image cursor-pointer" src={`${paths.currentPath === "/" ? "Home_Grey.svg" : "Home.svg"}`} alt="Home"

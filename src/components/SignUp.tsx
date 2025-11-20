@@ -1,8 +1,7 @@
 import axios from "axios";
 import { useState } from "react";
-import { goTo } from "../utils/globalVariables";
 import { useUserData } from "../utils/UserStore";
-import { BackendApi } from "../utils/globalVariables";
+import { BackendApi, goTo } from "../utils/globalVariables";
 
 function SignUp() {
     const [email, setEmail] = useState("");
@@ -74,10 +73,9 @@ function SignUp() {
         }
         setIsSendingForm(true);
         await axios.post(BackendApi.signUp_url, user, {
-            headers: { 'Content-Type': 'application/json' }
+            withCredentials: true
         })
-            .then(response => {
-                console.log('Usuario creado:', response.data);
+            .then(() => {
                 setGlobalEmail(email);
                 setGlobalPassword(password);
                 setIsSendingForm(false);
@@ -90,7 +88,7 @@ function SignUp() {
                 setEmail("");
                 setUsername("");
                 setPassword("");
-                //goTo("/profile");
+                goTo("/profile");
             })
             .catch(error => {
                 setIsSendingForm(false);

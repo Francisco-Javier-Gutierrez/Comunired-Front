@@ -1,13 +1,8 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BackendApi } from "../utils/globalVariables";
 import { goTo, formatFecha } from "../utils/globalVariables";
-
-const user = {
-  nombre: "Francisco_Javi",
-  correo_electronico: "franciscoj@gmail.com",
-  url_foto_perfil: "https://s3.us-east-2.amazonaws.com/franciscojgh.com/Git.svg"
-};
+import { useUserData } from "../utils/UserStore";
 
 const publicaciones = [
   {
@@ -100,6 +95,30 @@ const reportes = [
 ];
 
 function Profile() {
+
+  const { name, email, profilePictureUrl, setName, setEmail, setProfilePictureUrl } = useUserData();
+
+  useEffect(() => {
+    const fetchAccount = async () => {
+      try {
+        const res = await axios.post(BackendApi.get_account_url, {}, { withCredentials: true });
+        setName(res.data.usuario.Nombre_usuario);
+        setEmail(res.data.usuario.Correo_electronico);
+        setProfilePictureUrl(res.data.usuario.Url_foto_perfil);
+      } catch (e) {
+        if (axios.isAxiosError(e)) {
+          console.log("Error al obtener la cuenta:", e.response?.data?.error || e.message);
+        } else if (e instanceof Error) {
+          console.log("Error al obtener la cuenta:", e.message);
+        } else {
+          console.log("Error al obtener la cuenta:", String(e));
+        }
+      }
+    };
+
+    fetchAccount();
+  }, []);
+
   const hasPublicaciones = publicaciones && publicaciones.length > 0;
   const hasReports = reportes && reportes.length > 0;
   const isEmpty = !hasPublicaciones && !hasReports;
@@ -117,7 +136,6 @@ function Profile() {
   const handleConfirm = async () => {
     if (accion === "cerrar") {
       await axios.post(BackendApi.logout_url, {}, {
-        headers: { 'Content-Type': 'application/json' },
         withCredentials: true
       })
         .then(response => {
@@ -129,13 +147,12 @@ function Profile() {
           console.log(backendError)
         });
     } else if (accion === "eliminar") {
-      await axios.post(BackendApi.delete_url, {}, {
-        headers: { 'Content-Type': 'application/json' },
+      await axios.post(BackendApi.delete_account_url, {}, {
         withCredentials: true
       })
         .then(response => {
           console.log('Usuario eliminado:', response.data);
-          //goTo("/");
+          goTo("/");
         })
         .catch(error => {
           const backendError = error.response?.data?.error;
@@ -151,20 +168,22 @@ function Profile() {
         <div className="text-center">
           <h1 className="text-white mb-4">Tu perfil</h1>
           <img
-            className="mb-4 text-center profile-image cursor-pointer"
-            src="Profile.svg"
+            className="mb-4 text-center rounded-circle profile-image cursor-pointer"
+            src={profilePictureUrl ?? "/Profile.svg"}
             alt="Profile Image"
-            onClick={() => setImagenSeleccionada("Profile.svg")}
+            onClick={() => setImagenSeleccionada(profilePictureUrl ?? "/Profile.svg")}
           />
         </div>
 
         <span className="text-white">Nombre de usuario:</span>
-        <p className="text-white mb-5">{user.nombre}</p>
+        <p className="text-white mb-5">{name}</p>
         <span className="text-white">Correo Electrónico:</span>
-        <p className="text-white mb-5">{user.correo_electronico}</p>
+        <p className="text-white mb-5">{email}</p>
 
         <div className="py-4 d-flex align-items-center justify-content-around">
-          <button className="white-button w-30">Editar perfil</button>
+          <button className="white-button w-30" onClick={() => { goTo("/edit-profile") }}>
+            Editar perfil
+          </button>
           <button className="white-button w-30" onClick={() => setAccion("eliminar")}>
             Eliminar cuenta
           </button>
@@ -186,12 +205,12 @@ function Profile() {
                   <React.Fragment key={post.Id_publicacion}>
                     <div className="d-flex my-3">
                       <div>
-                        <img src={user.url_foto_perfil} alt={user.nombre} className="cursor-pointer no-select rounded-circle me-1 user-image" onClick={() => setImagenSeleccionada(user.url_foto_perfil)} />
+                        <img src={profilePictureUrl ?? "/Profile.svg"} alt={name ?? ""} className="cursor-pointer no-select rounded-circle me-1 user-image" onClick={() => setImagenSeleccionada(profilePictureUrl ?? "/Profile.svg")} />
                       </div>
                       <div className="text-white flex-grow-1">
 
                         <div className="d-flex justify-content-between align-items-center mb-3">
-                          <span className="no-select">{user.nombre}</span>
+                          <span className="no-select">{name ?? ""}</span>
                           <span>{formatFecha(post.Fecha_publicacion)}</span>
                         </div>
 
@@ -225,13 +244,13 @@ function Profile() {
                   <React.Fragment key={i}>
                     <div className="d-flex my-3">
                       <div>
-                        <img src={user.url_foto_perfil} alt={user.nombre} className="cursor-pointer no-select rounded-circle me-1 user-image"
-                          onClick={() => setImagenSeleccionada(user.url_foto_perfil)} />
+                        <img src={profilePictureUrl ?? "/Profile.svg"} alt={name ?? ""} className="cursor-pointer no-select rounded-circle me-1 user-image"
+                          onClick={() => setImagenSeleccionada(profilePictureUrl ?? "/Profile.svg")} />
                       </div>
                       <div className="text-white flex-grow-1">
 
                         <div className="d-flex justify-content-between align-items-center mb-3">
-                          <span className="no-select">{user.nombre}</span>
+                          <span className="no-select">{name ?? ""}</span>
                           <span>{formatFecha(reporte.Fecha_reporte)}</span>
                         </div>
 

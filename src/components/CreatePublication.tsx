@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from "react";
-import { goTo } from "../utils/globalVariables";
+import axios from "axios";
+import { goTo, BackendApi } from "../utils/globalVariables";
 import { useUserData } from "../utils/UserStore";
 import { usePublicationData } from "../utils/PublicationStore";
 import { useReportData } from "../utils/ReportStore";
@@ -26,12 +27,18 @@ function CreatePublication() {
         }
     }, []);
 
+    useEffect(() => {
+        if (text === null && image === null) {
+            if (textareaRef.current) textareaRef.current.value = "";
+            setPreviewImage(null);
+        }
+    }, [text, image]);
+
     const goToPreview = () => {
         resetReport();
         const realText = textareaRef.current?.value || "";
         setText(realText);
         setImage(previewImage);
-        console.log(realText)
         goTo("/preview-publication");
     };
 
@@ -62,7 +69,8 @@ function CreatePublication() {
         const maxSize = 2 * 1024 * 1024;
 
         if (file.size > maxSize) {
-            setImageError("La imagen es demasiado pesada (máximo 2 MB).");
+            setImageError("La imagen está demasiado pesada, el máximo permitido es: 2MB");
+            setIsValidImage(false);
             setPreviewImage(null);
             return;
         }
@@ -71,17 +79,38 @@ function CreatePublication() {
         reader.onloadend = () => {
             const base64String = reader.result as string;
             setImageError("");
+            setIsValidImage(true);
             setPreviewImage(base64String);
         };
         reader.readAsDataURL(file);
     };
 
-    const handleValidatePublication = () => {
+    const handleValidatePublicationPreview = () => {
         const textIsValid = validateText();
         if (isValidImage === false) return;
 
         if (textIsValid) goToPreview();
     };
+
+    const handleValidatePublicationPublicate = async () => {
+    const textIsValid = validateText();
+    if (isValidImage === false) return;
+
+    if (textIsValid) {
+        
+        const realText = textareaRef.current?.value || "";
+        try {
+            await axios.post(BackendApi.create_publication_url, { Contenido: realText, Url_imagen: previewImage }, { withCredentials: true });
+            setText(null);
+            setImage(null);
+            if (textareaRef.current) textareaRef.current.value = "";
+            setPreviewImage(null);
+        } catch (error: any) {
+            console.error(error.response?.data || error.message);
+        }
+    }
+};
+
 
     const validateText = () => {
         const realText = textareaRef.current?.value || "";
@@ -141,10 +170,10 @@ function CreatePublication() {
 
             <div className="publication-actions nav-bar w-100 d-flex justify-content-center align-items-center">
                 <div className="w-50 text-start">
-                    <button className="white-button" onClick={handleValidatePublication}>Previsualizar</button>
+                    <button className="white-button" onClick={handleValidatePublicationPreview}>Previsualizar</button>
                 </div>
                 <div className="w-50 text-end">
-                    <button className="white-button">Publicar</button>
+                    <button className="white-button" onClick={handleValidatePublicationPublicate}>Publicar</button>
                 </div>
             </div>
 

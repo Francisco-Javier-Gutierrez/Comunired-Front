@@ -1,8 +1,7 @@
 import axios from "axios";
 import { useState } from "react";
-import { goTo } from "../utils/globalVariables";
 import { useUserData } from "../utils/UserStore";
-import { BackendApi } from "../utils/globalVariables";
+import { BackendApi, goTo } from "../utils/globalVariables";
 
 function Login() {
     const [email, setEmail] = useState("");
@@ -53,10 +52,9 @@ function Login() {
         }
         setIsSendingForm(true);
         await axios.post(BackendApi.login_url, user, {
-            headers: { 'Content-Type': 'application/json' }
+            withCredentials: true
         })
             .then(response => {
-                console.log('Usuario logeado:', response.data);
                 setGlobalEmail(response.data.Correo_electronico_usuario);
                 setGlobalName(response.data.nombre_usuario);
                 setIsSendingForm(false);
@@ -67,7 +65,7 @@ function Login() {
                 setLoginFailedMessage("");
                 setEmail("");
                 setPassword("");
-                //goTo("/profile");
+                goTo("/home");
             })
             .catch(error => {
                 setIsSendingForm(false);

@@ -8,7 +8,8 @@ function Footer() {
                     onClick={() => { goTo("/"); }} />
                 <img className="footer-image cursor-pointer footer-add-publication" src="AddPublication.svg" alt="AddPublication"
                     onClick={() => { goTo("/choose?origin=" + paths.currentPath) }} />
-                <img className={`footer-image cursor-pointer${paths.currentPath === "/messages" ? "footer-selected" : ""}`} src="Messages.svg" alt="Messages" />
+                <img className={`footer-image cursor-pointer${paths.currentPath === "/messages" ? "footer-selected" : ""}`} src="Messages.svg" alt="Messages"
+                    onClick={() => { goTo("/notifications") }} />
             </div>
         )
     );

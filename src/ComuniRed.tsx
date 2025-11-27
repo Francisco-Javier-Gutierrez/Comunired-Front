@@ -2,12 +2,15 @@ import './ComuniRed.css'
 import Home from './components/Home';
 import Login from './components/Login'
 import SignUp from './components/SignUp';
+import Search from './components/Search';
 import Profile from './components/Profile';
 import ChooseType from './components/ChooseType';
 import EditProfile from './components/EditProfile';
+import EditPassword from './components/EditPassword';
 import CreateReport from './components/CreateReport';
 import Notifications from './components/Notifications';
 import PreviewReport from './components/PreviewReport';
+import ViewPublication from './components/ViewPublication';
 import CreatePublication from './components/CreatePublication';
 import PreviewPublication from './components/PreviewPublication';
 
@@ -25,11 +28,14 @@ function ComuniRed() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signUp" element={<SignUp />} />
+        <Route path="/search" element={<Search />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/choose" element={<ChooseType />} />
-        <Route path="/edit-profile" element={<EditProfile />} />
         <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/edit-profile" element={<EditProfile />} />
+        <Route path="/edit-password" element={<EditPassword />} />
         <Route path="/create-report" element={<CreateReport />} />
+        <Route path="/publication" element={<ViewPublication />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/preview-report" element={<PreviewReport />} />
         <Route path="/create-publication" element={<CreatePublication />} />

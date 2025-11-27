@@ -1,11 +1,20 @@
 import { useRef, useState, useEffect } from "react";
-import { goTo } from "../utils/globalVariables";
+import { goTo, BackendApi } from "../utils/globalVariables";
+import axios from "axios";
 import { useReportData } from "../utils/ReportStore";
 import { usePublicationData } from "../utils/PublicationStore";
 import { ServiceCodes, ServiceNames, type ServiceCode } from "../enums/ServiceEnum";
 import { UrgencyCodes, UrgencyNames, type UrgencyCode } from "../enums/UrgencyEnum";
 
 function CreateReport() {
+    useEffect(() => {
+        axios
+            .post(BackendApi.auth_me_url,{}, { withCredentials: true })
+            .catch(() => {
+                goTo("/login");
+            });
+    }, []);
+
     const { resetPublication } = usePublicationData();
     const {
         Servicio_reporte,

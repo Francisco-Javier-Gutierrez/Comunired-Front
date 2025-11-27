@@ -4,24 +4,6 @@ import { BackendApi } from "../utils/globalVariables";
 import { goTo, formatFecha } from "../utils/globalVariables";
 import { useUserData } from "../utils/UserStore";
 
-const publicaciones = [
-  {
-    Id_publicacion: "1",
-    Correo_electronico_usuario: "franciscoj@gmail.com",
-    Contenido: "Disfrutando del evento de innovación tecnológica en la UTSEM 🚀✨",
-    Fecha_publicacion: "2025-11-12",
-    likes: { total: 230 }, comentarios: { total: 12 }, compartidos: { total: 9 }
-  },
-  {
-    Id_publicacion: "2",
-    Correo_electronico_usuario: "franciscoj@gmail.com",
-    Contenido: "Nueva actualización del sistema de boletos disponible. ¡Pronto más mejoras! 🎟️",
-    Url_imagen: "https://s3.us-east-2.amazonaws.com/franciscojgh.com/Git.svg",
-    Fecha_publicacion: "2025-11-13",
-    likes: { total: 230 }, comentarios: { total: 12 }, compartidos: { total: 9 }
-  },
-]
-
 const reportes = [
   {
     Id_reporte: "rep-001",
@@ -49,75 +31,41 @@ const reportes = [
     Contacto_reportante: "7223409821",
     Fecha_reporte: "2025-11-15",
     likes: { total: 87 }, comentarios: { total: 5 }, compartidos: { total: 3 }
-  },
-
-  {
-    Id_reporte: "rep-003",
-    Correo_electronico_usuario: "carlos.rdz@gmail.com",
-    Servicio_reporte: "Basura",
-    Descripcion_problema: "El camión recolector no ha pasado por más de una semana",
-    Direccion: "Barrio San Miguel, Tlatlaya, México",
-    Nivel_urgencia: "Alta",
-    Foto_evidencia: "https://s3.us-east-2.amazonaws.com/franciscojgh.com/AWSIAM.svg",
-    Nombre_reportante: "Carlos Rodríguez Torres",
-    Contacto_reportante: "7221204490",
-    Fecha_reporte: "2025-11-13",
-    likes: { total: 134 }, comentarios: { total: 18 }, compartidos: { total: 6 }
-  },
-
-  {
-    Id_reporte: "rep-004",
-    Correo_electronico_usuario: "angela.mendoza@gmail.com",
-    Servicio_reporte: "Seguridad",
-    Descripcion_problema: "Se reportan robos constantes cerca de la secundaria",
-    Direccion: "Colonia Las Flores, Tlatlaya, México",
-    Nivel_urgencia: "Urgente",
-    Foto_evidencia: "https://s3.us-east-2.amazonaws.com/franciscojgh.com/AWSS3.svg",
-    Nombre_reportante: "Ángela Mendoza Pérez",
-    Contacto_reportante: "7228902311",
-    Fecha_reporte: "2025-11-16",
-    likes: { total: 301 }, comentarios: { total: 27 }, compartidos: { total: 14 }
-  },
-
-  {
-    Id_reporte: "rep-005",
-    Correo_electronico_usuario: "juan.ramirez@gmail.com",
-    Servicio_reporte: "Carreteras",
-    Descripcion_problema: "Apareció un bache enorme en la avenida principal",
-    Direccion: "El Tamarindo, Tlatlaya, México",
-    Nivel_urgencia: "Baja",
-    Foto_evidencia: "https://s3.us-east-2.amazonaws.com/franciscojgh.com/AWSApiGateway.svg",
-    Nombre_reportante: "Juan Ramírez Ortega",
-    Contacto_reportante: "7229984430",
-    Fecha_reporte: "2025-11-14",
-    likes: { total: 52 }, comentarios: { total: 4 }, compartidos: { total: 1 }
   }
 ];
 
 function Profile() {
-
   const { name, email, profilePictureUrl, setName, setEmail, setProfilePictureUrl } = useUserData();
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [publicaciones, setPublicaciones] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchAccount = async () => {
-      try {
-        const res = await axios.post(BackendApi.get_account_url, {}, { withCredentials: true });
-        setName(res.data.usuario.Nombre_usuario);
-        setEmail(res.data.usuario.Correo_electronico);
-        setProfilePictureUrl(res.data.usuario.Url_foto_perfil);
-      } catch (e) {
-        if (axios.isAxiosError(e)) {
-          console.log("Error al obtener la cuenta:", e.response?.data?.error || e.message);
-        } else if (e instanceof Error) {
-          console.log("Error al obtener la cuenta:", e.message);
-        } else {
-          console.log("Error al obtener la cuenta:", String(e));
-        }
+  axios
+    .post(BackendApi.auth_me_url, {}, { withCredentials: true })
+    .then(() => {
+      return axios.post(BackendApi.get_account_url, {}, { withCredentials: true });
+    })
+    .then((res) => {
+      setName(res.data.usuario.Nombre_usuario);
+      setEmail(res.data.usuario.Correo_electronico);
+      setProfilePictureUrl(res.data.usuario.Url_foto_perfil);
+      return axios.get(BackendApi.list_user_publications_url, { withCredentials: true });
+    })
+    .then((res) => {
+      const data = res.data.publicaciones || [];
+      setPublicaciones(data);
+    })
+    .catch((err) => {
+      if (err?.response?.status === 401) {
+        return goTo("/login");
       }
-    };
+      console.error("Ocurrió un error en la carga inicial:", err);
+    })
+    .finally(() => {
+      setIsLoadingProfile(false);
+    });
+}, []);
 
-    fetchAccount();
-  }, []);
 
   const hasPublicaciones = publicaciones && publicaciones.length > 0;
   const hasReports = reportes && reportes.length > 0;
@@ -165,125 +113,131 @@ function Profile() {
   return (
     <div className="d-flex justify-content-center">
       <div className="profile-container">
-        <div className="text-center">
-          <h1 className="text-white mb-4">Tu perfil</h1>
-          <img
-            className="mb-4 text-center rounded-circle profile-image cursor-pointer"
-            src={profilePictureUrl ?? "/Profile.svg"}
-            alt="Profile Image"
-            onClick={() => setImagenSeleccionada(profilePictureUrl ?? "/Profile.svg")}
-          />
-        </div>
-
-        <span className="text-white">Nombre de usuario:</span>
-        <p className="text-white mb-5">{name}</p>
-        <span className="text-white">Correo Electrónico:</span>
-        <p className="text-white mb-5">{email}</p>
-
-        <div className="py-4 d-flex align-items-center justify-content-around">
-          <button className="white-button w-30" onClick={() => { goTo("/edit-profile") }}>
-            Editar perfil
-          </button>
-          <button className="white-button w-30" onClick={() => setAccion("eliminar")}>
-            Eliminar cuenta
-          </button>
-          <button className="white-button w-30" onClick={() => setAccion("cerrar")}>
-            Cerrar sesión
-          </button>
-        </div>
-
-        <div className="mt-3 w-75 mx-auto profile-publications">
-          <h3 className="text-white mb-5 text-center">Tus publicaciones / reportes</h3>
-
-          {isEmpty && <p className="text-white text-center">No tienes publicaciones ni reportes aún 😔</p>}
-
-          {hasPublicaciones && (
-            <div className="d-flex w-100 mx-auto flex-column">
-              {publicaciones.map((post) => {
-                const liked = likesActivos[post.Id_publicacion];
-                return (
-                  <React.Fragment key={post.Id_publicacion}>
-                    <div className="d-flex my-3">
-                      <div>
-                        <img src={profilePictureUrl ?? "/Profile.svg"} alt={name ?? ""} className="cursor-pointer no-select rounded-circle me-1 user-image" onClick={() => setImagenSeleccionada(profilePictureUrl ?? "/Profile.svg")} />
-                      </div>
-                      <div className="text-white flex-grow-1">
-
-                        <div className="d-flex justify-content-between align-items-center mb-3">
-                          <span className="no-select">{name ?? ""}</span>
-                          <span>{formatFecha(post.Fecha_publicacion)}</span>
-                        </div>
-
-                        <p className="mb-3">{post.Contenido}</p>
-                        {post.Url_imagen && (
-                          <img src={post.Url_imagen} alt="imagen publicación" className="rounded-3 mb-3 w-50 publication-image cursor-pointer d-block mx-auto"
-                            onClick={() => setImagenSeleccionada(post.Url_imagen)} />
-                        )}
-                        <div className="d-flex no-select justify-content-between text-center mt-2">
-                          <div className="cursor-pointer d-flex align-items-center justify-content-center" onClick={() => handleLikeClick(post.Id_publicacion)}>
-                            <img src={liked ? "Like_active.svg" : "Like.svg"} width={20} className="me-1" alt="Like" />
-                            <span className={liked ? "text-error" : ""}>{post.likes.total}</span>
-                          </div>
-                          <div><img src="Comment.svg" width={20} className="me-1 cursor-pointer" alt="Comentarios" />{post.comentarios.total}</div>
-                          <div><img src="Share.svg" width={20} className="me-1 cursor-pointer" alt="Compartir" />{post.compartidos.total}</div>
-                        </div>
-                      </div>
-                    </div>
-                    <hr className="text-white m-0" />
-                  </React.Fragment>
-                );
-              })}
+        {isLoadingProfile ? (
+          <div className="big-loader"></div>
+        ) : (
+          <>
+            <div className="text-center">
+              <h1 className="text-white mb-4">Tu perfil</h1>
+              <img
+                className="mb-4 text-center rounded-circle profile-image cursor-pointer"
+                src={profilePictureUrl ?? "/Profile.svg"}
+                alt="Profile Image"
+                onClick={() => setImagenSeleccionada(profilePictureUrl ?? "/Profile.svg")}
+              />
             </div>
-          )}
 
-          {hasReports && (
-            <div className="d-flex w-100 mx-auto flex-column">
-              {reportes.map((reporte, i) => {
-                const liked = likesActivos[reporte.Id_reporte];
-                return (
-                  <React.Fragment key={i}>
-                    <div className="d-flex my-3">
-                      <div>
-                        <img src={profilePictureUrl ?? "/Profile.svg"} alt={name ?? ""} className="cursor-pointer no-select rounded-circle me-1 user-image"
-                          onClick={() => setImagenSeleccionada(profilePictureUrl ?? "/Profile.svg")} />
-                      </div>
-                      <div className="text-white flex-grow-1">
+            <span className="text-white">Nombre de usuario:</span>
+            <p className="text-white mb-5">{name}</p>
+            <span className="text-white">Correo Electrónico:</span>
+            <p className="text-white mb-5">{email}</p>
 
-                        <div className="d-flex justify-content-between align-items-center mb-3">
-                          <span className="no-select">{name ?? ""}</span>
-                          <span>{formatFecha(reporte.Fecha_reporte)}</span>
-                        </div>
-
-                        <p className="mb-1">{reporte.Direccion}</p>
-                        <p className="mb-1"><strong>Servicio:</strong> {reporte.Servicio_reporte}</p>
-                        <p className="mb-3">{reporte.Descripcion_problema}</p>
-
-                        {reporte.Foto_evidencia && (<img src={reporte.Foto_evidencia} alt="evidencia"
-                          className="rounded-3 mb-3 w-50 publication-image cursor-pointer d-block mx-auto"
-                          onClick={() => setImagenSeleccionada(reporte.Foto_evidencia)} />)}
-
-                        <div className="d-flex no-select justify-content-between text-center mt-2">
-                          <div className="cursor-pointer d-flex align-items-center justify-content-center" onClick={() => handleLikeClick(reporte.Id_reporte)}>
-                            <img src={liked ? "Like_active.svg" : "Like.svg"} width={20} className="me-1" alt="Like" />
-                            <span className={liked ? "text-error" : ""}>{reporte.likes.total}</span>
-                          </div>
-                          <div>
-                            <img src="Comment.svg" width={20} className="me-1 cursor-pointer" alt="Comentarios" />{reporte.comentarios?.total}
-                          </div>
-                          <div>
-                            <img src="Share.svg" width={20} className="me-1 cursor-pointer" alt="Compartir" />{reporte.compartidos?.total}
-                          </div>
-                        </div>
-
-                      </div>
-                    </div>
-                    <hr className="text-white m-0" />
-                  </React.Fragment>
-                );
-              })}
+            <div className="py-4 d-flex align-items-center justify-content-around">
+              <button className="white-button w-30" onClick={() => { goTo("/edit-profile") }}>
+                Editar perfil
+              </button>
+              <button className="white-button w-30" onClick={() => setAccion("eliminar")}>
+                Eliminar cuenta
+              </button>
+              <button className="white-button w-30" onClick={() => setAccion("cerrar")}>
+                Cerrar sesión
+              </button>
             </div>
-          )}
-        </div>
+
+            <div className="mt-3 w-75 mx-auto profile-publications">
+              <h3 className="text-white mb-5 text-center">Tus publicaciones / reportes</h3>
+
+              {isEmpty && <p className="text-white text-center">No tienes publicaciones ni reportes aún 😔</p>}
+
+              {hasPublicaciones && (
+                <div className="d-flex w-100 mx-auto flex-column">
+                  {publicaciones.map((post) => {
+                    const liked = likesActivos[post.Id_publicacion];
+                    return (
+                      <React.Fragment key={post.Id_publicacion}>
+                        <div className="d-flex my-3">
+                          <div>
+                            <img src={profilePictureUrl ?? "/Profile.svg"} alt={name ?? ""} className="cursor-pointer no-select rounded-circle me-1 user-image" onClick={() => setImagenSeleccionada(profilePictureUrl ?? "/Profile.svg")} />
+                          </div>
+                          <div className="text-white flex-grow-1">
+
+                            <div className="d-flex justify-content-between align-items-center mb-3">
+                              <span className="no-select">{name ?? ""}</span>
+                              <span>{formatFecha(post.Fecha_publicacion)}</span>
+                            </div>
+
+                            <p className="mb-3">{post.Contenido}</p>
+                            {post.Url_imagen && (
+                              <img src={post.Url_imagen} alt="imagen publicación" className="rounded-3 mb-3 w-50 publication-image cursor-pointer d-block mx-auto"
+                                onClick={() => setImagenSeleccionada(post.Url_imagen)} />
+                            )}
+                            <div className="d-flex no-select justify-content-between text-center mt-2">
+                              <div className="cursor-pointer d-flex align-items-center justify-content-center" onClick={() => handleLikeClick(post.Id_publicacion)}>
+                                <img src={liked ? "Like_active.svg" : "Like.svg"} width={20} className="me-1" alt="Like" />
+                                <span className={liked ? "text-error" : ""}>{post.likes.total}</span>
+                              </div>
+                              <div><img src="Comment.svg" width={20} className="me-1 cursor-pointer" alt="Comentarios" />{post.comentarios.total}</div>
+                              <div><img src="Share.svg" width={20} className="me-1 cursor-pointer" alt="Compartir" />{post.compartidos.total}</div>
+                            </div>
+                          </div>
+                        </div>
+                        <hr className="text-white m-0" />
+                      </React.Fragment>
+                    );
+                  })}
+                </div>
+              )}
+
+              {hasReports && (
+                <div className="d-flex w-100 mx-auto flex-column">
+                  {reportes.map((reporte, i) => {
+                    const liked = likesActivos[reporte.Id_reporte];
+                    return (
+                      <React.Fragment key={i}>
+                        <div className="d-flex my-3">
+                          <div>
+                            <img src={profilePictureUrl ?? "/Profile.svg"} alt={name ?? ""} className="cursor-pointer no-select rounded-circle me-1 user-image"
+                              onClick={() => setImagenSeleccionada(profilePictureUrl ?? "/Profile.svg")} />
+                          </div>
+                          <div className="text-white flex-grow-1">
+
+                            <div className="d-flex justify-content-between align-items-center mb-3">
+                              <span className="no-select">{name ?? ""}</span>
+                              <span>{formatFecha(reporte.Fecha_reporte)}</span>
+                            </div>
+
+                            <p className="mb-1">{reporte.Direccion}</p>
+                            <p className="mb-1"><strong>Servicio:</strong> {reporte.Servicio_reporte}</p>
+                            <p className="mb-3">{reporte.Descripcion_problema}</p>
+
+                            {reporte.Foto_evidencia && (<img src={reporte.Foto_evidencia} alt="evidencia"
+                              className="rounded-3 mb-3 w-50 publication-image cursor-pointer d-block mx-auto"
+                              onClick={() => setImagenSeleccionada(reporte.Foto_evidencia)} />)}
+
+                            <div className="d-flex no-select justify-content-between text-center mt-2">
+                              <div className="cursor-pointer d-flex align-items-center justify-content-center" onClick={() => handleLikeClick(reporte.Id_reporte)}>
+                                <img src={liked ? "Like_active.svg" : "Like.svg"} width={20} className="me-1" alt="Like" />
+                                <span className={liked ? "text-error" : ""}>{reporte.likes.total}</span>
+                              </div>
+                              <div>
+                                <img src="Comment.svg" width={20} className="me-1 cursor-pointer" alt="Comentarios" />{reporte.comentarios?.total}
+                              </div>
+                              <div>
+                                <img src="Share.svg" width={20} className="me-1 cursor-pointer" alt="Compartir" />{reporte.compartidos?.total}
+                              </div>
+                            </div>
+
+                          </div>
+                        </div>
+                        <hr className="text-white m-0" />
+                      </React.Fragment>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       {imagenSeleccionada && (

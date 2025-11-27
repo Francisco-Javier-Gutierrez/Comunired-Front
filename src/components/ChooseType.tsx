@@ -1,4 +1,6 @@
-import { goTo } from "../utils/globalVariables";
+import { goTo, BackendApi } from "../utils/globalVariables";
+import axios from "axios";
+import { useEffect } from "react";
 
 function ChooseType() {
     const params = new URLSearchParams(window.location.search);
@@ -7,6 +9,14 @@ function ChooseType() {
     const handleNavigate = (): string => {
         return origin?.trim() ? origin : "/home";
     };
+
+    useEffect(() => {
+        axios
+            .post(BackendApi.auth_me_url,{}, { withCredentials: true })
+            .catch(() => {
+                goTo("/login");
+            });
+    }, []);
 
     return (
         <>
@@ -19,8 +29,7 @@ function ChooseType() {
                     onClick={() => goTo("/create-publication")}>
                     <h3>Publicar una opinión o idea</h3>
                 </button>
-                <button className="white-button w-40"
-                onClick={() => goTo("/create-report")}>
+                <button className="white-button w-40">
                     <h3>Realizar y publicar un reporte</h3>
                 </button>
             </div>

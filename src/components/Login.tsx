@@ -104,7 +104,7 @@ function Login() {
                 <span className="text-white">¿Todavía no tienes una cuenta? <a className="text-white" href="signUp">Regístrate aquí</a></span>
 
                 <button className="white-button w-100 my-4" onClick={handleValidateForm}>
-                    {!isSendingForm ? "Iniciar sesión" : (<><span>Autenticando...</span><img className="loading ms-3" src="Loading.gif" alt="Cargando ..." /></>)}
+                    {!isSendingForm ? "Iniciar sesión" : (<div className="d-flex justify-content-center"><span>Autenticandote...</span><div className="loader"></div></div>)}
                 </button>
             </div>
         </div>

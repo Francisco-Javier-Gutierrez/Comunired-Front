@@ -118,7 +118,7 @@ function SignUp() {
     };
 
     return (
-        <>
+        <div className={`${isSendingForm ? "disabled-form no-select" : ""}`}>
             <h1 className="text-white text-center m-5">Registrarse</h1>
             <div className="signUp-container w-50 mx-auto">
                 <p className={`text-white ${isValidName === false ? "text-error" : ""}`}>{nameMessage}</p>
@@ -182,15 +182,11 @@ function SignUp() {
                 <button className="white-button w-100 my-4" onClick={handleValidateForm}>
                     {!isSendingForm ? (
                         "Registrarse"
-                    ) : (
-                        <>
-                            <span>Registrandote...</span>
-                            <img className="loading ms-3" src="Loading.gif" alt="Cargando ..." />
-                        </>
+                    ) : (<div className="d-flex justify-content-center"><span>Registrandote...</span><div className="loader"></div></div>
                     )}
                 </button>
             </div>
-        </>
+        </div>
     );
 }
 

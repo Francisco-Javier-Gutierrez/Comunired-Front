@@ -1,11 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useUserData } from "../utils/UserStore";
 import { useReportData } from "../utils/ReportStore";
-import { goTo } from "../utils/globalVariables";
+import { goTo, BackendApi } from "../utils/globalVariables";
 import { formatFecha } from "../utils/globalVariables";
+import axios from "axios";
 import { ServiceNames, type ServiceCode } from "../enums/ServiceEnum"
 
 function PreviewReport() {
+    useEffect(() => {
+        axios
+            .post(BackendApi.auth_me_url,{}, { withCredentials: true })
+            .catch(() => {
+                goTo("/login");
+            });
+    }, []);
+
     const { name, profilePictureUrl } = useUserData();
     const {
         Servicio_reporte,

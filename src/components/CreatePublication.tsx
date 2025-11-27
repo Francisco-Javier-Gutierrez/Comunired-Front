@@ -7,7 +7,7 @@ import { useReportData } from "../utils/ReportStore";
 
 function CreatePublication() {
     const { name, profilePictureUrl } = useUserData();
-    const { text, image, setText, setImage } = usePublicationData();
+    const { text, image, setText, setImage, resetPublication } = usePublicationData();
     const { resetReport } = useReportData();
     const [textMessage, setTextMessage] = useState("");
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -16,6 +16,15 @@ function CreatePublication() {
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [imageError, setImageError] = useState("");
     const [isValidImage, setIsValidImage] = useState<boolean | null>(null);
+    const [isSendingForm, setIsSendingForm] = useState<boolean | null>(null);
+
+    useEffect(() => {
+        axios
+            .post(BackendApi.auth_me_url, {}, { withCredentials: true })
+            .catch(() => {
+                goTo("/login");
+            });
+    }, []);
 
     useEffect(() => {
         if (text && textareaRef.current) {
@@ -93,24 +102,25 @@ function CreatePublication() {
     };
 
     const handleValidatePublicationPublicate = async () => {
-    const textIsValid = validateText();
-    if (isValidImage === false) return;
+        const textIsValid = validateText();
+        if (isValidImage === false) return;
 
-    if (textIsValid) {
-        
-        const realText = textareaRef.current?.value || "";
-        try {
-            await axios.post(BackendApi.create_publication_url, { Contenido: realText, Url_imagen: previewImage }, { withCredentials: true });
-            setText(null);
-            setImage(null);
-            if (textareaRef.current) textareaRef.current.value = "";
-            setPreviewImage(null);
-        } catch (error: any) {
-            console.error(error.response?.data || error.message);
+        if (textIsValid) {
+            setIsSendingForm(true);
+            const realText = textareaRef.current?.value || "";
+            await axios.post(BackendApi.create_publication_url, { Contenido: realText, Url_imagen: previewImage }, { withCredentials: true })
+                .then(() => {
+                    setText(null);
+                    setImage(null);
+                    resetPublication();
+                    if (textareaRef.current) textareaRef.current.value = "";
+                    setPreviewImage(null);
+                    goTo("/profile");
+                }).finally(() => {
+                    setIsSendingForm(false)
+                })
         }
-    }
-};
-
+    };
 
     const validateText = () => {
         const realText = textareaRef.current?.value || "";
@@ -125,58 +135,61 @@ function CreatePublication() {
     };
 
     return (
-        <div className="w-75 mx-auto d-flex flex-column min-vh-100">
-            <img className="footer-image d-md-none cursor-pointer my-4" src="Back.svg" alt="Regresar"
-                onClick={() => goTo("/choose")} />
+        <div className={`${isSendingForm ? "disabled-form no-select" : ""}`}>
+            <div className="w-75 mx-auto d-flex flex-column min-vh-100">
+                <img className="footer-image d-md-none cursor-pointer my-4" src="Back.svg" alt="Regresar"
+                    onClick={() => goTo("/choose")} />
 
-            <h1 className="text-white text-center mb-4">Nueva publicación</h1>
+                <h1 className="text-white text-center mb-4">Nueva publicación</h1>
 
-            <div className="no-select my-3">
-                <img src={profilePictureUrl ?? "/Profile.svg"} alt="Foto de perfil" className="rounded-circle me-1 user-image" />
-                <span className="text-white">
-                    {name ?? "Usuario"} &gt; <span className="text-grey">Publicación</span>
-                </span>
-            </div>
-
-            <span className="text-error">{textMessage}</span>
-            <textarea
-                ref={textareaRef}
-                className={`textarea-input mb-3 ${isValidText === false && "input-error"}`}
-                placeholder="Expresa tu idea u opinión aquí"
-                onInput={autoResize}
-                onChange={() => { setIsValidText(null); setTextMessage("") }}
-                style={{
-                    overflow: "hidden",
-                    resize: "none",
-                    minHeight: "80px"
-                }}
-            ></textarea>
-
-            <div>
-                <img src="/AddImage.svg" alt="Agregar imagen" className="create-publication-image cursor-pointer me-4"
-                    onClick={openImageSelector} />
-
-                <img src="/AddGif.svg" alt="Agregar Gif" className="create-publication-image cursor-pointer"
-                    onClick={openImageSelector} />
-                {imageError && <span className="text-error text-center d-block mt-2">{imageError}</span>}
-            </div>
-
-            <input type="file" accept="image/*" ref={fileInputRef}
-                onChange={handleImageSelected} style={{ display: "none" }} />
-
-            {previewImage && (
-                <img src={previewImage} alt="Vista previa" className="mt-4 d-block w-75 mx-auto rounded preview-image" />
-            )}
-
-            <div className="publication-actions nav-bar w-100 d-flex justify-content-center align-items-center">
-                <div className="w-50 text-start">
-                    <button className="white-button" onClick={handleValidatePublicationPreview}>Previsualizar</button>
+                <div className="no-select my-3">
+                    <img src={profilePictureUrl ?? "/Profile.svg"} alt="Foto de perfil" className="rounded-circle me-1 user-image" />
+                    <span className="text-white">
+                        {name ?? "Usuario"} &gt; <span className="text-grey">Publicación</span>
+                    </span>
                 </div>
-                <div className="w-50 text-end">
-                    <button className="white-button" onClick={handleValidatePublicationPublicate}>Publicar</button>
+
+                <span className="text-error">{textMessage}</span>
+                <textarea
+                    ref={textareaRef}
+                    className={`textarea-input mb-3 ${isValidText === false && "input-error"}`}
+                    placeholder="Expresa tu idea u opinión aquí"
+                    onInput={autoResize}
+                    onChange={() => { setIsValidText(null); setTextMessage("") }}
+                    style={{
+                        overflow: "hidden",
+                        resize: "none",
+                        minHeight: "80px"
+                    }}
+                ></textarea>
+
+                <div>
+                    <img src="/AddImage.svg" alt="Agregar imagen" className="create-publication-image cursor-pointer me-4"
+                        onClick={openImageSelector} />
+
+                    <img src="/AddGif.svg" alt="Agregar Gif" className="create-publication-image cursor-pointer"
+                        onClick={openImageSelector} />
+                    {imageError && <span className="text-error text-center d-block mt-2">{imageError}</span>}
+                </div>
+
+                <input type="file" accept="image/*" ref={fileInputRef}
+                    onChange={handleImageSelected} style={{ display: "none" }} />
+
+                {previewImage && (
+                    <img src={previewImage} alt="Vista previa" className="mt-4 d-block w-75 mx-auto rounded preview-image" />
+                )}
+
+                <div className="publication-actions nav-bar w-100 d-flex justify-content-center align-items-center">
+                    <div className="w-50 text-start">
+                        <button className="white-button" onClick={handleValidatePublicationPreview}>Previsualizar</button>
+                    </div>
+                    <div className="w-50 text-end">
+                        <button className="white-button" onClick={handleValidatePublicationPublicate}>
+                            {!isSendingForm ? "Publicar" : (<div className="d-flex justify-content-center"><span>Publicando...</span><div className="loader"></div></div>)}
+                        </button>
+                    </div>
                 </div>
             </div>
-
         </div>
     );
 }

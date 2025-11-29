@@ -88,7 +88,7 @@ function SignUp() {
                 setEmail("");
                 setUsername("");
                 setPassword("");
-                goTo("/profile");
+                goTo("/my-profile");
             })
             .catch(error => {
                 setIsSendingForm(false);
@@ -182,7 +182,7 @@ function SignUp() {
                 <button className="white-button w-100 my-4" onClick={handleValidateForm}>
                     {!isSendingForm ? (
                         "Registrarse"
-                    ) : (<div className="d-flex justify-content-center"><span>Registrandote...</span><div className="loader"></div></div>
+                    ) : (<div className="d-flex justify-content-center"><span>Registrandote...</span><div className="loader ms-3"></div></div>
                     )}
                 </button>
             </div>

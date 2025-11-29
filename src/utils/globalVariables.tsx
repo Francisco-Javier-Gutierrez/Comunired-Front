@@ -5,10 +5,11 @@ export const BackendApi = {
   auth_me_url: `${base_url}/auth/auth-me`,
   logout_url: `${base_url}/auth/logout`,
 
-  delete_account_url: `${base_url}/account/delete`,
   edit_account_url: `${base_url}/account/edit`,
-  edit_password_url: `${base_url}/account/edit-password`,
+  delete_account_url: `${base_url}/account/delete`,
   get_account_url: `${base_url}/account/get-account`,
+  messages_account_url: `${base_url}/account/messages`,
+  edit_password_url: `${base_url}/account/edit-password`,
 
   list_publication_url: `${base_url}/publications/list-publication`,
   like_publications_url: `${base_url}/publications/like-publication`,
@@ -21,8 +22,11 @@ export const BackendApi = {
 };
 
 const currentPath = window.location.pathname;
+
+export const searchParams = new URLSearchParams(window.location.search);
+
 export const paths = {
-  hideNavBar: !["/profile", "/report", "/edit-profile", "/choose", "/create-publication", "/create-report", "/preview-report", "/preview-publication"].includes(currentPath),
+  hideNavBar: !["/my-profile", "/report", "/edit-profile", "/choose", "/create-publication", "/create-report", "/preview-report", "/preview-publication"].includes(currentPath),
   hideFooter: !["/report", "/signUp", "/edit-profile", "/login", "/choose", "/create-publication", "/create-report", "/preview-report", "/preview-publication"].includes(currentPath),
   showSideNav: !["/report"].includes(currentPath),
   showLogoOnly: ["/login", "/signUp"].includes(currentPath),
@@ -32,7 +36,6 @@ export const paths = {
 export const goTo = (path: string) => {
   window.location.href = path;
 };
-
 
 export const formatFecha = (fechaISO: string) =>
   new Date(fechaISO).toLocaleString("es-MX", {

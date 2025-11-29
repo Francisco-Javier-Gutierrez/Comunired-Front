@@ -34,38 +34,37 @@ const reportes = [
   }
 ];
 
-function Profile() {
+function MyProfile() {
   const { name, email, profilePictureUrl, setName, setEmail, setProfilePictureUrl } = useUserData();
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [publicaciones, setPublicaciones] = useState<any[]>([]);
+  const [isLoadingAction, setIsLoadingAction] = useState(false);
 
   useEffect(() => {
-  axios
-    .post(BackendApi.auth_me_url, {}, { withCredentials: true })
-    .then(() => {
-      return axios.post(BackendApi.get_account_url, {}, { withCredentials: true });
-    })
-    .then((res) => {
-      setName(res.data.usuario.Nombre_usuario);
-      setEmail(res.data.usuario.Correo_electronico);
-      setProfilePictureUrl(res.data.usuario.Url_foto_perfil);
-      return axios.get(BackendApi.list_user_publications_url, { withCredentials: true });
-    })
-    .then((res) => {
-      const data = res.data.publicaciones || [];
-      setPublicaciones(data);
-    })
-    .catch((err) => {
-      if (err?.response?.status === 401) {
-        return goTo("/login");
-      }
-      console.error("Ocurrió un error en la carga inicial:", err);
-    })
-    .finally(() => {
-      setIsLoadingProfile(false);
-    });
-}, []);
-
+    axios
+      .post(BackendApi.auth_me_url, {}, { withCredentials: true })
+      .then(() => {
+        return axios.post(BackendApi.get_account_url, {}, { withCredentials: true });
+      })
+      .then((res) => {
+        setName(res.data.usuario.Nombre_usuario);
+        setEmail(res.data.usuario.Correo_electronico);
+        setProfilePictureUrl(res.data.usuario.Url_foto_perfil);
+        return axios.post(BackendApi.list_user_publications_url, {}, { withCredentials: true });
+      })
+      .then((res) => {
+        const data = res.data.publicaciones || [];
+        setPublicaciones(data);
+      })
+      .catch((err) => {
+        if (err?.response?.status === 401) {
+          return goTo("/login");
+        }
+      })
+      .finally(() => {
+        setIsLoadingProfile(false);
+      });
+  }, []);
 
   const hasPublicaciones = publicaciones && publicaciones.length > 0;
   const hasReports = reportes && reportes.length > 0;
@@ -81,33 +80,34 @@ function Profile() {
       [id_publicacion]: !prev[id_publicacion]
     }));
   };
-  const handleConfirm = async () => {
+
+  const handleConfirm = () => {
+    setIsLoadingAction(true);
+
+    let request;
+
     if (accion === "cerrar") {
-      await axios.post(BackendApi.logout_url, {}, {
-        withCredentials: true
-      })
-        .then(response => {
-          console.log('Usuario deslogeado:', response.data);
-          goTo("/");
-        })
-        .catch(error => {
-          const backendError = error.response?.data?.error;
-          console.log(backendError)
-        });
-    } else if (accion === "eliminar") {
-      await axios.post(BackendApi.delete_account_url, {}, {
-        withCredentials: true
-      })
-        .then(response => {
-          console.log('Usuario eliminado:', response.data);
-          goTo("/");
-        })
-        .catch(error => {
-          const backendError = error.response?.data?.error;
-          console.log(backendError)
-        });
+      request = axios.post(BackendApi.logout_url, {}, { withCredentials: true });
     }
-    setAccion(null);
+    else if (accion === "eliminar") {
+      request = axios.post(BackendApi.delete_account_url, {}, { withCredentials: true });
+    }
+    else {
+      request = Promise.resolve();
+    }
+
+    request
+      .then(() => {
+        setName(null);
+        setEmail(null);
+        setProfilePictureUrl(null);
+        goTo("/");
+      })
+      .catch(() => { })
+      .finally(() => {
+        setIsLoadingAction(false);
+        setAccion(null);
+      });
   };
 
   return (
@@ -144,10 +144,12 @@ function Profile() {
               </button>
             </div>
 
+            <hr className="text-white" />
+
             <div className="mt-3 w-75 mx-auto profile-publications">
               <h3 className="text-white mb-5 text-center">Tus publicaciones / reportes</h3>
 
-              {isEmpty && <p className="text-white text-center">No tienes publicaciones ni reportes aún 😔</p>}
+              {isEmpty && <p className="text-white text-center"> {name} no tiene publicaciones ni reportes aún 😔</p>}
 
               {hasPublicaciones && (
                 <div className="d-flex w-100 mx-auto flex-column">
@@ -255,7 +257,7 @@ function Profile() {
       )}
 
       {accion && (
-        <div className="modal fade show d-block" tabIndex={-1} onClick={() => setAccion(null)}>
+        <div className={`modal fade show d-block ${isLoadingAction ? "disabled" : ""}`} tabIndex={-1} onClick={() => setAccion(null)}>
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content bg-white rounded-4 shadow p-4 text-center" onClick={(e) => e.stopPropagation()}>
               <h4 className="mb-4">
@@ -264,13 +266,17 @@ function Profile() {
                   : "¿Estás seguro de que deseas cerrar sesión?"}
               </h4>
               <div className="w-75 mx-auto d-flex align-items-center justify-content-around mt-4">
-                <img
-                  src="Confirm.svg"
-                  alt="Confirmar"
-                  className="cursor-pointer"
-                  width={50}
-                  onClick={handleConfirm}
-                />
+                {isLoadingAction ? (
+                  <div className="mid-loader"></div>
+                ) : (
+                  <img
+                    src="Confirm.svg"
+                    alt="Confirmar"
+                    className="cursor-pointer"
+                    width={50}
+                    onClick={handleConfirm}
+                  />
+                )}
                 <img
                   src="Cancel.svg"
                   alt="Cancelar"
@@ -287,4 +293,4 @@ function Profile() {
   );
 }
 
-export default Profile;
+export default MyProfile;

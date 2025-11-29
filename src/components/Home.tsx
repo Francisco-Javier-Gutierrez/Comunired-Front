@@ -1,62 +1,20 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { BackendApi, goTo, paths } from "../utils/globalVariables";
+import { BackendApi, goTo } from "../utils/globalVariables";
 import { formatFecha } from "../utils/globalVariables";
-
-const reportes = [
-    {
-        Id_reporte: "rep-006",
-        Correo_electronico_usuario: "lucia.morales@gmail.com",
-        Servicio_reporte: "Transporte público",
-        Descripcion_problema: "Los camiones están tardando demasiado en pasar por la ruta habitual",
-        Direccion: "Colonia El Mirador, Tlatlaya, México",
-        Nivel_urgencia: "Media",
-        Foto_evidencia: "https://s3.us-east-2.amazonaws.com/franciscojgh.com/Git.svg",
-        Nombre_reportante: "Lucía Morales Castillo",
-        Contacto_reportante: "7227784412",
-        Fecha_reporte: "2025-11-15",
-        Usuario: { nombre_usuario: "Carlos Mendoza", Url_foto_perfil: "https://s3.us-east-2.amazonaws.com/franciscojgh.com/Git.svg" },
-        likes: { total: 64 }, comentarios: { total: 3 }, compartidos: { total: 2 }
-    },
-    {
-        Id_reporte: "rep-007",
-        Correo_electronico_usuario: "diego.santos@gmail.com",
-        Servicio_reporte: "Electricidad",
-        Descripcion_problema: "Se va la luz constantemente en toda la privada desde hace dos días",
-        Direccion: "Privada Los Pinos, Tlatlaya, México",
-        Nivel_urgencia: "Urgente",
-        Foto_evidencia: "https://s3.us-east-2.amazonaws.com/franciscojgh.com/Git.svg",
-        Nombre_reportante: "Diego Santos Martínez",
-        Contacto_reportante: "7221047788",
-        Fecha_reporte: "2025-11-16",
-        Usuario: { nombre_usuario: "Carlos Mendoza", Url_foto_perfil: "https://s3.us-east-2.amazonaws.com/franciscojgh.com/Git.svg" },
-        likes: { total: 189 }, comentarios: { total: 21 }, compartidos: { total: 10 }
-    },
-    {
-        Id_reporte: "rep-008",
-        Correo_electronico_usuario: "rocio.garcia@gmail.com",
-        Servicio_reporte: "Salud",
-        Descripcion_problema: "El centro de salud no cuenta con suficiente personal para las consultas",
-        Direccion: "Barrio La Esperanza, Tlatlaya, México",
-        Nivel_urgencia: "Alta",
-        Foto_evidencia: "https://s3.us-east-2.amazonaws.com/franciscojgh.com/Git.svg",
-        Nombre_reportante: "Rocío García Hernández",
-        Contacto_reportante: "7226679080",
-        Fecha_reporte: "2025-11-17",
-        Usuario: { nombre_usuario: "Carlos Mendoza", Url_foto_perfil: "https://s3.us-east-2.amazonaws.com/franciscojgh.com/Git.svg" },
-        likes: { total: 142 }, comentarios: { total: 9 }, compartidos: { total: 5 }
-    }
-];
 
 function Home() {
     const [publicaciones, setPublicaciones] = useState<any[]>([]);
     const [isLoadingPublications, setIsLoadingPublications] = useState<boolean>(false);
     const [imagenSeleccionada, setImagenSeleccionada] = useState<string | null>(null);
     const [likesActivos, setLikesActivos] = useState<{ [key: string]: boolean }>({});
-    const [reportesMock, setReportesMock] = useState(reportes);
+    const [shareDisabled] = useState<boolean>(false);
+    const [sharedCount, setSharedCount] = useState<{ [key: string]: number }>({});
+    const [shareLock, setShareLock] = useState<{ [key: string]: boolean }>({});
+    const [reportesMock, setReportesMock] = useState<any[]>([]);
     const processingLikes = new Set<string>();
 
-    const handleLikeClick = async (id_publicacion: string) => {
+    const handleLikeClick = (id_publicacion: string) => {
         if (processingLikes.has(id_publicacion)) return;
         processingLikes.add(id_publicacion);
 
@@ -66,25 +24,22 @@ function Home() {
         setLikesActivos(prev => ({ ...prev, [id_publicacion]: !alreadyLiked }));
         updateLikeNumbers(id_publicacion, change);
 
-        try {
-            await axios.post(
-                BackendApi.like_publications_url,
-                { Id_objetivo: id_publicacion },
-                { withCredentials: true }
-            );
-        } catch (err: any) {
-            const status = err?.response?.status;
-
-            updateLikeNumbers(id_publicacion, -change);
-
-            if (status === 401) {
-                goTo("/login");
-            } else if (status !== 400) {
-                console.error("Error inesperado al dar like:", err);
-            }
-        } finally {
-            processingLikes.delete(id_publicacion);
-        }
+        axios.post(
+            BackendApi.like_publications_url,
+            { Id_objetivo: id_publicacion },
+            { withCredentials: true }
+        )
+            .then(() => { })
+            .catch((err: any) => {
+                const status = err?.response?.status;
+                updateLikeNumbers(id_publicacion, -change);
+                if (status === 401) {
+                    goTo("/login");
+                }
+            })
+            .finally(() => {
+                processingLikes.delete(id_publicacion);
+            });
     };
 
     const updateLikeNumbers = (id_publicacion: string, change: number) => {
@@ -101,7 +56,7 @@ function Home() {
             )
         );
 
-        setReportesMock(prev =>
+        setReportesMock((prev: any[]) =>
             prev.map(rep =>
                 rep.Id_reporte === id_publicacion
                     ? {
@@ -121,13 +76,104 @@ function Home() {
                 const data = res.data.publicaciones || [];
                 setPublicaciones(data);
             })
-            .catch((err) => {
-                console.error("Error cargando publicaciones:", err);
-            })
+            .catch(() => { })
             .finally(() => {
                 setIsLoadingPublications(false);
             });
     }, []);
+
+    const handleSharePublication = (publicationId: string, isReporte = false) => {
+
+        if (shareLock[publicationId]) return;
+
+        setShareLock(prev => ({ ...prev, [publicationId]: true }));
+
+        alert("Url copiada exitosamente");
+        navigator.clipboard.writeText(window.location.href + "/publication?post=" + publicationId)
+            .then(() => {
+                setSharedCount(prev => ({
+                    ...prev,
+                    [publicationId]: (prev[publicationId] ?? (
+                        isReporte
+                            ? reportesMock.find(r => r.Id_reporte === publicationId)?.compartidos?.total ?? 0
+                            : publicaciones.find(p => p.Id_publicacion === publicationId)?.compartidos?.total ?? 0
+                    )) + 1
+                }));
+
+                if (isReporte) {
+                    setReportesMock(prev =>
+                        prev.map(rep =>
+                            rep.Id_reporte === publicationId
+                                ? {
+                                    ...rep,
+                                    compartidos: {
+                                        total: (rep.compartidos?.total ?? 0) + 1
+                                    }
+                                }
+                                : rep
+                        )
+                    );
+                } else {
+                    setPublicaciones(prev =>
+                        prev.map(pub =>
+                            pub.Id_publicacion === publicationId
+                                ? {
+                                    ...pub,
+                                    compartidos: {
+                                        total: (pub.compartidos?.total ?? 0) + 1
+                                    }
+                                }
+                                : pub
+                        )
+                    );
+                }
+                axios.post(
+                    BackendApi.share_publication_url,
+                    { Id_objetivo: publicationId },
+                    { withCredentials: true }
+                )
+                    .catch(() => {
+                        setSharedCount(prev => ({
+                            ...prev,
+                            [publicationId]: (prev[publicationId] ?? 1) - 1
+                        }));
+
+                        if (isReporte) {
+                            setReportesMock((prev: any[]) =>
+                                prev.map(rep =>
+                                    rep.Id_reporte === publicationId
+                                        ? {
+                                            ...rep,
+                                            compartidos: {
+                                                total: (rep.compartidos?.total ?? 1) - 1
+                                            }
+                                        }
+                                        : rep
+                                )
+                            );
+                        } else {
+                            setPublicaciones(prev =>
+                                prev.map(pub =>
+                                    pub.Id_publicacion === publicationId
+                                        ? {
+                                            ...pub,
+                                            compartidos: {
+                                                total: (pub.compartidos?.total ?? 1) - 1
+                                            }
+                                        }
+                                        : pub
+                                )
+                            );
+                        }
+                    })
+                    .finally(() => {
+                        setTimeout(() => {
+                            setShareLock(prev => ({ ...prev, [publicationId]: false }));
+                        }, 600);
+                    });
+            })
+            .catch(() => { setShareLock(prev => ({ ...prev, [publicationId]: false })); });
+    };
 
     return (
         <div className="d-flex justify-content-center">
@@ -146,7 +192,7 @@ function Home() {
                                         </div>
                                         <div className="text-white flex-grow-1">
                                             <div className="d-flex justify-content-between align-items-center mb-3">
-                                                <span className="no-select">{post.Usuario.nombre_usuario}</span>
+                                                <span className="no-select"><a className="text-white" href={"/profile?user=" + post.Usuario.Correo_electronico}>{post.Usuario.nombre_usuario}</a></span>
                                                 <span>{formatFecha(post.Fecha_publicacion)}</span>
                                             </div>
 
@@ -163,7 +209,13 @@ function Home() {
                                                 </div>
                                                 <div><img src="Comment.svg" width={20} className="me-1 cursor-pointer" alt="Comentarios"
                                                     onClick={() => { goTo("/publication?post=" + post.Id_publicacion) }} />{post.comentarios?.total ?? 0}</div>
-                                                <div><img src="Share.svg" width={20} className="me-1 cursor-pointer" alt="Compartir" />{post.compartidos?.total ?? 0}</div>
+                                                <div
+                                                    className={`d-flex align-items-center cursor-pointer justify-content-center ${shareDisabled ? "disabled" : ""}`}
+                                                    onClick={() => handleSharePublication(post.Id_publicacion, false)}
+                                                >
+                                                    <img src="Share.svg" width={20} className="me-1" alt="Compartir" />
+                                                    <span>{sharedCount[post.Id_publicacion] ?? post.compartidos?.total ?? 0}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -172,14 +224,14 @@ function Home() {
                             );
                         })}
 
-                        {reportesMock.map((reporte, i) => {
+                        {reportesMock.map((reporte: { Id_reporte: string; Usuario: { Url_foto_perfil: React.SetStateAction<string | null> | undefined; nombre_usuario: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; }; Fecha_reporte: string; Direccion: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; Servicio_reporte: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; Descripcion_problema: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; Foto_evidencia: React.SetStateAction<string | null> | undefined; likes: { total: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; }; comentarios: { total: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; }; compartidos: { total: any; }; }, i: React.Key | null | undefined) => {
                             const liked = likesActivos[reporte.Id_reporte];
                             return (
                                 <React.Fragment key={i}>
                                     <div className="d-flex my-3">
                                         <div>
-                                            <img src={reporte.Usuario.Url_foto_perfil} alt={reporte.Usuario.nombre_usuario} className="cursor-pointer no-select rounded-circle me-1 user-image"
-                                                onClick={() => setImagenSeleccionada(reporte.Usuario.Url_foto_perfil)} />
+                                            <img src={String(reporte.Usuario.Url_foto_perfil ?? "")} alt={String(reporte.Usuario.nombre_usuario ?? "")} className="cursor-pointer no-select rounded-circle me-1 user-image"
+                                                onClick={() => setImagenSeleccionada(typeof reporte.Usuario.Url_foto_perfil === 'string' ? reporte.Usuario.Url_foto_perfil : "")} />
                                         </div>
                                         <div className="text-white flex-grow-1">
 
@@ -192,9 +244,9 @@ function Home() {
                                             <p className="mb-1"><strong>Servicio:</strong> {reporte.Servicio_reporte}</p>
                                             <p className="mb-3">{reporte.Descripcion_problema}</p>
 
-                                            {reporte.Foto_evidencia && (<img src={reporte.Foto_evidencia} alt="evidencia"
+                                            {reporte.Foto_evidencia && typeof reporte.Foto_evidencia === 'string' && (<img src={reporte.Foto_evidencia} alt="evidencia"
                                                 className="rounded-3 mb-3 w-50 publication-image cursor-pointer d-block mx-auto"
-                                                onClick={() => setImagenSeleccionada(reporte.Foto_evidencia)} />)}
+                                                onClick={() => setImagenSeleccionada(reporte.Foto_evidencia as string)} />)}
 
                                             <div className="d-flex no-select justify-content-between text-center mt-2">
                                                 <div className="cursor-pointer d-flex align-items-center justify-content-center" onClick={() => handleLikeClick(reporte.Id_reporte)}>
@@ -204,8 +256,12 @@ function Home() {
                                                 <div>
                                                     <img src="Comment.svg" width={20} className="me-1 cursor-pointer" alt="Comentarios" />{reporte.comentarios?.total}
                                                 </div>
-                                                <div>
-                                                    <img src="Share.svg" width={20} className="me-1 cursor-pointer" alt="Compartir" />{reporte.compartidos?.total}
+                                                <div
+                                                    className={`d-flex align-items-center cursor-pointer justify-content-center ${shareDisabled ? "disabled" : ""}`}
+                                                    onClick={() => handleSharePublication(reporte.Id_reporte, true)}
+                                                >
+                                                    <img src="Share.svg" width={20} className="me-1" alt="Compartir" />
+                                                    <span>{sharedCount[reporte.Id_reporte] ?? reporte.compartidos?.total ?? 0}</span>
                                                 </div>
                                             </div>
 

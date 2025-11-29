@@ -69,7 +69,7 @@ function EditPassword() {
                 setNewPassword("Ingrese su nueva contraseña");
                 setCurrentPassword("");
                 setNewPassword("");
-                goTo("/profile");
+                goTo("/my-profile");
             }).finally(() => {
                 setIsSendingForm(false);
             });
@@ -113,7 +113,7 @@ function EditPassword() {
                     </div>
                     <div className="w-50 text-end">
                         <button className="white-button w-100 my-4" onClick={handleValidateForm}>
-                            {!isSendingForm ? "Actualizar contraseña" : (<div className="d-flex justify-content-center"><span>Actualizando...</span><div className="loader"></div></div>)}
+                            {!isSendingForm ? "Actualizar contraseña" : (<div className="d-flex justify-content-center"><span>Actualizando...</span><div className="loader ms-3"></div></div>)}
                         </button>
                     </div>
                 </div>

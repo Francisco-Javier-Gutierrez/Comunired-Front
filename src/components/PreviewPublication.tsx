@@ -28,11 +28,9 @@ function PreviewPublication() {
                 setText(null);
                 setImage(null);
                 resetPublication();
-                goTo("/profile");
+                goTo("/my-profile");
             })
-            .catch(error => {
-                console.error(error.response?.data || error.message);
-            })
+            .catch(() => { })
             .finally(() => {
                 setIsSendingForm(false);
             });

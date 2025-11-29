@@ -85,20 +85,15 @@ function EditProfile() {
             Url_foto_perfil: profileImage || null,
         };
 
-        console.log(bodyData)
-
         setIsSendingForm(true);
 
         await axios
             .post(BackendApi.edit_account_url, bodyData, { withCredentials: true })
             .then(() => {
-                setIsSendingForm(false);
-                goTo("/profile");
+                goTo("/my-profile");
             })
-            .catch(error => {
-                console.error(error.response?.data);
-                setIsSendingForm(false);
-            });
+            .catch(() => { })
+            .finally(() => { setIsSendingForm(false) });
     };
 
     return (
@@ -155,7 +150,7 @@ function EditProfile() {
                     </div>
                     <div className="w-50 text-end">
                         <button className="white-button" onClick={handleSave}>
-                            {!isSendingForm ? "Actualizar" : (<div className="d-flex justify-content-center"><span>Actualizando...</span><div className="loader"></div></div>)}
+                            {!isSendingForm ? "Actualizar" : (<div className="d-flex justify-content-center"><span>Actualizando...</span><div className="loader ms-3"></div></div>)}
                         </button>
                     </div>
                 </div>

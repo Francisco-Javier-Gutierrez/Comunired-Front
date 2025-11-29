@@ -12,7 +12,7 @@ function NavBar() {
                     <img className="nav-bar-image cursor-pointer" src="Search.svg" alt="Search" onClick={() => goTo("/search")} />
                     <img className={`nav-bar-image`} src="Logo.png" alt="Logo" />
                     <img className={`nav-bar-image cursor-pointer`} src="Profile.svg" alt="ProfileImage"
-                        onClick={() => { goTo("/profile") }} />
+                        onClick={() => { goTo("/my-profile") }} />
                 </div>
             ) : null}
         </>

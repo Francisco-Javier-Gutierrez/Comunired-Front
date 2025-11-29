@@ -13,8 +13,7 @@ function Login() {
     const [isValidPassword, setIsValidPassword] = useState<boolean | null>(null);
     const [passwordMessage, setPasswordMessage] = useState("Ingrese su contraseña");
     const [emailMessage, setEmailMessage] = useState("Ingrese su correo electrónico");
-    const setGlobalEmail = useUserData((state) => state.setEmail);
-    const setGlobalName = useUserData((state) => state.setName);
+    const { setEmail: setGlobalEmail, setName: setGlobalName, setProfilePictureUrl } = useUserData();
 
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -55,8 +54,9 @@ function Login() {
             withCredentials: true
         })
             .then(response => {
-                setGlobalEmail(response.data.Correo_electronico_usuario);
-                setGlobalName(response.data.nombre_usuario);
+                setGlobalEmail(response.data.user.Correo_electronico);
+                setGlobalName(response.data.user.Nombre_usuario);
+                setProfilePictureUrl(response.data.user.Url_foto_perfil);
                 setIsSendingForm(false);
                 setIsValidEmail(null);
                 setIsValidPassword(null);
@@ -74,6 +74,8 @@ function Login() {
 
                 if (backendError === "Correo o contraseña incorrectos") {
                     setLoginFailedMessage("Correo o contraseña incorrectos");
+                    setPasswordMessage("Ingrese una contraseña");
+                    setEmailMessage("Ingrese su correo electrónico");
                 }
             });
     };
@@ -104,7 +106,7 @@ function Login() {
                 <span className="text-white">¿Todavía no tienes una cuenta? <a className="text-white" href="signUp">Regístrate aquí</a></span>
 
                 <button className="white-button w-100 my-4" onClick={handleValidateForm}>
-                    {!isSendingForm ? "Iniciar sesión" : (<div className="d-flex justify-content-center"><span>Autenticandote...</span><div className="loader"></div></div>)}
+                    {!isSendingForm ? "Iniciar sesión" : (<div className="d-flex justify-content-center"><span>Autenticandote...</span><div className="loader ms-3"></div></div>)}
                 </button>
             </div>
         </div>

@@ -1,10 +1,9 @@
-import { goTo, BackendApi } from "../utils/globalVariables";
+import { goTo, BackendApi, searchParams } from "../utils/globalVariables";
 import axios from "axios";
 import { useEffect } from "react";
 
 function ChooseType() {
-    const params = new URLSearchParams(window.location.search);
-    const origin = params.get("origin");
+    const origin = searchParams.get("origin");
 
     const handleNavigate = (): string => {
         return origin?.trim() ? origin : "/home";
@@ -12,7 +11,7 @@ function ChooseType() {
 
     useEffect(() => {
         axios
-            .post(BackendApi.auth_me_url,{}, { withCredentials: true })
+            .post(BackendApi.auth_me_url, {}, { withCredentials: true })
             .catch(() => {
                 goTo("/login");
             });

@@ -16,7 +16,6 @@ createRoot(document.getElementById('root')!).render(
       <ComuniRed />
       <Footer />
     </div>
-
     <div className={`d-none ${paths.showLogoOnly ? "d-md-block" : "d-md-flex"}`}>
       <SideNav />
       <div className="flex-grow-1">

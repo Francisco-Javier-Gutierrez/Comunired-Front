@@ -115,7 +115,7 @@ function CreatePublication() {
                     resetPublication();
                     if (textareaRef.current) textareaRef.current.value = "";
                     setPreviewImage(null);
-                    goTo("/profile");
+                    goTo("/my-profile");
                 }).finally(() => {
                     setIsSendingForm(false)
                 })
@@ -185,7 +185,7 @@ function CreatePublication() {
                     </div>
                     <div className="w-50 text-end">
                         <button className="white-button" onClick={handleValidatePublicationPublicate}>
-                            {!isSendingForm ? "Publicar" : (<div className="d-flex justify-content-center"><span>Publicando...</span><div className="loader"></div></div>)}
+                            {!isSendingForm ? "Publicar" : (<div className="d-flex justify-content-center"><span>Publicando...</span><div className="loader ms-3"></div></div>)}
                         </button>
                     </div>
                 </div>

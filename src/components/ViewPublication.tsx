@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { BackendApi, formatFecha } from "../utils/globalVariables";
+import { BackendApi, formatFecha, searchParams } from "../utils/globalVariables";
 import { useUserData } from "../utils/UserStore";
 
 function ViewPublication() {
@@ -12,8 +12,14 @@ function ViewPublication() {
     const [showCommentInput, setShowCommentInput] = useState<boolean>(false);
     const [newComment, setNewComment] = useState<string>("");
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const [isCreatingComment, setIsCreatingComment] = useState<boolean>(false);
+    const [liked, setLiked] = useState(false);
+    const [likesCount, setLikesCount] = useState(0);
+    const likeProcessing = useRef(false);
 
-    const searchParams = new URLSearchParams(window.location.search);
+
+    const [shareDisabled, setShareDisabled] = useState<boolean>(false);
+
     const publicationId = searchParams.get("post");
 
     useEffect(() => {
@@ -32,11 +38,10 @@ function ViewPublication() {
             .then(res => {
                 const pub = Array.isArray(res.data.publicacion) ? res.data.publicacion[0] : res.data.publicacion;
                 setPublication(pub);
+                setLiked(false);
+                setLikesCount(pub?.likes?.total ?? 0);
             })
-            .catch(err => {
-                console.error(err.response?.data || err.message);
-                setError("Error al obtener la publicación");
-            })
+            .catch(() => { setError("Error al obtener la publicación"); })
             .finally(() => setIsLoading(false));
     }, [publicationId]);
 
@@ -44,7 +49,7 @@ function ViewPublication() {
         if (!newComment.trim()) return;
 
         const body = { Id_objetivo: publicationId, Contenido: newComment };
-
+        setIsCreatingComment(true);
         axios.post(BackendApi.comment_publication_url, body, { withCredentials: true })
             .then(res => {
                 if (res.data?.id) {
@@ -59,7 +64,7 @@ function ViewPublication() {
                         }
                     };
 
-                    setPublication((prev: { comentarios: { total: number; lista: never[]; }; }) => {
+                    setPublication((prev: any) => {
                         const prevComentarios = prev?.comentarios ?? { total: 0, lista: [] };
                         const lista = Array.isArray(prevComentarios.lista) ? prevComentarios.lista : [];
 
@@ -78,14 +83,45 @@ function ViewPublication() {
 
                 }
             })
-            .catch(err => console.error(err));
+            .catch(() => { })
+            .finally(() => setIsCreatingComment(false));
+
+    };
+
+    const toggleLike = async () => {
+        if (likeProcessing.current) return;
+        likeProcessing.current = true;
+
+        const already = liked;
+        const change = already ? -1 : +1;
+
+        setLiked(!already);
+        setLikesCount(prev => prev + change);
+
+        try {
+            await axios.post(
+                BackendApi.like_publications_url,
+                { Id_objetivo: publicationId },
+                { withCredentials: true }
+            );
+        } catch (err: any) {
+            const status = err?.response?.status;
+
+            setLikesCount(prev => prev - change);
+
+            if (status === 401) {
+                window.location.href = "/login";
+            }
+        } finally {
+            likeProcessing.current = false;
+        }
     };
 
     if (isLoading) return <div className="big-loader"></div>;
     if (error) return <div className="text-danger">{error}</div>;
     if (!publication) return <div>No hay publicación para mostrar</div>;
 
-    const { Contenido, Url_imagen, Fecha_publicacion, Usuario, likes, comentarios, compartidos } = publication;
+    const { Contenido, Url_imagen, Fecha_publicacion, Usuario, comentarios, compartidos } = publication;
 
     const autoResize = () => {
         if (textareaRef.current) {
@@ -95,66 +131,92 @@ function ViewPublication() {
     };
 
     const handleSharePublication = () => {
+        if (shareDisabled) return;
+
+        setShareDisabled(true);
+
         navigator.clipboard.writeText(window.location.href)
-            .catch(err => {
-                console.error("Error copiando URL:", err);
-            });
-        axios.post(
-            BackendApi.share_publication_url,
-            { Id_objetivo: publicationId },
-            { withCredentials: true }
-        )
-            .then(res => {
-                if (res.data?.id) {
-                    setPublication((prev: { compartidos: { total: number; }; }) => {
-                        const prevCompartidos = prev?.compartidos ?? { total: 0 };
+            .then(() => {
+                alert("¡Copiado al portapapeles!");
 
-                        return {
-                            ...prev,
-                            compartidos: {
-                                ...prevCompartidos,
-                                total: (prevCompartidos.total ?? 0) + 1
-                            }
-                        };
+                axios.post(
+                    BackendApi.share_publication_url,
+                    { Id_objetivo: publicationId },
+                    { withCredentials: true }
+                )
+                    .then(res => {
+                        if (res.data?.id) {
+                            setPublication((prev: any) => {
+                                const prevCompartidos = prev?.compartidos ?? { total: 0 };
+                                return {
+                                    ...prev,
+                                    compartidos: {
+                                        ...prevCompartidos,
+                                        total: (prevCompartidos.total ?? 0) + 1
+                                    }
+                                };
+                            });
+                        }
+                    })
+                    .catch(() => { })
+                    .finally(() => {
+                        setTimeout(() => {
+                            setShareDisabled(false);
+                        }, 1500);
                     });
-
-                }
             })
-            .catch(err => console.error("Error al registrar compartido:", err));
+            .catch(() => { })
+            .finally(() => { setShareDisabled(false) });
     };
 
     return (
         <div className="w-75 min-vh-100 mx-auto home-container d-flex flex-column">
             <div className="d-flex my-3">
                 <div>
-                    <img src={Usuario?.Url_foto_perfil ?? Usuario?.url_foto_perfil ?? "/Profile.svg"} alt={Usuario?.nombre_usuario ?? Usuario?.Nombre_usuario ?? "Usuario"} className="cursor-pointer no-select rounded-circle me-1 user-image" onClick={() => setImagenSeleccionada(Usuario?.Url_foto_perfil ?? Usuario?.url_foto_perfil ?? "/Profile.svg")} />
+                    <img
+                        src={Usuario?.Url_foto_perfil ?? Usuario?.url_foto_perfil ?? "/Profile.svg"}
+                        alt={Usuario?.nombre_usuario ?? Usuario?.Nombre_usuario ?? "Usuario"}
+                        className="cursor-pointer no-select rounded-circle me-1 user-image"
+                        onClick={() => setImagenSeleccionada(
+                            Usuario?.Url_foto_perfil ?? Usuario?.url_foto_perfil ?? "/Profile.svg"
+                        )}
+                    />
                 </div>
 
                 <div className="text-white flex-grow-1">
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                        <span className="no-select">{Usuario?.nombre_usuario ?? Usuario?.Nombre_usuario ?? "Usuario"}</span>
+                        <span className="no-select">
+                            {Usuario?.nombre_usuario ?? Usuario?.Nombre_usuario ?? "Usuario"}
+                        </span>
                         <span>{formatFecha(Fecha_publicacion)}</span>
                     </div>
 
                     <p className="mb-3">{Contenido}</p>
 
                     {Url_imagen && (
-                        <img src={Url_imagen} alt="imagen publicación" className="rounded-3 mb-3 w-50 publication-image cursor-pointer d-block mx-auto" onClick={() => setImagenSeleccionada(Url_imagen)} />
+                        <img
+                            src={Url_imagen}
+                            alt="imagen publicación"
+                            className="rounded-3 mb-3 w-50 publication-image cursor-pointer d-block mx-auto"
+                            onClick={() => setImagenSeleccionada(Url_imagen)}
+                        />
                     )}
 
-                    <div className="d-flex no-select justify-content-between text-center mt-2">
-                        <div className="cursor-pointer d-flex align-items-center justify-content-center">
-                            <img src="Like.svg" width={20} className="me-1" alt="Like" />
-                            <span>{likes?.total ?? 0}</span>
+                    <div className="d-flex no-select justify-content-between text-center mt-3">
+                        <div className="cursor-pointer d-flex align-items-center justify-content-center"
+                            onClick={toggleLike}>
+                            <img src={liked ? "Like_active.svg" : "Like.svg"} width={20} className="me-1" alt="Like" />
+                            <span className={liked ? "text-error" : ""}>{likesCount}</span>
                         </div>
 
-                        <div className="cursor-pointer d-flex align-items-center justify-content-center" onClick={() => setShowCommentInput(prev => !prev)}>
+                        <div className="cursor-pointer d-flex align-items-center justify-content-center"
+                            onClick={() => setShowCommentInput(prev => !prev)}>
                             <img src="Comment.svg" width={20} className="me-1" alt="Comentarios" />
-                            <span>{comentarios?.total ?? (comentarios && Array.isArray(comentarios) ? comentarios.length : 0)}</span>
+                            <span>{comentarios?.total ?? (Array.isArray(comentarios) ? comentarios.length : 0)}</span>
                         </div>
 
                         <div
-                            className="d-flex align-items-center cursor-pointer justify-content-center"
+                            className={`d-flex align-items-center cursor-pointer justify-content-center ${shareDisabled ? "disabled" : ""}`}
                             onClick={handleSharePublication}
                         >
                             <img src="Share.svg" width={20} className="me-1" alt="Compartir" />
@@ -164,14 +226,19 @@ function ViewPublication() {
                 </div>
             </div>
 
-            <hr className="text-white mt-5 m-0" />
+            <hr className="text-white mt-3 m-0" />
             <h6 className="text-white my-2">Comentarios</h6>
             <hr className="text-white mb-3 m-0" />
 
             {showCommentInput && (
                 <div className="d-flex my-3">
                     <div>
-                        <img src={profilePictureUrl ?? "/Profile.svg"} alt={name ?? "Usuario"} className="cursor-pointer no-select rounded-circle me-1 user-image" onClick={() => setImagenSeleccionada(profilePictureUrl ?? "/Profile.svg")} />
+                        <img
+                            src={profilePictureUrl ?? "/Profile.svg"}
+                            alt={name ?? "Usuario"}
+                            className="cursor-pointer no-select rounded-circle me-1 user-image"
+                            onClick={() => setImagenSeleccionada(profilePictureUrl ?? "/Profile.svg")}
+                        />
                     </div>
                     <div className="text-white flex-grow-1">
                         <div className="d-flex justify-content-between align-items-center mb-2">
@@ -185,7 +252,8 @@ function ViewPublication() {
                             className="textarea-input mb-2"
                             style={{ overflow: "hidden", resize: "none", minHeight: "80px" }}
                         />
-                        <button className="white-button" onClick={handleAddComment}>Comentar</button>
+                        <button className="white-button" onClick={handleAddComment}>
+                            {!isCreatingComment ? "Comentar" : (<div className="d-flex justify-content-center"><span>Creando comentario...</span><div className="loader ms-3"></div></div>)}</button>
                     </div>
                 </div>
             )}
@@ -194,7 +262,14 @@ function ViewPublication() {
                 <div key={c.Id_comentario || `${c.Fecha_comentario}-${Math.random()}`}>
                     <div className="d-flex my-3">
                         <div>
-                            <img src={c.Usuario?.Url_foto_perfil ?? c.Usuario?.url_foto_perfil ?? "/Profile.svg"} alt={c.Usuario?.nombre_usuario ?? c.Usuario?.Nombre_usuario ?? "Usuario"} className="cursor-pointer no-select rounded-circle me-1 user-image" onClick={() => setImagenSeleccionada(c.Usuario?.Url_foto_perfil ?? c.Usuario?.url_foto_perfil ?? "/Profile.svg")} />
+                            <img
+                                src={c.Usuario?.Url_foto_perfil ?? c.Usuario?.url_foto_perfil ?? "/Profile.svg"}
+                                alt={c.Usuario?.nombre_usuario ?? c.Usuario?.Nombre_usuario ?? "Usuario"}
+                                className="cursor-pointer no-select rounded-circle me-1 user-image"
+                                onClick={() => setImagenSeleccionada(
+                                    c.Usuario?.Url_foto_perfil ?? c.Usuario?.url_foto_perfil ?? "/Profile.svg"
+                                )}
+                            />
                         </div>
                         <div className="text-white flex-grow-1">
                             <div className="d-flex justify-content-between align-items-center mb-2">
@@ -214,7 +289,11 @@ function ViewPublication() {
                         <div className="modal-content bg-transparent border-0">
                             <div className="modal-body p-0 text-center position-relative">
                                 <img src={imagenSeleccionada} alt="Vista ampliada" className="img-fluid rounded-3 selected-image" />
-                                <button type="button" className="btn-close position-absolute top-0 end-0 m-3 bg-light rounded-circle" onClick={() => setImagenSeleccionada(null)}></button>
+                                <button
+                                    type="button"
+                                    className="btn-close position-absolute top-0 end-0 m-3 bg-light rounded-circle"
+                                    onClick={() => setImagenSeleccionada(null)}
+                                ></button>
                             </div>
                         </div>
                     </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { BackendApi, formatFecha, searchParams } from "../utils/globalVariables";
+import { BackendApi, formatFecha, useSearchParamsGlobal } from "../utils/globalVariables";
 import { useUserData } from "../utils/UserStore";
 
 function ViewPublication() {
@@ -20,6 +20,7 @@ function ViewPublication() {
 
     const [shareDisabled, setShareDisabled] = useState<boolean>(false);
 
+    const searchParams = useSearchParamsGlobal();
     const publicationId = searchParams.get("post");
 
     useEffect(() => {
@@ -38,7 +39,8 @@ function ViewPublication() {
             .then(res => {
                 const pub = Array.isArray(res.data.publicacion) ? res.data.publicacion[0] : res.data.publicacion;
                 setPublication(pub);
-                setLiked(false);
+
+                setLiked(pub.is_Liked ?? false);
                 setLikesCount(pub?.likes?.total ?? 0);
             })
             .catch(() => { setError("Error al obtener la publicación"); })
@@ -73,7 +75,7 @@ function ViewPublication() {
                             comentarios: {
                                 ...prevComentarios,
                                 total: lista.length + 1,
-                                lista: [...lista, newComm]
+                                lista: [newComm, ...lista]
                             }
                         };
                     });
@@ -100,13 +102,13 @@ function ViewPublication() {
 
         try {
             await axios.post(
-                BackendApi.like_publications_url,
+                already ? BackendApi.unlike_publications_url : BackendApi.like_publications_url,
                 { Id_objetivo: publicationId },
                 { withCredentials: true }
             );
         } catch (err: any) {
             const status = err?.response?.status;
-
+            setLiked(already);
             setLikesCount(prev => prev - change);
 
             if (status === 401) {
@@ -117,7 +119,11 @@ function ViewPublication() {
         }
     };
 
-    if (isLoading) return <div className="big-loader"></div>;
+    if (isLoading) return (
+        <div className="home-container">
+            <div className="big-loader"></div>
+        </div>
+    );
     if (error) return <div className="text-danger">{error}</div>;
     if (!publication) return <div>No hay publicación para mostrar</div>;
 
@@ -170,7 +176,7 @@ function ViewPublication() {
     };
 
     return (
-        <div className="w-75 min-vh-100 mx-auto home-container d-flex flex-column">
+        <div className="w-75 mx-auto home-container d-flex flex-column">
             <div className="d-flex my-3">
                 <div>
                     <img
@@ -186,7 +192,7 @@ function ViewPublication() {
                 <div className="text-white flex-grow-1">
                     <div className="d-flex justify-content-between align-items-center mb-3">
                         <span className="no-select">
-                            {Usuario?.nombre_usuario ?? Usuario?.Nombre_usuario ?? "Usuario"}
+                            <a className="text-white" href={"/profile?user=" + Usuario?.Correo_electronico}>{Usuario?.Nombre_usuario ?? Usuario?.Nombre_usuario ?? "Usuario"}</a>
                         </span>
                         <span>{formatFecha(Fecha_publicacion)}</span>
                     </div>
@@ -231,7 +237,7 @@ function ViewPublication() {
             <hr className="text-white mb-3 m-0" />
 
             {showCommentInput && (
-                <div className="d-flex my-3">
+                <div className={`d-flex my-3 ${isCreatingComment ? "disabled-form no-select" : ""}`}>
                     <div>
                         <img
                             src={profilePictureUrl ?? "/Profile.svg"}
@@ -258,6 +264,10 @@ function ViewPublication() {
                 </div>
             )}
 
+            {(!comentarios?.lista || comentarios.lista.length === 0) && (
+                <h4 className="text-white text-center mb-3">No hay comentarios en la publicación</h4>
+            )}
+
             {(comentarios?.lista ?? []).map((c: any) => (
                 <div key={c.Id_comentario || `${c.Fecha_comentario}-${Math.random()}`}>
                     <div className="d-flex my-3">
@@ -273,7 +283,7 @@ function ViewPublication() {
                         </div>
                         <div className="text-white flex-grow-1">
                             <div className="d-flex justify-content-between align-items-center mb-2">
-                                <span className="no-select">{c.Usuario?.Nombre_usuario ?? c.Usuario?.nombre_usuario ?? "Usuario"}</span>
+                                <span className="no-select"><a className="text-white" href={"/profile?user=" + c.Usuario?.Correo_electronico}>{c.Usuario?.Nombre_usuario ?? c.Usuario?.nombre_usuario ?? "Usuario"}</a></span>
                                 <span>{formatFecha(c.Fecha_comentario)}</span>
                             </div>
                             <p className="mb-3">{c.Contenido}</p>

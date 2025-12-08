@@ -7,8 +7,8 @@ function UserInfo() {
 
     return (
         <>
-            {paths.hideFooter && email != null && name != null && (
-                <div className="d-none d-md-block">
+            {paths.hideUserInfo && email != null && name != null && (
+                <div className="d-none d-md-block nav-bar">
                     <div className="text-end me-5 my-3">
                         <div className="text-center text-white">
                             <h5>Usuario</h5>

@@ -26,7 +26,19 @@ function Notifications() {
     }, []);
 
     const eliminarNotificacion = (id: string) => {
-        setNotificaciones(prev => prev.filter(n => n.Id_notificacion !== id));
+        axios.post(
+            BackendApi.delete_notification_url,
+            { Id_notificacion: id },
+            { withCredentials: true }
+        )
+            .then(() => {
+                setNotificaciones(prev =>
+                    prev.filter(n => n.Id_notificacion !== id)
+                );
+            })
+            .catch(err => {
+                console.error("Error eliminando notificación:", err);
+            });
     };
 
     const hasNotificaciones = notificaciones.length > 0;
@@ -45,7 +57,10 @@ function Notifications() {
                 <div className="d-flex w-75 mx-auto flex-column">
                     {notificaciones.map((noti) => (
                         <React.Fragment key={noti.Id_notificacion}>
-                            <div className="d-flex align-items-start p-1 mb-3 w-100 text-white justify-content-between notifications-container">
+                            <div
+                                className="d-flex align-items-start p-1 mb-3 w-100 text-white justify-content-between notifications-container cursor-pointer"
+                                onClick={() => goTo("/publication?post=" + noti.Id_objetivo)}
+                            >
                                 <div className="mb-2 d-flex align-items-center">
                                     <img
                                         src={noti.Usuario?.Url_foto_perfil ?? "/Profile.svg"}
@@ -61,7 +76,10 @@ function Notifications() {
                                     src="/Cancel-white.svg"
                                     className="notification-image cursor-pointer m-1"
                                     alt="Eliminar"
-                                    onClick={() => eliminarNotificacion(noti.Id_notificacion)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        eliminarNotificacion(noti.Id_notificacion);
+                                    }}
                                 />
                             </div>
                         </React.Fragment>

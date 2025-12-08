@@ -1,6 +1,9 @@
+import { useLocation } from "react-router-dom";
 import { paths, goTo } from "../utils/globalVariables";
 
 function SideNav() {
+  const location = useLocation();
+  const currentPath = location.pathname;
 
   return (
     <div className={`d-flex ${paths.showLogoOnly ? "flex-column" : "flex-column"} justify-content-around no-select align-items-center w-20 py-3
@@ -28,10 +31,10 @@ function SideNav() {
             />
           </div>
 
-          <div className="tooltip-wrapper" data-tooltip="Mensajes">
+          <div className="tooltip-wrapper" data-tooltip="Notificaciones">
             <img 
               className="side-nav-image cursor-pointer" 
-              src={`${paths.currentPath === "/messages" ? "Messages_Grey.svg" : "Messages.svg"}`}
+              src={`${currentPath === "/notifications" ? "Messages_Grey.svg" : "Messages.svg"}`}
               alt="Messages"
               onClick={() => goTo("/notifications")}
             />
@@ -42,14 +45,14 @@ function SideNav() {
               className="side-nav-image cursor-pointer footer-add-publication"
               src="AddPublication.svg"
               alt="AddPublication"
-              onClick={() => goTo("/choose?origin=" + paths.currentPath)}
+              onClick={() => goTo("/choose?origin=" + currentPath)}
             />
           </div>
 
           <div className="tooltip-wrapper" data-tooltip="Inicio">
             <img 
               className="side-nav-image cursor-pointer"
-              src={`${paths.currentPath === "/" ? "Home_Grey.svg" : "Home.svg"}`}
+              src={`${currentPath === "/" ? "Home_Grey.svg" : "Home.svg"}`}
               alt="Home"
               onClick={() => goTo("/")}
             />
@@ -58,7 +61,7 @@ function SideNav() {
           <div className="tooltip-wrapper" data-tooltip="Perfil">
             <img 
               className="side-nav-image cursor-pointer"
-              src={`${paths.currentPath === "/my-profile" ? "Profile_Grey.svg" : "Profile.svg"}`}
+              src={`${currentPath === "/my-profile" ? "Profile_Grey.svg" : "Profile.svg"}`}
               alt="ProfileImage"
               onClick={() => goTo("/my-profile")}
             />

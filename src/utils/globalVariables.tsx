@@ -1,5 +1,16 @@
+import type { NavigateFunction } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
+import { useEffect } from "react";
+
 const base_url = 'https://nkuohbe6xa.execute-api.us-east-1.amazonaws.com';
 export const BackendApi = {
+
+  delete_notification_url: `${base_url}/notifications/delete-notification`,
+
+  search_resources_url: `${base_url}/search/search-resources`,
+
+  create_report_url: `${base_url}/reports/create-report`,
+
   signUp_url: `${base_url}/auth/sign-up`,
   login_url: `${base_url}/auth/login`,
   auth_me_url: `${base_url}/auth/auth-me`,
@@ -7,34 +18,69 @@ export const BackendApi = {
 
   edit_account_url: `${base_url}/account/edit`,
   delete_account_url: `${base_url}/account/delete`,
+  ban_account_url: `${base_url}/account/ban-account`,
+  verify_code_url: `${base_url}/account/verify-code`,
   get_account_url: `${base_url}/account/get-account`,
   messages_account_url: `${base_url}/account/messages`,
   edit_password_url: `${base_url}/account/edit-password`,
+  reset_password_url: `${base_url}/account/reset-password`,
+  forgot_password_url: `${base_url}/account/forgot-password`,
 
   list_publication_url: `${base_url}/publications/list-publication`,
   like_publications_url: `${base_url}/publications/like-publication`,
   list_publications_url: `${base_url}/publications/list-publications`,
   share_publication_url: `${base_url}/publications/share-publication`,
   create_publication_url: `${base_url}/publications/create-publication`,
+  unlike_publications_url: `${base_url}/publications/unlike-publication`,
   comment_publication_url: `${base_url}/publications/comment-publication`,
   list_user_publications_url: `${base_url}/publications/list-user-publications`
-
 };
 
-const currentPath = window.location.pathname;
-
-export const searchParams = new URLSearchParams(window.location.search);
-
-export const paths = {
-  hideNavBar: !["/my-profile", "/report", "/edit-profile", "/choose", "/create-publication", "/create-report", "/preview-report", "/preview-publication"].includes(currentPath),
-  hideFooter: !["/report", "/signUp", "/edit-profile", "/login", "/choose", "/create-publication", "/create-report", "/preview-report", "/preview-publication"].includes(currentPath),
-  showSideNav: !["/report"].includes(currentPath),
-  showLogoOnly: ["/login", "/signUp"].includes(currentPath),
-  currentPath: window.location.pathname
-};
-
+let navigator: NavigateFunction | null = null;
+export const setNavigator = (nav: NavigateFunction) => { navigator = nav; };
 export const goTo = (path: string) => {
-  window.location.href = path;
+  if (!navigator) return console.error("Navigator not set! Llama a setNavigator() desde un componente dentro del Router.");
+  navigator(path);
+};
+
+type Paths = {
+  hideNavBar: boolean;
+  hideFooter: boolean;
+  showSideNav: boolean;
+  hideUserInfo: boolean;
+  showLogoOnly: boolean;
+  currentPath: string;
+};
+let pathss: Paths = {
+  hideNavBar: true,
+  hideFooter: true,
+  showSideNav: true,
+  hideUserInfo: true,
+  showLogoOnly: false,
+  currentPath: "/"
+};
+
+export const BanMessaje = "Usted se encuentra baneado.Para más información, visite: https://midominio.com/ban-info. Si requiere asistencia adicional, envíe un correo a franciscojgh.com."
+
+export const PathsInitializer = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const currentPath = location.pathname;
+    pathss = {
+      hideNavBar: !["/my-profile", "/report", "/edit-profile", "/choose", "/create-publication", "/create-report", "/preview-report", "/preview-publication", "/notifications"].includes(currentPath),
+      hideFooter: !["/report", "/signUp", "/edit-profile", "/login", "/choose", "/create-publication", "/create-report", "/preview-report", "/preview-publication", "/forgot-password", "/verify-code", "/reset-password"].includes(currentPath),
+      showSideNav: !["/report"].includes(currentPath),
+      hideUserInfo: !["/login", "/signUp", "/forgot-password", "/verify-code", "/reset-password"].includes(currentPath),
+      showLogoOnly: ["/login", "/signUp", "/forgot-password", "/verify-code", "/reset-password"].includes(currentPath),
+      currentPath
+    };
+  }, [location]);
+  return null;
+};
+
+export const useSearchParamsGlobal = () => {
+  const [searchParams] = useSearchParams();
+  return searchParams;
 };
 
 export const formatFecha = (fechaISO: string) =>
@@ -43,3 +89,23 @@ export const formatFecha = (fechaISO: string) =>
     timeStyle: "short",
   });
 
+export const paths = {
+  get hideNavBar() { return pathss.hideNavBar; },
+  get hideFooter() { return pathss.hideFooter; },
+  get showSideNav() { return pathss.showSideNav; },
+  get hideUserInfo() { return pathss.hideUserInfo; },
+  get showLogoOnly() { return pathss.showLogoOnly; },
+  get currentPath() { return pathss.currentPath; },
+};
+
+let globalState = {};
+
+export const setGlobalState = (data: any) => {
+  globalState = { ...globalState, ...data };
+};
+
+export const getGlobalState = () => globalState;
+
+
+export const currentPath = () => pathss.currentPath;
+export const searchParams = useSearchParamsGlobal;

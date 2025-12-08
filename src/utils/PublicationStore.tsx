@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 
 export interface PublicationData {
   text: string | null;
@@ -12,23 +11,16 @@ export interface PublicationStore extends PublicationData {
   resetPublication: () => void;
 }
 
-export const usePublicationData = create<PublicationStore>()(
-  persist(
-    (set) => ({
+export const usePublicationData = create<PublicationStore>()((set) => ({
+  text: null,
+  image: null,
+
+  setText: (text) => set({ text }),
+  setImage: (image) => set({ image }),
+
+  resetPublication: () =>
+    set({
       text: null,
       image: null,
-
-      setText: (text: string | null) => set({ text }),
-      setImage: (image: string | null) => set({ image }),
-
-      resetPublication: () =>
-        set({
-          text: null,
-          image: null,
-        }),
     }),
-    {
-      name: "publication-store",
-    }
-  )
-);
+}));

@@ -1,14 +1,12 @@
 import { useRef, useState, useEffect } from "react";
 import axios from "axios";
-import { goTo, BackendApi } from "../utils/globalVariables";
+import { goTo, BackendApi, BanMessaje } from "../utils/globalVariables";
 import { useUserData } from "../utils/UserStore";
 import { usePublicationData } from "../utils/PublicationStore";
-import { useReportData } from "../utils/ReportStore";
 
 function CreatePublication() {
     const { name, profilePictureUrl } = useUserData();
     const { text, image, setText, setImage, resetPublication } = usePublicationData();
-    const { resetReport } = useReportData();
     const [textMessage, setTextMessage] = useState("");
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -17,12 +15,19 @@ function CreatePublication() {
     const [imageError, setImageError] = useState("");
     const [isValidImage, setIsValidImage] = useState<boolean | null>(null);
     const [isSendingForm, setIsSendingForm] = useState<boolean | null>(null);
+    const [isBannedUser, setIsBannedUser] = useState<boolean | null>(null);
 
     useEffect(() => {
         axios
             .post(BackendApi.auth_me_url, {}, { withCredentials: true })
-            .catch(() => {
-                goTo("/login");
+            .catch((err: any) => {
+                if (err?.response?.status === 403) {
+                    setIsBannedUser(true);
+                } else if (err?.response?.status === 401) {
+                    goTo("/login");
+                } else {
+                    console.error("Error inesperado:", err);
+                }
             });
     }, []);
 
@@ -43,8 +48,13 @@ function CreatePublication() {
         }
     }, [text, image]);
 
+    if (isBannedUser) return (
+        <h1 className="text-danger text-break fw-bold mt-5 w-75 mx-auto">
+            {BanMessaje}
+        </h1>
+    );
+
     const goToPreview = () => {
-        resetReport();
         const realText = textareaRef.current?.value || "";
         setText(realText);
         setImage(previewImage);
@@ -116,7 +126,8 @@ function CreatePublication() {
                     if (textareaRef.current) textareaRef.current.value = "";
                     setPreviewImage(null);
                     goTo("/my-profile");
-                }).finally(() => {
+                })
+                .finally(() => {
                     setIsSendingForm(false)
                 })
         }

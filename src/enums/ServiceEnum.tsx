@@ -17,5 +17,5 @@ export const ServiceNames: Record<ServiceCode, string> = {
   SEG: "Seguridad",
   SM: "Servicios municipales",
   AG: "Agua",
-  OT: "Otros"
+  OT: "Otro"
 };

@@ -3,6 +3,10 @@ import axios from "axios";
 import { BackendApi, goTo } from "../utils/globalVariables";
 import { formatFecha } from "../utils/globalVariables";
 
+const normalizeLiked = (pub: any) => {
+    return pub?.is_Liked ?? pub?.Is_Liked ?? pub?.is_liked ?? false;
+};
+
 function Home() {
     const [publicaciones, setPublicaciones] = useState<any[]>([]);
     const [isLoadingPublications, setIsLoadingPublications] = useState<boolean>(false);
@@ -20,22 +24,23 @@ function Home() {
 
         const alreadyLiked = !!likesActivos[id_publicacion];
         const change = alreadyLiked ? -1 : +1;
-
         setLikesActivos(prev => ({ ...prev, [id_publicacion]: !alreadyLiked }));
         updateLikeNumbers(id_publicacion, change);
 
         axios.post(
-            BackendApi.like_publications_url,
+            alreadyLiked
+                ? BackendApi.unlike_publications_url
+                : BackendApi.like_publications_url,
             { Id_objetivo: id_publicacion },
             { withCredentials: true }
         )
             .then(() => { })
             .catch((err: any) => {
                 const status = err?.response?.status;
+                setLikesActivos(prev => ({ ...prev, [id_publicacion]: alreadyLiked }));
                 updateLikeNumbers(id_publicacion, -change);
-                if (status === 401) {
-                    goTo("/login");
-                }
+
+                if (status === 401) goTo("/login");
             })
             .finally(() => {
                 processingLikes.delete(id_publicacion);
@@ -70,16 +75,21 @@ function Home() {
 
     useEffect(() => {
         setIsLoadingPublications(true);
-        axios
-            .get(BackendApi.list_publications_url, { withCredentials: true })
+
+        axios.get(BackendApi.list_publications_url, { withCredentials: true })
             .then((res) => {
                 const data = res.data.publicaciones || [];
+
+                const initialLikesState: { [key: string]: boolean } = {};
+                data.forEach((pub: { Id_publicacion: string | number }) => {
+                    initialLikesState[pub.Id_publicacion] = normalizeLiked(pub);
+                });
+
                 setPublicaciones(data);
+                setLikesActivos(initialLikesState);
             })
             .catch(() => { })
-            .finally(() => {
-                setIsLoadingPublications(false);
-            });
+            .finally(() => setIsLoadingPublications(false));
     }, []);
 
     const handleSharePublication = (publicationId: string, isReporte = false) => {
@@ -89,7 +99,7 @@ function Home() {
         setShareLock(prev => ({ ...prev, [publicationId]: true }));
 
         alert("Url copiada exitosamente");
-        navigator.clipboard.writeText(window.location.href + "/publication?post=" + publicationId)
+        navigator.clipboard.writeText(window.location.href + "publication?post=" + publicationId)
             .then(() => {
                 setSharedCount(prev => ({
                     ...prev,
@@ -186,32 +196,32 @@ function Home() {
                             const liked = likesActivos[post.Id_publicacion];
                             return (
                                 <React.Fragment key={post.Id_publicacion}>
-                                    <div className="d-flex my-3">
+                                    <div className="d-flex my-3 no-select"
+                                        onClick={() => { goTo("/publication?post=" + post.Id_publicacion) }}>
                                         <div>
-                                            <img src={post.Usuario.Url_foto_perfil == null ? "/Profile.svg" : post.Usuario.Url_foto_perfil} alt={post.Usuario.nombre_usuario} className="cursor-pointer no-select rounded-circle me-1 user-image" onClick={() => setImagenSeleccionada(post.Usuario.Url_foto_perfil)} />
+                                            <img src={post.Usuario.Url_foto_perfil == null ? "/Profile.svg" : post.Usuario.Url_foto_perfil} alt={post.Usuario.nombre_usuario} className="cursor-pointer no-select rounded-circle me-1 user-image" onClick={(e) => { e.stopPropagation(); setImagenSeleccionada(post.Usuario.Url_foto_perfil == null ? "/Profile.svg" : post.Usuario.Url_foto_perfil) }} />
                                         </div>
                                         <div className="text-white flex-grow-1">
                                             <div className="d-flex justify-content-between align-items-center mb-3">
-                                                <span className="no-select"><a className="text-white" href={"/profile?user=" + post.Usuario.Correo_electronico}>{post.Usuario.nombre_usuario}</a></span>
+                                                <span className="no-select"><a className="text-white cursor-pointer" onClick={(e) => { e.stopPropagation(); goTo("/profile?user=" + post.Usuario.Correo_electronico) }}>{post.Usuario.nombre_usuario}</a></span>
                                                 <span>{formatFecha(post.Fecha_publicacion)}</span>
                                             </div>
 
                                             <p className="mb-3">{post.Contenido}</p>
                                             {post.Url_imagen && (
                                                 <img src={post.Url_imagen} alt="imagen publicación" className="rounded-3 mb-3 w-50 publication-image cursor-pointer d-block mx-auto"
-                                                    onClick={() => setImagenSeleccionada(post.Url_imagen)} />
+                                                    onClick={(e) => { e.stopPropagation(); setImagenSeleccionada(post.Url_imagen) }} />
                                             )}
 
                                             <div className="d-flex no-select justify-content-between text-center mt-2">
-                                                <div className="cursor-pointer d-flex align-items-center justify-content-center" onClick={() => handleLikeClick(post.Id_publicacion)}>
+                                                <div className="cursor-pointer d-flex align-items-center justify-content-center" onClick={(e) => { e.stopPropagation(); handleLikeClick(post.Id_publicacion) }}>
                                                     <img src={liked ? "Like_active.svg" : "Like.svg"} width={20} className="me-1" alt="Like" />
                                                     <span className={liked ? "text-error" : ""}>{post.likes?.total ?? 0}</span>
                                                 </div>
-                                                <div><img src="Comment.svg" width={20} className="me-1 cursor-pointer" alt="Comentarios"
-                                                    onClick={() => { goTo("/publication?post=" + post.Id_publicacion) }} />{post.comentarios?.total ?? 0}</div>
+                                                <div><img src="Comment.svg" width={20} className="me-1 cursor-pointer" alt="Comentarios" />{post.comentarios?.total ?? 0}</div>
                                                 <div
                                                     className={`d-flex align-items-center cursor-pointer justify-content-center ${shareDisabled ? "disabled" : ""}`}
-                                                    onClick={() => handleSharePublication(post.Id_publicacion, false)}
+                                                    onClick={(e) => { e.stopPropagation(); handleSharePublication(post.Id_publicacion, false) }}
                                                 >
                                                     <img src="Share.svg" width={20} className="me-1" alt="Compartir" />
                                                     <span>{sharedCount[post.Id_publicacion] ?? post.compartidos?.total ?? 0}</span>

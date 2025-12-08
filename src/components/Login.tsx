@@ -96,14 +96,16 @@ function Login() {
                     onChange={(e) => { setEmail(e.target.value); if (isValidEmail === false) { setIsValidEmail(null); setEmailMessage("Ingrese su correo electrónico"); } }} />
 
                 <p className={`text-white ${isValidPassword === false ? "text-error" : ""}`}>{passwordMessage}</p>
-                <div className="position-relative mb-3">
+                <div className="position-relative mb-4">
                     <input className={`text-input w-100 ${isValidPassword === false ? "input-error" : ""}`}
                         type={showPassword ? "text" : "password"} value={password}
                         onChange={(e) => { setPassword(e.target.value); if (isValidPassword === false) { setIsValidPassword(null); setPasswordMessage("Ingrese su contraseña"); } }} />
                     <img className="position-absolute end-0 top-50 input-change-image translate-middle-y me-3 cursor-pointer" src={!showPassword ? "Text.svg" : "Password.svg"} alt="Mostrar u ocultar contraseña" onClick={handleTogglePassword} />
                 </div>
 
-                <span className="text-white">¿Todavía no tienes una cuenta? <a className="text-white" href="signUp">Regístrate aquí</a></span>
+                <span className="text-white d-block mb-3">¿Olvidaste tu contraseña? <a className="text-white cursor-pointer" onClick={() => { goTo("/forgot-password") }}>!Recuperala¡</a></span>
+
+                <span className="text-white">¿Todavía no tienes una cuenta? <a className="text-white cursor-pointer" onClick={() => { goTo("/signUp") }}>Regístrate aquí</a></span>
 
                 <button className="white-button w-100 my-4" onClick={handleValidateForm}>
                     {!isSendingForm ? "Iniciar sesión" : (<div className="d-flex justify-content-center"><span>Autenticandote...</span><div className="loader ms-3"></div></div>)}

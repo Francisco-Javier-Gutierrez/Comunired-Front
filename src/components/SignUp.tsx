@@ -82,6 +82,7 @@ function SignUp() {
                 setIsValidName(null)
                 setIsValidEmail(null);
                 setIsValidPassword(null);
+                setFocusLogin(false);
                 setPasswordMessage("Ingrese una contraseña");
                 setNameMessage("Ingrese un nombre de usuario");
                 setEmailMessage("Ingrese su correo electrónico");
@@ -138,6 +139,7 @@ function SignUp() {
                         setEmail(e.target.value);
                         if (isValidEmail === false) {
                             setIsValidEmail(null);
+                            setFocusLogin(false);
                             setEmailMessage("Ingrese su correo electrónico");
                         }
                     }}
@@ -177,7 +179,7 @@ function SignUp() {
                     </div>
                 </div>
 
-                <span><a className={`text-white ${focusLogin === true ? "text-error" : ""}`} href="login">¿Ya tienes una cuenta?</a></span>
+                <span><a className={`text-white cursor-pointer ${focusLogin === true ? "text-error" : ""}`} onClick={() => { goTo("/login") }}>¿Ya tienes una cuenta?</a></span>
 
                 <button className="white-button w-100 my-4" onClick={handleValidateForm}>
                     {!isSendingForm ? (

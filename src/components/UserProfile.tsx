@@ -1,9 +1,10 @@
 import axios from "axios";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { BackendApi } from "../utils/globalVariables";
-import { goTo, formatFecha, searchParams } from "../utils/globalVariables";
+import { goTo, formatFecha, useSearchParamsGlobal } from "../utils/globalVariables";
+import { useUserData } from "../utils/UserStore";
 
-const reportes = [
+const initialReportes = [
   {
     Id_reporte: "rep-001",
     Correo_electronico_usuario: "franciscoj@gmail.com",
@@ -32,26 +33,40 @@ const reportes = [
   }
 ];
 
+const normalizeLiked = (pub: any) => {
+  return pub?.is_Liked ?? pub?.Is_Liked ?? pub?.is_liked ?? false;
+};
+
 function UserProfile() {
   const [name, setName] = useState<string | null>("");
   const [email, setEmail] = useState<string | null>("");
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>("");
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [publicaciones, setPublicaciones] = useState<any[]>([]);
-  const [authMeData, setAuthMeData] = useState<{ Rol: string } | null>(null);
+  const [reportesState, setReportesState] = useState<any[]>(initialReportes);
+  const [authMeData, setAuthMeData] = useState<{ payload?: { Rol: string } } | null>(null);
   const [accion, setAccion] = useState<string | null>(null);
   const [imagenSeleccionada, setImagenSeleccionada] = useState<string | null>(null);
   const [likesActivos, setLikesActivos] = useState<{ [key: string]: boolean }>({});
   const [isLoadingAction, setIsLoadingAction] = useState(false);
   const [userNotFound, setUserNotFound] = useState(false);
+  const { email: globalEmail } = useUserData();
 
+  // anti-spam per item (survives renders)
+  const processingLikesRef = useRef<Set<string>>(new Set());
+
+  const searchParams = useSearchParamsGlobal();
   const userEmail = searchParams.get("user");
 
+  if (userEmail == globalEmail) goTo("/my-profile");
+
   useEffect(() => {
+    // get auth role (optional)
     axios.post(BackendApi.auth_me_url, {}, { withCredentials: true })
       .then((res) => setAuthMeData(res.data))
       .catch(() => { });
 
+    // get account data
     axios.post(BackendApi.get_account_url, { "Correo_electronico": userEmail }, { withCredentials: true })
       .then((res) => {
         setName(res.data.usuario.Nombre_usuario);
@@ -65,9 +80,38 @@ function UserProfile() {
       })
       .finally(() => setIsLoadingProfile(false));
 
+    // publicaciones del usuario
     axios.post(BackendApi.list_user_publications_url, { "Correo_electronico": userEmail }, { withCredentials: true })
-      .then((res) => setPublicaciones(res.data.publicaciones || []))
-      .catch(() => setPublicaciones([]));
+      .then((res) => {
+        const pubs = res.data.publicaciones || [];
+        setPublicaciones(pubs);
+
+        // inicializar likesActivos con publicaciones y reportes
+        setLikesActivos(prev => {
+          const next = { ...prev };
+          pubs.forEach((p: any) => {
+            next[p.Id_publicacion] = normalizeLiked(p);
+          });
+          initialReportes.forEach((r: any) => {
+            next[r.Id_reporte] = normalizeLiked(r);
+          });
+          return next;
+        });
+
+        // inicializar reportesState desde el mock (si quieres que venga del servidor, cámbialo)
+        setReportesState(initialReportes);
+      })
+      .catch(() => {
+        setPublicaciones([]);
+        // still init reportes likes
+        setLikesActivos(prev => {
+          const next = { ...prev };
+          initialReportes.forEach((r: any) => next[r.Id_reporte] = normalizeLiked(r));
+          return next;
+        });
+        setReportesState(initialReportes);
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (userNotFound) {
@@ -75,19 +119,67 @@ function UserProfile() {
   }
 
   const hasPublicaciones = publicaciones.length > 0;
-  const hasReports = reportes.length > 0;
+  const hasReports = reportesState.length > 0;
   const isEmpty = !hasPublicaciones && !hasReports;
 
+  // actualiza counters en publicaciones y reportes
+  const updateLikeNumbers = (id: string, change: number) => {
+    setPublicaciones(prev =>
+      prev.map(pub =>
+        pub.Id_publicacion === id
+          ? { ...pub, likes: { total: (pub.likes?.total ?? 0) + change } }
+          : pub
+      )
+    );
+
+    setReportesState(prev =>
+      prev.map(rep =>
+        rep.Id_reporte === id
+          ? { ...rep, likes: { total: (rep.likes?.total ?? 0) + change } }
+          : rep
+      )
+    );
+  };
+
   const handleLikeClick = (id: string) => {
-    setLikesActivos(prev => ({ ...prev, [id]: !prev[id] }));
+    const proc = processingLikesRef.current;
+    if (proc.has(id)) return; // anti-spam
+    proc.add(id);
+
+    const alreadyLiked = !!likesActivos[id];
+    const change = alreadyLiked ? -1 : +1;
+
+    // optimistic UI
+    setLikesActivos(prev => ({ ...prev, [id]: !alreadyLiked }));
+    updateLikeNumbers(id, change);
+
+    axios.post(
+      alreadyLiked ? BackendApi.unlike_publications_url : BackendApi.like_publications_url,
+      { Id_objetivo: id },
+      { withCredentials: true }
+    )
+      .then(() => {
+        // opcional: podrías sincronizar counts desde la respuesta si el backend devuelve el total real
+      })
+      .catch((err: any) => {
+        const status = err?.response?.status;
+        // rollback
+        setLikesActivos(prev => ({ ...prev, [id]: alreadyLiked }));
+        updateLikeNumbers(id, -change);
+
+        if (status === 401) goTo("/login");
+      })
+      .finally(() => {
+        proc.delete(id);
+      });
   };
 
   const handleConfirm = () => {
     setIsLoadingAction(true);
     let request: Promise<any>;
 
-    if (accion === "cerrar") request = axios.post(BackendApi.logout_url, {}, { withCredentials: true });
-    else if (accion === "eliminar") request = axios.post(BackendApi.delete_account_url, {}, { withCredentials: true });
+    if (accion === "cerrar") request = axios.post(BackendApi.ban_account_url, { "Correo_electronico": userEmail }, { withCredentials: true });
+    else if (accion === "eliminar") request = axios.post(BackendApi.delete_account_url, { "Correo_electronico": userEmail }, { withCredentials: true });
     else request = Promise.resolve();
 
     request
@@ -121,11 +213,11 @@ function UserProfile() {
             <span className="text-white">Correo Electrónico:</span>
             <p className="text-white mb-5">{email}</p>
 
-            {authMeData?.Rol === "Admin" && (
+            {authMeData?.payload?.Rol === "Admin" && (
               <div className="py-4 d-flex align-items-center justify-content-around">
                 <button className="white-button w-30" onClick={() => { goTo("/edit-profile?user=" + email) }}>Editar perfil</button>
                 <button className="white-button w-30" onClick={() => setAccion("eliminar")}>Eliminar usuario</button>
-                <button className="white-button w-30" onClick={() => setAccion("cerrar")}>Bloquar usuario</button>
+                <button className="white-button w-30" onClick={() => setAccion("cerrar")}>Banear usuario</button>
               </div>
             )}
 
@@ -136,7 +228,7 @@ function UserProfile() {
               {isEmpty && <p className="text-white text-center">No hay publicaciones ni reportes 😔</p>}
 
               {hasPublicaciones && publicaciones.map(post => {
-                const liked = likesActivos[post.Id_publicacion];
+                const liked = !!likesActivos[post.Id_publicacion];
                 return (
                   <React.Fragment key={post.Id_publicacion}>
                     <div className="d-flex my-3">
@@ -153,10 +245,10 @@ function UserProfile() {
                         <div className="d-flex no-select justify-content-between text-center mt-2">
                           <div className="cursor-pointer d-flex align-items-center justify-content-center" onClick={() => handleLikeClick(post.Id_publicacion)}>
                             <img src={liked ? "Like_active.svg" : "Like.svg"} width={20} className="me-1" alt="Like" />
-                            <span className={liked ? "text-error" : ""}>{post.likes.total}</span>
+                            <span className={liked ? "text-error" : ""}>{post.likes?.total ?? 0}</span>
                           </div>
-                          <div><img src="Comment.svg" width={20} className="me-1 cursor-pointer" alt="Comentarios" />{post.comentarios.total}</div>
-                          <div><img src="Share.svg" width={20} className="me-1 cursor-pointer" alt="Compartir" />{post.compartidos.total}</div>
+                          <div><img src="Comment.svg" width={20} className="me-1 cursor-pointer" alt="Comentarios" />{post.comentarios?.total ?? 0}</div>
+                          <div><img src="Share.svg" width={20} className="me-1 cursor-pointer" alt="Compartir" />{post.compartidos?.total ?? 0}</div>
                         </div>
                       </div>
                     </div>
@@ -165,8 +257,8 @@ function UserProfile() {
                 );
               })}
 
-              {hasReports && reportes.map((reporte, i) => {
-                const liked = likesActivos[reporte.Id_reporte];
+              {hasReports && reportesState.map((reporte, i) => {
+                const liked = !!likesActivos[reporte.Id_reporte];
                 return (
                   <React.Fragment key={i}>
                     <div className="d-flex my-3">
@@ -185,10 +277,10 @@ function UserProfile() {
                         <div className="d-flex no-select justify-content-between text-center mt-2">
                           <div className="cursor-pointer d-flex align-items-center justify-content-center" onClick={() => handleLikeClick(reporte.Id_reporte)}>
                             <img src={liked ? "Like_active.svg" : "Like.svg"} width={20} className="me-1" alt="Like" />
-                            <span className={liked ? "text-error" : ""}>{reporte.likes.total}</span>
+                            <span className={liked ? "text-error" : ""}>{reporte.likes?.total ?? 0}</span>
                           </div>
-                          <div><img src="Comment.svg" width={20} className="me-1 cursor-pointer" alt="Comentarios" />{reporte.comentarios?.total}</div>
-                          <div><img src="Share.svg" width={20} className="me-1 cursor-pointer" alt="Compartir" />{reporte.compartidos?.total}</div>
+                          <div><img src="Comment.svg" width={20} className="me-1 cursor-pointer" alt="Comentarios" />{reporte.comentarios?.total ?? 0}</div>
+                          <div><img src="Share.svg" width={20} className="me-1 cursor-pointer" alt="Compartir" />{reporte.compartidos?.total ?? 0}</div>
                         </div>
                       </div>
                     </div>
@@ -218,7 +310,7 @@ function UserProfile() {
         <div className={`modal fade show d-block ${isLoadingAction ? "disabled" : ""}`} tabIndex={-1} onClick={() => setAccion(null)}>
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content bg-white rounded-4 shadow p-4 text-center" onClick={(e) => e.stopPropagation()}>
-              <h4 className="mb-4">{accion === "eliminar" ? "¿Eliminar este usuario?" : "¿Bloquear sesión del usuario?"}</h4>
+              <h4 className="mb-4">{accion === "eliminar" ? "¿Eliminar este usuario?" : "¿Banear este usuario?"}</h4>
               <div className="w-75 mx-auto d-flex align-items-center justify-content-around mt-4">
                 {isLoadingAction ? <div className="mid-loader"></div> : <img src="Confirm.svg" alt="Confirmar" className="cursor-pointer" width={50} onClick={handleConfirm} />}
                 <img src="Cancel.svg" alt="Cancelar" className="cursor-pointer" width={50} onClick={() => setAccion(null)} />

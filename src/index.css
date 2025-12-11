@@ -162,6 +162,14 @@ body {
   animation: spin 0.8s linear infinite;
 }
 
+.min-dvh-100 {
+  min-height: 100dvh !important;
+}
+
+.min-dvh-70 {
+  min-height: 70dvh !important;
+}
+
 .big-loader {
   margin-top: 15rem;
   margin-left: auto;

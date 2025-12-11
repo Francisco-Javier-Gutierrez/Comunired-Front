@@ -117,7 +117,7 @@ function EditProfile() {
             </h1>
         ) : (
             <div className={`${isSendingForm ? "disabled-form no-select" : ""}`}>
-                <div className="w-75 mx-auto d-flex flex-column min-vh-100">
+                <div className="w-75 mx-auto d-flex flex-column min-dvh-100">
                     <img className="footer-image d-md-none cursor-pointer my-4"
                         src="Back.svg" alt="Regresar"
                         onClick={() => userEmail ? goTo("/profile?user=" + userEmail) : goTo("/my-profile")}

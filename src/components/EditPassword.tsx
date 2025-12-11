@@ -6,7 +6,6 @@ import axios from "axios";
 function EditPassword() {
     const searchParams = useSearchParamsGlobal();
     const userEmail = searchParams.get("user");
-    const [isAdmin, setIsAdmin] = useState(false);
     const [isBannedUser, setIsBannedUser] = useState<boolean | null>(null);
 
     useEffect(() => {
@@ -14,7 +13,6 @@ function EditPassword() {
             .then(res => {
                 const currentUser = res.data;
                 const admin = currentUser?.payload.Rol === "Admin";
-                setIsAdmin(admin);
                 if (userEmail && !admin) goTo("/");
             })
             .catch((err: any) => {
@@ -96,7 +94,7 @@ function EditPassword() {
             </h1>
         ) : (
             <div className={`${isSendingForm ? "disabled-form no-select" : ""}`}>
-                <div className="w-75 mx-auto d-flex flex-column min-vh-100">
+                <div className="w-75 mx-auto d-flex flex-column min-dvh-100">
                     <img className="footer-image d-md-none cursor-pointer my-4" src="Back.svg" alt="Regresar" onClick={() => goTo("/home")} />
                     <h1 className="text-white text-center mb-4">{userEmail ? "Actualizar contraseña" : "Actualizar mi contraseña"}</h1>
 

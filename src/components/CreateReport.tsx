@@ -181,7 +181,7 @@ function CreateReport() {
 
     const openImageSelector = () => fileInputRef.current?.click();
 
-    const MAX_MB = 2;
+    const MAX_MB = 10;
     const MAX_BYTES = MAX_MB * 1024 * 1024;
 
     const convertToBase64 = (file: File): Promise<string> => {
@@ -386,6 +386,8 @@ function CreateReport() {
         if (name.trim()) payload.Nombre_reportante = name.trim();
         if (contact.trim()) payload.Contacto_reportante = contact.trim();
 
+        console.log(payload);
+
         axios.post(
             BackendApi.create_report_url,
             payload,
@@ -393,16 +395,18 @@ function CreateReport() {
         )
             .then((res) => {
                 console.log("Reporte creado:", res.data);
-                goTo("/report-created");
             })
             .catch((err) => {
                 console.error("Error creando reporte", err);
             })
-            .finally(() => { setIsSendingForm(false) });
+            .finally(() => {
+                setIsSendingForm(false)
+                goTo("/");
+            });
     };
 
     return (
-        <div className="w-75 mx-auto d-flex flex-column min-vh-100">
+        <div className={`w-75 mx-auto d-flex flex-column min-dvh-100 ${isSendingForm ? "disabled-form no-select" : ""}`}>
             <img className="footer-image d-md-none cursor-pointer my-4" src="Back.svg" alt="Regresar"
                 onClick={() => goTo("/choose")} />
 
@@ -646,7 +650,7 @@ function CreateReport() {
                 </div>
             )}
 
-            <div className="publication-actions nav-bar w-100 d-flex justify-content-center align-items-center">
+            <div className="publication-actions w-100 d-flex justify-content-center align-items-center">
                 <div className="w-50 text-start">
                     <button className="white-button" onClick={handleValidatePublication}>Previsualizar</button>
                 </div>

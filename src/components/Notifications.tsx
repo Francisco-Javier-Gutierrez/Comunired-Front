@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { goTo, BackendApi } from "../utils/globalVariables";
+import { goTo, BackendApi, BanMessaje } from "../utils/globalVariables";
 
 function Notifications() {
     const [notificaciones, setNotificaciones] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isBannedUser, setIsBannedUser] = useState<boolean | null>(null)
 
     useEffect(() => {
         const loadNotifications = async () => {
@@ -14,7 +15,11 @@ function Notifications() {
                 const data = res.data.notifications || [];
                 setNotificaciones(data);
             } catch (err: any) {
-                if (err?.response?.status === 401) {
+                const status = err?.response?.status;
+                if (status === 403) {
+                    setIsBannedUser(true);
+                }
+                if (status === 401) {
                     return goTo("/login");
                 }
             } finally {
@@ -41,10 +46,18 @@ function Notifications() {
             });
     };
 
+    if (isBannedUser) {
+        return (
+            <div className="min-dvh-100 fw-bold mt-5 w-75 mx-auto">
+                <h1 className="text-danger text-break">{BanMessaje}</h1>
+            </div>
+        );
+    }
+
     const hasNotificaciones = notificaciones.length > 0;
 
     return (
-        <div className="text-center flex-column min-vh-100">
+        <div className="text-center flex-column min-dvh-100">
             <h1 className="text-white mb-5 text-center">Notificaciones</h1>
 
             {isLoading && <div className="big-loader"></div>}
@@ -59,7 +72,14 @@ function Notifications() {
                         <React.Fragment key={noti.Id_notificacion}>
                             <div
                                 className="d-flex align-items-start p-1 mb-3 w-100 text-white justify-content-between notifications-container cursor-pointer"
-                                onClick={() => goTo("/publication?post=" + noti.Id_objetivo)}
+                                onClick={() => {
+                                    const msg = (noti.Mensaje || "").toLowerCase();
+                                    if (msg.includes("reporte")) {
+                                        goTo("/report?rep=" + noti.Id_objetivo);
+                                    } else {
+                                        goTo("/publication?post=" + noti.Id_objetivo);
+                                    }
+                                }}
                             >
                                 <div className="mb-2 d-flex align-items-center">
                                     <img

@@ -40,7 +40,7 @@ function PreviewPublication() {
     return (
 
         <div className={`${isSendingForm ? "disabled-form no-select" : ""}`}>
-            <div className="w-75 min-vh-100 mx-auto home-container d-flex flex-column">
+            <div className="w-75 min-dvh-70 mx-auto home-container d-flex flex-column">
                 <React.Fragment>
                     <div className="d-flex my-3">
                         <div>

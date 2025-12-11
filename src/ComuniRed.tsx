@@ -4,6 +4,7 @@ import Login from './components/Login'
 import SignUp from './components/SignUp';
 import Search from './components/Search';
 import MyProfile from './components/MyProfile';
+import ViewReport from './components/ViewReport';
 import VerifyCode from './components/VerifyCode';
 import ChooseType from './components/ChooseType';
 import UserProfile from './components/UserProfile';
@@ -32,6 +33,7 @@ function ComuniRed() {
       <Route path="/signUp" element={<SignUp />} />
       <Route path="/search" element={<Search />} />
       <Route path="/choose" element={<ChooseType />} />
+      <Route path="/report" element={<ViewReport />} />
       <Route path="/profile" element={<UserProfile />} />
       <Route path="/my-profile" element={<MyProfile />} />
       <Route path="/verify-code" element={<VerifyCode />} />

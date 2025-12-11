@@ -49,9 +49,13 @@ function CreatePublication() {
     }, [text, image]);
 
     if (isBannedUser) return (
-        <h1 className="text-danger text-break fw-bold mt-5 w-75 mx-auto">
-            {BanMessaje}
-        </h1>
+        <div className="mt-5 w-75 mx-auto">
+            <img className="footer-image d-md-none cursor-pointer my-4" src="Back.svg" alt="Regresar"
+                onClick={() => goTo("/choose")} />
+            <h1 className="text-danger text-break fw-bold">
+                {BanMessaje}
+            </h1>
+        </div>
     );
 
     const goToPreview = () => {
@@ -85,10 +89,10 @@ function CreatePublication() {
     const handleImageSelected = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
-        const maxSize = 2 * 1024 * 1024;
+        const maxSize = 10 * 1024 * 1024;
 
         if (file.size > maxSize) {
-            setImageError("La imagen está demasiado pesada, el máximo permitido es: 2MB");
+            setImageError("La imagen está demasiado pesada, el máximo permitido es: 10MB");
             setIsValidImage(false);
             setPreviewImage(null);
             return;
@@ -147,14 +151,14 @@ function CreatePublication() {
 
     return (
         <div className={`${isSendingForm ? "disabled-form no-select" : ""}`}>
-            <div className="w-75 mx-auto d-flex flex-column min-vh-100">
+            <div className="w-75 mx-auto d-flex flex-column min-dvh-70">
                 <img className="footer-image d-md-none cursor-pointer my-4" src="Back.svg" alt="Regresar"
                     onClick={() => goTo("/choose")} />
 
                 <h1 className="text-white text-center mb-4">Nueva publicación</h1>
 
                 <div className="no-select my-3">
-                    <img src={profilePictureUrl ?? "/Profile.svg"} alt="Foto de perfil" className="rounded-circle me-1 user-image" />
+                    <img src={profilePictureUrl ? profilePictureUrl : "/Profile.svg"} alt="Foto de perfil" className="rounded-circle me-1 user-image" />
                     <span className="text-white">
                         {name ?? "Usuario"} &gt; <span className="text-grey">Publicación</span>
                     </span>
@@ -190,7 +194,7 @@ function CreatePublication() {
                     <img src={previewImage} alt="Vista previa" className="mt-4 d-block w-75 mx-auto rounded preview-image" />
                 )}
 
-                <div className="publication-actions nav-bar w-100 d-flex justify-content-center align-items-center">
+                <div className="publication-actions w-100 mt-5 d-flex justify-content-center align-items-center">
                     <div className="w-50 text-start">
                         <button className="white-button" onClick={handleValidatePublicationPreview}>Previsualizar</button>
                     </div>

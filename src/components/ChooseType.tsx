@@ -21,16 +21,21 @@ function ChooseType() {
             });
     }, []);
 
-    if (isBannedUser) return (
-        <h1 className="text-danger text-break fw-bold mt-5 w-75 mx-auto">
-            {BanMessaje}
-        </h1>
-    );
 
     const handleNavigate = (): string => {
         return origin?.trim() ? origin : "/home";
     };
 
+    if (isBannedUser) return (
+        <><img className="footer-image d-md-none my-4 cursor-pointer" src="Back.svg" alt="Regresar"
+            onClick={() => goTo(handleNavigate())} />
+
+            <h1 className="text-danger text-break fw-bold mt-5 w-75 mx-auto">
+                {BanMessaje}
+            </h1>
+        </>
+    );
+    
     return (
         <>
             <img className="footer-image d-md-none my-4 cursor-pointer" src="Back.svg" alt="Regresar"
@@ -40,11 +45,11 @@ function ChooseType() {
             <div className="w-100 d-flex justify-content-around align-items-center">
                 <button className="white-button w-40"
                     onClick={() => goTo("/create-publication")}>
-                    <h3>Publicar una opinión o idea</h3>
+                    <h3>Publicar una idea</h3>
                 </button>
                 <button className="white-button w-40"
                     onClick={() => goTo("/create-report")}>
-                    <h3>Realizar y publicar un reporte</h3>
+                    <h3>Publicar un reporte</h3>
                 </button>
             </div>
         </>

@@ -10,6 +10,10 @@ export const BackendApi = {
   search_resources_url: `${base_url}/search/search-resources`,
 
   create_report_url: `${base_url}/reports/create-report`,
+  like_report_url: `${base_url}/reports/like-report`,
+  list_report_url: `${base_url}/reports/list-report`,
+  comment_report_url: `${base_url}/reports/comment-report`,
+  share_report_url: `${base_url}/reports/share-report`,
 
   signUp_url: `${base_url}/auth/sign-up`,
   login_url: `${base_url}/auth/login`,
@@ -60,16 +64,16 @@ let pathss: Paths = {
   currentPath: "/"
 };
 
-export const BanMessaje = "Usted se encuentra baneado.Para más información, visite: https://midominio.com/ban-info. Si requiere asistencia adicional, envíe un correo a franciscojgh.com."
+export const BanMessaje = "Usted se encuentra baneado. Si requiere asistencia adicional, envíe un correo a franciscojg.h.051130.com."
 
 export const PathsInitializer = () => {
   const location = useLocation();
   useEffect(() => {
     const currentPath = location.pathname;
     pathss = {
-      hideNavBar: !["/my-profile", "/report", "/edit-profile", "/choose", "/create-publication", "/create-report", "/preview-report", "/preview-publication", "/notifications"].includes(currentPath),
-      hideFooter: !["/report", "/signUp", "/edit-profile", "/login", "/choose", "/create-publication", "/create-report", "/preview-report", "/preview-publication", "/forgot-password", "/verify-code", "/reset-password"].includes(currentPath),
-      showSideNav: !["/report"].includes(currentPath),
+      hideNavBar: !["/my-profile", "/edit-profile", "/choose", "/create-publication", "/create-report", "/preview-report", "/preview-publication", "/notifications"].includes(currentPath),
+      hideFooter: !["/signUp", "/edit-profile", "/login", "/choose", "/create-publication", "/create-report", "/preview-report", "/preview-publication", "/forgot-password", "/verify-code", "/reset-password"].includes(currentPath),
+      showSideNav: ![""].includes(currentPath),
       hideUserInfo: !["/login", "/signUp", "/forgot-password", "/verify-code", "/reset-password"].includes(currentPath),
       showLogoOnly: ["/login", "/signUp", "/forgot-password", "/verify-code", "/reset-password"].includes(currentPath),
       currentPath

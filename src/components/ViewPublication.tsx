@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { BackendApi, formatFecha, useSearchParamsGlobal } from "../utils/globalVariables";
+import { BackendApi, formatFecha, useSearchParamsGlobal, goTo } from "../utils/globalVariables";
 import { useUserData } from "../utils/UserStore";
 
 function ViewPublication() {
@@ -85,9 +85,20 @@ function ViewPublication() {
 
                 }
             })
-            .catch(() => { })
-            .finally(() => setIsCreatingComment(false));
-
+            .catch((err) => {
+                const status = err?.response?.status;
+                if (status === 401) {
+                    goTo("/login");
+                }
+                if (status === 403) {
+                    alert("Usted está baneado, no puede comentar");
+                }
+            })
+            .finally(() => {
+                setNewComment("");
+                setShowCommentInput(false);
+                setIsCreatingComment(false)
+            });
     };
 
     const toggleLike = async () => {
@@ -113,6 +124,9 @@ function ViewPublication() {
 
             if (status === 401) {
                 window.location.href = "/login";
+            }
+            if (status === 403) {
+                alert("Usted está baneado, no puede dar like");
             }
         } finally {
             likeProcessing.current = false;
@@ -164,7 +178,15 @@ function ViewPublication() {
                             });
                         }
                     })
-                    .catch(() => { })
+                    .catch((err) => {
+                        const status = err?.response?.status;
+                        if (status === 401) {
+                            goTo("/login");
+                        }
+                        if (status === 403) {
+                            alert("Usted está baneado, puede compartir, pero no sumará");
+                        }
+                    })
                     .finally(() => {
                         setTimeout(() => {
                             setShareDisabled(false);
@@ -172,7 +194,9 @@ function ViewPublication() {
                     });
             })
             .catch(() => { })
-            .finally(() => { setShareDisabled(false) });
+            .finally(() => {
+                setShareDisabled(false)
+            });
     };
 
     return (
@@ -181,7 +205,7 @@ function ViewPublication() {
                 <div>
                     <img
                         src={Usuario?.Url_foto_perfil ?? Usuario?.url_foto_perfil ?? "/Profile.svg"}
-                        alt={Usuario?.nombre_usuario ?? Usuario?.Nombre_usuario ?? "Usuario"}
+                        alt={Usuario?.nombre_usuario ?? Usuario?.nombre_usuario ?? "Usuario"}
                         className="cursor-pointer no-select rounded-circle me-1 user-image"
                         onClick={() => setImagenSeleccionada(
                             Usuario?.Url_foto_perfil ?? Usuario?.url_foto_perfil ?? "/Profile.svg"
@@ -192,7 +216,7 @@ function ViewPublication() {
                 <div className="text-white flex-grow-1">
                     <div className="d-flex justify-content-between align-items-center mb-3">
                         <span className="no-select">
-                            <a className="text-white" href={"/profile?user=" + Usuario?.Correo_electronico}>{Usuario?.Nombre_usuario ?? Usuario?.Nombre_usuario ?? "Usuario"}</a>
+                            <a className="text-white" href={"/profile?user=" + Usuario?.Correo_electronico}>{Usuario?.nombre_usuario ?? Usuario?.nombre_usuario ?? "Usuario"}</a>
                         </span>
                         <span>{formatFecha(Fecha_publicacion)}</span>
                     </div>
@@ -240,7 +264,7 @@ function ViewPublication() {
                 <div className={`d-flex my-3 ${isCreatingComment ? "disabled-form no-select" : ""}`}>
                     <div>
                         <img
-                            src={profilePictureUrl ?? "/Profile.svg"}
+                            src={profilePictureUrl ? profilePictureUrl : "/Profile.svg"}
                             alt={name ?? "Usuario"}
                             className="cursor-pointer no-select rounded-circle me-1 user-image"
                             onClick={() => setImagenSeleccionada(profilePictureUrl ?? "/Profile.svg")}

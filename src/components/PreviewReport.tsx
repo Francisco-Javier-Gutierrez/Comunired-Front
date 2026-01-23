@@ -27,7 +27,7 @@ function PreviewReport() {
     const [imagenSeleccionada, setImagenSeleccionada] = useState<string | null>(null);
 
     return (
-        <div className="w-75 min-vh-100 mx-auto home-container d-flex flex-column">
+        <div className="w-75 min-dvh-70 mx-auto home-container d-flex flex-column">
             <React.Fragment>
                 <div className="d-flex my-3">
                     <div>

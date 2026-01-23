@@ -2,11 +2,15 @@ import './index.css';
 import { StrictMode, useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter as Router, useNavigate, useLocation } from "react-router-dom";
+
+import './awsConfig.ts';
+
 import ComuniRed from './ComuniRed.tsx';
 import Footer from './components/Footer.tsx';
 import NavBar from './components/NavBar.tsx';
 import SideNav from './components/SideNav.tsx';
 import UserInfo from './components/UserInfo.tsx';
+
 import { setNavigator, PathsInitializer, paths } from "./utils/globalVariables.tsx";
 
 function NavigatorAndPaths({ setPathsState }: { setPathsState: any }) {
@@ -28,6 +32,7 @@ function App() {
   return (
     <Router>
       <NavigatorAndPaths setPathsState={setPathsState} />
+
       <div className="d-md-none">
         {pathsState.hideNavBar && <NavBar />}
         <UserInfo />

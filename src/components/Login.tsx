@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { signIn, fetchAuthSession } from "aws-amplify/auth";
+import { signIn, fetchAuthSession, signOut } from "aws-amplify/auth";
 import { useUserData } from "../utils/UserStore";
 import { goTo } from "../utils/globalVariables";
 
@@ -17,7 +17,7 @@ function Login() {
     const {
         setEmail: setGlobalEmail,
         setName: setGlobalName,
-        setProfilePictureUrl
+        setProfilePictureUrl,
     } = useUserData();
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -69,12 +69,8 @@ function Login() {
 
             setGlobalEmail(claims.email as string);
             setGlobalName((claims.name as string) ?? "");
-            setProfilePictureUrl(null);
 
-            localStorage.setItem(
-                "accessToken",
-                accessToken.toString()
-            );
+            setProfilePictureUrl(null);
 
             setIsSendingForm(false);
             setIsValidEmail(null);
@@ -85,7 +81,7 @@ function Login() {
             setEmail("");
             setPassword("");
 
-            goTo("/home");
+            goTo("/");
 
         } catch (error: any) {
             setIsSendingForm(false);

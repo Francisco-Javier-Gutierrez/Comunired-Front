@@ -34,10 +34,10 @@ function App() {
       <NavigatorAndPaths setPathsState={setPathsState} />
 
       <div className="d-md-none">
-        {pathsState.hideNavBar && <NavBar />}
+        {pathsState.showNavBar && <NavBar />}
         <UserInfo />
         <ComuniRed />
-        {pathsState.hideFooter && <Footer />}
+        {pathsState.showFooter && <Footer />}
       </div>
 
       <div className={`d-none ${pathsState.showLogoOnly ? "d-md-block" : "d-md-flex"}`}>

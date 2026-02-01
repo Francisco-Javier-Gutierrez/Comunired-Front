@@ -1,27 +1,25 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { goTo, BackendApi, BanMessaje } from "../utils/globalVariables";
+import { goTo, BackendApi, getToken } from "../utils/globalVariables";
 
 function Notifications() {
     const [notificaciones, setNotificaciones] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isBannedUser, setIsBannedUser] = useState<boolean | null>(null)
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     useEffect(() => {
+        setIsLoading(true);
         const loadNotifications = async () => {
             try {
-                await axios.post(BackendApi.auth_me_url, {}, { withCredentials: true });
-                const res = await axios.get(BackendApi.messages_account_url, { withCredentials: true });
+                const token = await getToken();
+                const res = await axios.get(BackendApi.messages_account_url, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
                 const data = res.data.notifications || [];
                 setNotificaciones(data);
-            } catch (err: any) {
-                const status = err?.response?.status;
-                if (status === 403) {
-                    setIsBannedUser(true);
-                }
-                if (status === 401) {
-                    return goTo("/login");
-                }
+            } catch (err) {
+                console.error("Error consultando notificaciones:", err);
             } finally {
                 setIsLoading(false);
             }
@@ -30,29 +28,23 @@ function Notifications() {
         loadNotifications();
     }, []);
 
-    const eliminarNotificacion = (id: string) => {
-        axios.post(
-            BackendApi.delete_notification_url,
-            { Id_notificacion: id },
-            { withCredentials: true }
-        )
-            .then(() => {
-                setNotificaciones(prev =>
-                    prev.filter(n => n.Id_notificacion !== id)
-                );
-            })
-            .catch(err => {
-                console.error("Error eliminando notificación:", err);
-            });
-    };
+    const leerNotificacion = async (id: string) => {
 
-    if (isBannedUser) {
-        return (
-            <div className="min-dvh-100 fw-bold mt-5 w-75 mx-auto">
-                <h1 className="text-danger text-break">{BanMessaje}</h1>
-            </div>
-        );
-    }
+        const token = await getToken();
+        try {
+            await axios.post(
+                BackendApi.read_notification_url,
+                { Id_notificacion: id },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            setNotificaciones(prev =>
+                prev.filter(n => n.Id_notificacion !== id)
+            );
+        } catch (err) {
+            console.error("Error leyendo notificación:", err);
+        }
+    };
 
     const hasNotificaciones = notificaciones.length > 0;
 
@@ -60,7 +52,9 @@ function Notifications() {
         <div className="text-center flex-column min-dvh-100">
             <h1 className="text-white mb-5 text-center">Notificaciones</h1>
 
-            {isLoading && <div className="big-loader"></div>}
+            {isLoading && (
+                <div className="big-loader"></div>
+            )}
 
             {!isLoading && !hasNotificaciones && (
                 <p className="text-white text-center">No tienes notificaciones</p>
@@ -73,12 +67,8 @@ function Notifications() {
                             <div
                                 className="d-flex align-items-start p-1 mb-3 w-100 text-white justify-content-between notifications-container cursor-pointer"
                                 onClick={() => {
-                                    const msg = (noti.Mensaje || "").toLowerCase();
-                                    if (msg.includes("reporte")) {
-                                        goTo("/report?rep=" + noti.Id_objetivo);
-                                    } else {
-                                        goTo("/publication?post=" + noti.Id_objetivo);
-                                    }
+                                    leerNotificacion(noti.Id_notificacion);
+                                    goTo("/publication?post=" + noti.Id_objetivo);
                                 }}
                             >
                                 <div className="mb-2 d-flex align-items-center">
@@ -98,7 +88,7 @@ function Notifications() {
                                     alt="Eliminar"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        eliminarNotificacion(noti.Id_notificacion);
+                                        leerNotificacion(noti.Id_notificacion);
                                     }}
                                 />
                             </div>

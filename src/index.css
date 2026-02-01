@@ -29,6 +29,9 @@ body {
   width: 40% !important;
 }
 
+.w-90 {
+  width: 90% !important;
+}
 .cursor-pointer {
   cursor: pointer;
 }

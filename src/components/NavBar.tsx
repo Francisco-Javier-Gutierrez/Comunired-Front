@@ -7,7 +7,7 @@ function NavBar() {
                 <div className="d-flex justify-content-around no-select align-items-center py-3 nav-bar">
                     <img className="logo-image-nav" src="Logo.png" alt="Logo" />
                 </div>
-            ) : paths.hideNavBar ? (
+            ) : paths.showNavBar ? (
                 <div className="d-flex justify-content-around no-select align-items-center py-3 nav-bar-border">
                     <img className="nav-bar-image cursor-pointer" src="Search.svg" alt="Search" onClick={() => goTo("/search")} />
                     <img className={`nav-bar-image`} src="Logo.png" alt="Logo" />

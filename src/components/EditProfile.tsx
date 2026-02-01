@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import { goTo } from "../utils/globalVariables";
 import { BackendApi, useSearchParamsGlobal, BanMessaje } from "../utils/globalVariables";
 import axios from "axios";
@@ -6,27 +6,6 @@ import axios from "axios";
 function EditProfile() {
     const searchParams = useSearchParamsGlobal();
     const userEmail = searchParams.get("user");
-    const [isBannedUser, setIsBannedUser] = useState<boolean | null>(null);
-
-    useEffect(() => {
-        axios.post(BackendApi.auth_me_url, {}, { withCredentials: true })
-            .then((res) => {
-                const currentUser = res.data;
-                const isAdmin = currentUser?.payload.Rol === "Admin";
-                if (userEmail && !isAdmin) {
-                    goTo("/");
-                }
-            })
-            .catch((err: any) => {
-                if (err?.response?.status === 403) {
-                    setIsBannedUser(true);
-                } else if (err?.response?.status === 401) {
-                    goTo("/login");
-                } else {
-                    console.error("Error inesperado:", err);
-                }
-            });
-    }, [userEmail]);
 
     const [name, setName] = useState("");
     const [isDragging, setIsDragging] = useState(false);
@@ -111,71 +90,65 @@ function EditProfile() {
     };
 
     return (
-        isBannedUser ? (
-            <h1 className="text-danger text-break fw-bold mt-5 w-75 mx-auto">
-                {BanMessaje}
-            </h1>
-        ) : (
-            <div className={`${isSendingForm ? "disabled-form no-select" : ""}`}>
-                <div className="w-75 mx-auto d-flex flex-column min-dvh-100">
-                    <img className="footer-image d-md-none cursor-pointer my-4"
-                        src="Back.svg" alt="Regresar"
-                        onClick={() => userEmail ? goTo("/profile?user=" + userEmail) : goTo("/my-profile")}
-                    />
+        <div className={`${isSendingForm ? "disabled-form no-select" : ""}`}>
+            <div className="w-75 mx-auto d-flex flex-column min-dvh-100">
+                <img className="footer-image d-md-none cursor-pointer my-4"
+                    src="Back.svg" alt="Regresar"
+                    onClick={() => userEmail ? goTo("/profile?user=" + userEmail) : goTo("/my-profile")}
+                />
 
-                    <h1 className="text-white text-center mb-4">{userEmail ? "Actualizar datos" : "Actualizar mis datos"}</h1>
+                <h1 className="text-white text-center mb-4">{userEmail ? "Actualizar datos" : "Actualizar mis datos"}</h1>
 
-                    <h6 className="text-error">{errorMessage}</h6>
+                <h6 className="text-error">{errorMessage}</h6>
 
-                    <p className={`text-white ${isValidImage ? "" : "text-error"}`}>{imageError}</p>
+                <p className={`text-white ${isValidImage ? "" : "text-error"}`}>{imageError}</p>
 
-                    <div
-                        className={`text-center mb-4 info-report w-100 cursor-pointer ${isDragging ? "drag-active" : ""}`}
-                        onClick={openImageSelector}
-                        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                        onDragLeave={() => setIsDragging(false)}
-                        onDrop={handleDropImage}
-                    >
-                        {profileImage ? (
-                            <img src={profileImage} alt="Vista previa" className="d-block w-75 mx-auto rounded preview-image" />
-                        ) : (
-                            <>
-                                <p className="d-block text-white">Haz click o arrastra una imagen aquí</p>
-                                <img src="/AddImage.svg" alt="Agregar imagen" className="report-add-image mb-2" />
-                            </>
-                        )}
+                <div
+                    className={`text-center mb-4 info-report w-100 cursor-pointer ${isDragging ? "drag-active" : ""}`}
+                    onClick={openImageSelector}
+                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDrop={handleDropImage}
+                >
+                    {profileImage ? (
+                        <img src={profileImage} alt="Vista previa" className="d-block w-75 mx-auto rounded preview-image" />
+                    ) : (
+                        <>
+                            <p className="d-block text-white">Haz click o arrastra una imagen aquí</p>
+                            <img src="/AddImage.svg" alt="Agregar imagen" className="report-add-image mb-2" />
+                        </>
+                    )}
+                </div>
+
+                <input
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    onChange={handleImageSelected}
+                    style={{ display: "none" }}
+                />
+
+                <p className="text-white">Nombre</p>
+                <input
+                    className="text-input w-100 mb-4"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                />
+
+                <div className="publication-actions nav-bar w-100 d-flex justify-content-center align-items-center">
+                    <div className="w-50 text-start">
+                        <button className="white-button"
+                            onClick={() => { userEmail ? goTo("/edit-password?user=" + userEmail) : goTo("/edit-password") }}>Cambiar contraseña</button>
                     </div>
-
-                    <input
-                        type="file"
-                        accept="image/*"
-                        ref={fileInputRef}
-                        onChange={handleImageSelected}
-                        style={{ display: "none" }}
-                    />
-
-                    <p className="text-white">Nombre</p>
-                    <input
-                        className="text-input w-100 mb-4"
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                    />
-
-                    <div className="publication-actions nav-bar w-100 d-flex justify-content-center align-items-center">
-                        <div className="w-50 text-start">
-                            <button className="white-button"
-                                onClick={() => { userEmail ? goTo("/edit-password?user=" + userEmail) : goTo("/edit-password") }}>Cambiar contraseña</button>
-                        </div>
-                        <div className="w-50 text-end">
-                            <button className="white-button" onClick={handleSave}>
-                                {!isSendingForm ? "Actualizar" : (<div className="d-flex justify-content-center"><span>Actualizando...</span><div className="loader ms-3"></div></div>)}
-                            </button>
-                        </div>
+                    <div className="w-50 text-end">
+                        <button className="white-button" onClick={handleSave}>
+                            {!isSendingForm ? "Actualizar" : (<div className="d-flex justify-content-center"><span>Actualizando...</span><div className="loader ms-3"></div></div>)}
+                        </button>
                     </div>
                 </div>
             </div>
-        )
+        </div>
     );
 }
 

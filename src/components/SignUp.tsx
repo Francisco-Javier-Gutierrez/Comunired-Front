@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { signUp, signInWithRedirect } from "aws-amplify/auth";
 import { useUserData } from "../utils/UserStore";
-import { goTo } from "../utils/globalVariables";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { BackendApi } from "../utils/globalVariables";
 
 function SignUp() {
     const [email, setEmail] = useState("");
@@ -31,6 +33,8 @@ function SignUp() {
         numero: /\d/.test(password),
         especial: /[@$!%*?&._-]/.test(password),
     };
+
+    const navigate = useNavigate();
 
     const handleTogglePassword = () => setShowPassword(prev => !prev);
 
@@ -82,6 +86,15 @@ function SignUp() {
                 },
             });
 
+            await axios.post(
+                BackendApi.create_user_url,
+                {
+                    Correo_electronico: email,
+                    Nombre_usuario: username
+                },
+                {}
+            );
+
             setGlobalEmail(email);
             setGlobalName(username);
 
@@ -99,7 +112,9 @@ function SignUp() {
             setUsername("");
             setPassword("");
 
-            goTo("/confirm-signup");
+            navigate("/confirm-signup", {
+                state: { Correo_electronico: email }
+            });
         } catch (error: any) {
             setIsSendingForm(false);
 
@@ -229,7 +244,7 @@ function SignUp() {
                 <span>
                     <a
                         className={`text-white cursor-pointer ${focusLogin === true ? "text-error" : ""}`}
-                        onClick={() => goTo("/login")}
+                        onClick={() => navigate("/login")}
                     >
                         ¿Ya tienes una cuenta?
                     </a>

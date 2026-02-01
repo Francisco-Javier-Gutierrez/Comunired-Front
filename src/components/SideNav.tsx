@@ -45,7 +45,7 @@ function SideNav() {
               className="side-nav-image cursor-pointer footer-add-publication"
               src="AddPublication.svg"
               alt="AddPublication"
-              onClick={() => goTo("/choose?origin=" + currentPath)}
+              onClick={() => goTo("/create-publication")}
             />
           </div>
 

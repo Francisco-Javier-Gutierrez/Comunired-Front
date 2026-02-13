@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { BackendApi, getToken, isUserAuthenticated } from "../utils/globalVariables";
-import PublicationCard from "../components/PublicationCard";
-import ImageModal from "../components/ImageModal";
+import { apiRoutes, getToken, isUserAuthenticated } from "../utils/GlobalVariables";
+import PublicationCard from "./PublicationCard";
+import ImageModal from "./modals/ImageModal";
 
 function Home() {
     const [publicaciones, setPublicaciones] = useState<any[]>([]);
@@ -19,8 +19,8 @@ function Home() {
 
                 const res = await axios.get(
                     (isAuth ?
-                        BackendApi.list_publications_user_auth_url :
-                        BackendApi.list_publications_url),
+                        apiRoutes.list_publications_user_auth_url :
+                        apiRoutes.list_publications_url),
                     {
                         ...(isAuth && {
                             headers: {
@@ -41,7 +41,6 @@ function Home() {
         loadPublications();
     }, []);
 
-
     return (
         <div className="d-flex justify-content-center">
             <div className="w-75 home-container">
@@ -61,6 +60,7 @@ function Home() {
                             image={imagenSeleccionada}
                             onClose={() => setImagenSeleccionada(null)}
                         />
+
                     </>
                 )}
             </div>

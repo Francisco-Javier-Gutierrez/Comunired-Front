@@ -1,31 +1,42 @@
-import { useRef, useState } from "react";
-import { goTo } from "../utils/globalVariables";
-import { BackendApi, useSearchParamsGlobal, BanMessaje } from "../utils/globalVariables";
-import axios from "axios";
+import { useRef, useState, useEffect } from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import { uploadFile } from "../utils/UploadUtils";
+import { updateUserAttributes, fetchAuthSession } from "aws-amplify/auth";
+import { useUserData } from "../utils/UserStore";
+import type { AuthContext } from "./layouts/LoggedLayout";
 
 function EditProfile() {
-    const searchParams = useSearchParamsGlobal();
-    const userEmail = searchParams.get("user");
+    const navigate = useNavigate();
+    const authContext = useOutletContext<AuthContext>();
+    const { setName: setGlobalName, setProfilePictureUrl } = useUserData();
 
     const [name, setName] = useState("");
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [profileImage, setProfileImage] = useState<string | null>(null);
-    const [isSendingForm, setIsSendingForm] = useState<boolean | null>(null);
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [isSendingForm, setIsSendingForm] = useState<boolean>(false);
+    const [isUploadingImage, setIsUploadingImage] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string>("");
-    const [imageError, setImageError] = useState<string | null>("Foto de perfil");
-    const [isValidImage, setIsValidImage] = useState<boolean | null>(true);
+    const [imageError, setImageError] = useState<string>("");
+    const [isValidImage, setIsValidImage] = useState<boolean>(true);
 
-    const MAX_MB = 2;
+    const MAX_MB = 5;
     const MAX_BYTES = MAX_MB * 1024 * 1024;
 
-    const convertToBase64 = (file: File): Promise<string> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
+    useEffect(() => {
+        if (authContext.name) setName(authContext.name);
+        if (authContext.picture) {
+            setPreviewImage(authContext.picture);
+            setProfileImage(authContext.picture);
+        }
+    }, [authContext]);
+
+
+    const handleImageSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        await handleImage(file);
     };
 
     const handleImage = async (file: File) => {
@@ -34,19 +45,34 @@ function EditProfile() {
         if (file.size > MAX_BYTES) {
             setImageError(`La imagen supera ${MAX_MB}MB`);
             setIsValidImage(false);
+            setPreviewImage(null);
             setProfileImage(null);
             return;
         }
-        setImageError("Foto de perfil");
-        setIsValidImage(true);
-        const base64 = await convertToBase64(file);
-        setProfileImage(base64);
-    };
 
-    const handleImageSelected = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-        handleImage(file);
+        setIsValidImage(true);
+        setImageError("");
+
+        const blobUrl = URL.createObjectURL(file);
+        setPreviewImage(blobUrl);
+
+        setIsUploadingImage(true);
+        try {
+            const fileUrl = await uploadFile(file, "profile");
+            if (fileUrl) {
+                setPreviewImage(fileUrl);
+                setProfileImage(fileUrl);
+            }
+        } catch (err) {
+            console.error("Error subiendo imagen:", err);
+            setImageError("Error subiendo imagen, intenta de nuevo");
+            setIsValidImage(false);
+            setPreviewImage(null);
+            setProfileImage(null);
+        } finally {
+            if (blobUrl) URL.revokeObjectURL(blobUrl);
+            setIsUploadingImage(false);
+        }
     };
 
     const openImageSelector = () => fileInputRef.current?.click();
@@ -56,66 +82,96 @@ function EditProfile() {
         setIsDragging(false);
         const file = event.dataTransfer.files?.[0];
         if (!file) return;
-        handleImage(file);
+        await handleImage(file);
     };
 
     const handleSave = async () => {
-        if (!name.trim() && !profileImage) {
+        const trimmedName = name.trim();
+        const hasNameChange = trimmedName && trimmedName !== authContext.name;
+        const hasPictureChange = profileImage && profileImage !== authContext.picture;
+
+        if (!hasNameChange && !hasPictureChange) {
             setErrorMessage("Debes cambiar tu nombre o actualizar tu foto antes de guardar");
             return;
         }
 
-        if (name.trim().length > 0 && name.trim().length < 3) {
+        if (trimmedName.length > 0 && trimmedName.length < 3) {
             setErrorMessage("El nombre debe tener al menos 3 caracteres");
             return;
         }
 
         setErrorMessage("");
-
-        const bodyData = {
-            Nombre_usuario: name.trim().length > 0 ? name : null,
-            Url_foto_perfil: profileImage || null,
-            Correo_electronico: userEmail || null
-        };
-
         setIsSendingForm(true);
 
-        await axios
-            .post(BackendApi.edit_account_url, bodyData, { withCredentials: true })
-            .then(() => {
-                userEmail ? goTo("/profile?user=" + userEmail) : goTo("/my-profile");
-            })
-            .catch(() => { })
-            .finally(() => { setIsSendingForm(false) });
+        try {
+            const userAttributes: Record<string, string> = {};
+
+            if (hasNameChange) {
+                userAttributes.name = trimmedName;
+            }
+
+            if (hasPictureChange && profileImage) {
+                userAttributes.picture = profileImage;
+            }
+
+            await updateUserAttributes({ userAttributes });
+
+            await fetchAuthSession({ forceRefresh: true });
+
+            if (hasNameChange) setGlobalName(trimmedName);
+            if (hasPictureChange && profileImage) setProfilePictureUrl(profileImage);
+
+            navigate("/my-profile");
+        } catch (err: any) {
+            console.error("Error actualizando perfil:", err);
+            setErrorMessage(err.message || "Error al actualizar el perfil");
+        } finally {
+            setIsSendingForm(false);
+        }
     };
 
+    const isFormDisabled = isSendingForm || isUploadingImage;
+
     return (
-        <div className={`${isSendingForm ? "disabled-form no-select" : ""}`}>
+        <div className={`${isFormDisabled ? "disabled-form no-select" : ""}`}>
             <div className="w-75 mx-auto d-flex flex-column min-dvh-100">
-                <img className="footer-image d-md-none cursor-pointer my-4"
-                    src="Back.svg" alt="Regresar"
-                    onClick={() => userEmail ? goTo("/profile?user=" + userEmail) : goTo("/my-profile")}
+                <img
+                    className="footer-image d-md-none cursor-pointer my-4"
+                    src="Back.svg"
+                    alt="Regresar"
+                    onClick={() => navigate("/my-profile")}
                 />
 
-                <h1 className="text-white text-center mb-4">{userEmail ? "Actualizar datos" : "Actualizar mis datos"}</h1>
+                <h1 className="text-white text-center mb-4">Actualizar mis datos</h1>
 
-                <h6 className="text-error">{errorMessage}</h6>
+                {errorMessage && <h6 className="text-error">{errorMessage}</h6>}
 
-                <p className={`text-white ${isValidImage ? "" : "text-error"}`}>{imageError}</p>
+                <p className={`text-white ${!isValidImage ? "text-error" : ""}`}>
+                    {imageError || "Foto de perfil"}
+                </p>
 
                 <div
-                    className={`text-center mb-4 info-report w-100 cursor-pointer ${isDragging ? "drag-active" : ""}`}
+                    className={`text-center mb-4 info-publication w-100 cursor-pointer ${isDragging ? "drag-active" : ""}`}
                     onClick={openImageSelector}
                     onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                     onDragLeave={() => setIsDragging(false)}
                     onDrop={handleDropImage}
                 >
-                    {profileImage ? (
-                        <img src={profileImage} alt="Vista previa" className="d-block w-75 mx-auto rounded preview-image" />
+                    {isUploadingImage ? (
+                        <div className="d-flex flex-column align-items-center py-4">
+                            <div className="loader mb-2"></div>
+                            <p className="text-white">Subiendo imagen...</p>
+                        </div>
+                    ) : previewImage ? (
+                        <img
+                            src={previewImage}
+                            alt="Vista previa"
+                            className="d-block w-75 mx-auto rounded preview-image"
+                        />
                     ) : (
                         <>
                             <p className="d-block text-white">Haz click o arrastra una imagen aquí</p>
-                            <img src="/AddImage.svg" alt="Agregar imagen" className="report-add-image mb-2" />
+                            <img src="/AddImage.svg" alt="Agregar imagen" className="publication-add-image mb-2" />
                         </>
                     )}
                 </div>
@@ -134,16 +190,28 @@ function EditProfile() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    placeholder={authContext.name || "Tu nombre"}
                 />
 
                 <div className="publication-actions nav-bar w-100 d-flex justify-content-center align-items-center">
                     <div className="w-50 text-start">
-                        <button className="white-button"
-                            onClick={() => { userEmail ? goTo("/edit-password?user=" + userEmail) : goTo("/edit-password") }}>Cambiar contraseña</button>
+                        <button
+                            className="white-button"
+                            onClick={() => navigate("/edit-password")}
+                        >
+                            Cambiar contraseña
+                        </button>
                     </div>
                     <div className="w-50 text-end">
-                        <button className="white-button" onClick={handleSave}>
-                            {!isSendingForm ? "Actualizar" : (<div className="d-flex justify-content-center"><span>Actualizando...</span><div className="loader ms-3"></div></div>)}
+                        <button className="white-button" onClick={handleSave} disabled={isFormDisabled}>
+                            {!isSendingForm ? (
+                                "Actualizar"
+                            ) : (
+                                <div className="d-flex justify-content-center">
+                                    <span>Actualizando...</span>
+                                    <div className="loader ms-3"></div>
+                                </div>
+                            )}
                         </button>
                     </div>
                 </div>

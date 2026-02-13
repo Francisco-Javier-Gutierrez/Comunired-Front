@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { goTo, BackendApi, getToken } from "../utils/globalVariables";
+import { apiRoutes, getToken } from "../utils/GlobalVariables";
+import { useNavigate } from "react-router-dom";
 
 function Notifications() {
+    const navigate = useNavigate();
     const [notificaciones, setNotificaciones] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -11,7 +13,7 @@ function Notifications() {
         const loadNotifications = async () => {
             try {
                 const token = await getToken();
-                const res = await axios.get(BackendApi.messages_account_url, {
+                const res = await axios.get(apiRoutes.messages_account_url, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -33,7 +35,7 @@ function Notifications() {
         const token = await getToken();
         try {
             await axios.post(
-                BackendApi.read_notification_url,
+                apiRoutes.read_notification_url,
                 { Id_notificacion: id },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -68,7 +70,7 @@ function Notifications() {
                                 className="d-flex align-items-start p-1 mb-3 w-100 text-white justify-content-between notifications-container cursor-pointer"
                                 onClick={() => {
                                     leerNotificacion(noti.Id_notificacion);
-                                    goTo("/publication?post=" + noti.Id_objetivo);
+                                    navigate("/publication?post=" + noti.Id_objetivo);
                                 }}
                             >
                                 <div className="mb-2 d-flex align-items-center">

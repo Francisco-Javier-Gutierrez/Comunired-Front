@@ -1,8 +1,10 @@
 import { useRef, useState } from "react";
 import axios from "axios";
-import { BackendApi, goTo, getToken } from "../../utils/globalVariables";
+import { useNavigate } from "react-router-dom";
+import { apiRoutes, getToken } from "../../utils/GlobalVariables";
 
 export function usePublicationActions(post: any) {
+    const navigate = useNavigate();
     const [isLiked, setIsLiked] = useState(
         post?.is_Liked ?? post?.Is_Liked ?? post?.is_liked ?? false
     );
@@ -24,7 +26,7 @@ export function usePublicationActions(post: any) {
         const token = await getToken();
 
         await axios.post(
-            isLiked ? BackendApi.unlike_publications_url : BackendApi.like_publications_url,
+            isLiked ? apiRoutes.unlike_publications_url : apiRoutes.like_publications_url,
             { Id_objetivo: post.Id_publicacion },
             {
                 headers: {
@@ -36,7 +38,7 @@ export function usePublicationActions(post: any) {
                 setIsLiked((prev: any) => !prev);
                 setLikes((prev: any) => Number(prev) - change);
 
-                if (err?.response?.status === 401) goTo("/login");
+                if (err?.response?.status === 401) navigate("/login");
                 if (err?.response?.status === 403) alert("Usted está baneado");
             })
             .finally(() => {
@@ -52,14 +54,14 @@ export function usePublicationActions(post: any) {
 
         setSharedCount((prev: number) => prev + 1);
         navigator.clipboard.writeText(
-            window.location.href + "publication?post=" + post.Id_publicacion
+            window.location.origin + "/publication?post=" + post.Id_publicacion
         );
         alert("Url copiada exitosamente");
 
         const token = await getToken();
 
         await axios.post(
-            BackendApi.share_publication_url,
+            apiRoutes.share_publication_url,
             { Id_objetivo: post.Id_publicacion },
             {
                 headers: {
@@ -77,11 +79,30 @@ export function usePublicationActions(post: any) {
             });
     };
 
+    const handleDelete = async () => {
+        try {
+            const token = await getToken();
+            await axios.post(
+                apiRoutes.delete_publication_url,
+                { Id_publicacion: post.Id_publicacion },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            window.location.reload();
+        } catch (err: any) {
+            if (err?.response?.status === 401) navigate("/login");
+        }
+    };
+
     return {
         isLiked,
         likes,
         sharedCount,
         handleLike,
-        handleShare
+        handleShare,
+        handleDelete
     };
 }

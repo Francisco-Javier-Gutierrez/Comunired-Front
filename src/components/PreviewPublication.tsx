@@ -1,26 +1,32 @@
 import { useState } from "react";
 import axios from "axios";
 import { usePublicationData } from "../utils/PublicationStore";
-import { goTo, BackendApi } from "../utils/globalVariables";
+import { apiRoutes, getToken } from "../utils/GlobalVariables";
 import PublicationCard from "./PublicationCard";
-import ImageModal from "./ImageModal";
+import ImageModal from "./modals/ImageModal";
+import { useUserData } from "../utils/UserStore";
+import { useNavigate } from "react-router-dom";
 
 function PreviewPublication() {
+    const navigate = useNavigate();
     const [isSendingForm, setIsSendingForm] = useState<boolean | null>(null);
-    const { text, image, setText, setImage, resetPublication } = usePublicationData();
+    const { text, image, video, latitude, longitude, setText, setImage, setVideo, resetPublication } = usePublicationData();
+    const { email: userEmail, name: userName, profilePictureUrl } = useUserData();
     const [imagenSeleccionada, setImagenSeleccionada] = useState<string | null>(null);
 
-    const handleValidatePublicationPublicate = () => {
+    const handleValidatePublicationPublicate = async () => {
         if (!text?.trim()) return;
 
         setIsSendingForm(true);
 
-        axios.post(BackendApi.create_publication_url, { Contenido: text, Url_imagen: image }, { withCredentials: true })
+        const token = await getToken();
+        axios.post(apiRoutes.create_publication_url, { Contenido: text, Url_imagen: image, Url_video: video, Lat: latitude, Long: longitude }, { headers: { Authorization: `Bearer ${token}` } })
             .then(() => {
                 setText(null);
                 setImage(null);
+                setVideo(null);
                 resetPublication();
-                goTo("/my-profile");
+                navigate("/my-profile");
             })
             .catch(() => { })
             .finally(() => {
@@ -30,20 +36,27 @@ function PreviewPublication() {
 
     return (
 
-        <div className={`${isSendingForm ? "disabled-form no-select" : ""}`}>
+        <div className={`min-dvh-100 ${isSendingForm ? "disabled-form no-select" : ""}`}>
             <div className="w-75 min-dvh-70 mx-auto home-container d-flex flex-column">
                 <PublicationCard
                     key={0}
+                    isPreview={true}
                     post={{
                         Id_publicacion: 0,
-                        Nombre: "Usuario",
+                        Usuario: {
+                            Correo_electronico: userEmail,
+                            nombre_usuario: userName,
+                            Url_foto_perfil: profilePictureUrl
+                        },
                         Fecha_publicacion: new Date().toISOString().split("T")[0],
                         Contenido: text,
                         Url_imagen: image,
+                        Url_video: video,
+                        Lat: latitude,
+                        Long: longitude,
                         Me_gusta: 0,
                         Comentarios: 0,
-                        Compartidos: 0,
-                        Url_foto_perfil: "/Profile.svg"
+                        Compartidos: 0
                     }}
                     onImageClick={setImagenSeleccionada}
                 />
@@ -53,9 +66,9 @@ function PreviewPublication() {
                     onClose={() => setImagenSeleccionada(null)}
                 />
 
-                <div className="publication-actions nav-bar w-100 mt-auto d-flex justify-content-center align-items-center">
+                <div className="publication-actions w-100 mt-5 d-flex justify-content-center align-items-center">
                     <div className="w-50 text-start">
-                        <button className="white-button" onClick={() => goTo("/create-publication")}>Regresar</button>
+                        <button className="white-button" onClick={() => navigate("/create-publication")}>Regresar</button>
                     </div>
                     <div className="w-50 text-end">
                         <button className="white-button" onClick={handleValidatePublicationPublicate}>

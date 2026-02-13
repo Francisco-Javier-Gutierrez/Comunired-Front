@@ -1,8 +1,9 @@
 import { useState } from "react";
 import axios from "axios";
-import { BackendApi, goTo, isUserAuthenticated, getToken } from "../utils/globalVariables";
-import PublicationCard from "../components/PublicationCard";
-import ImageModal from "../components/ImageModal";
+import { useNavigate } from "react-router-dom";
+import { apiRoutes, isUserAuthenticated, getToken } from "../utils/GlobalVariables";
+import PublicationCard from "./PublicationCard";
+import ImageModal from "./modals/ImageModal";
 
 function normalizePublications(data: any[]) {
     return data.map(p => ({
@@ -19,6 +20,7 @@ function normalizePublications(data: any[]) {
 }
 
 function Search() {
+    const navigate = useNavigate();
     const [text, setText] = useState("");
     const [resultados, setResultados] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -35,10 +37,10 @@ function Search() {
 
         const isAuth = await isUserAuthenticated();
 
-        const token = await getToken();
+        const token = isAuth ? await getToken() : null;
 
         await axios.post(
-            (isAuth ? BackendApi.search_resources_user_auth_url : BackendApi.search_resources_url),
+            (isAuth ? apiRoutes.search_resources_user_auth_url : apiRoutes.search_resources_url),
             { texto: lowered },
             {
                 ...(isAuth && {
@@ -63,7 +65,11 @@ function Search() {
         <div className="min-dvh-100">
             <h3 className="text-white w-75 mx-auto my-4">Buscador</h3>
 
-            <div className="w-75 mx-auto d-flex justify-content-around align-items-center mb-5">
+            <form className="w-75 mx-auto d-flex justify-content-around align-items-center mb-5"
+                onSubmit={e => {
+                    e.preventDefault();
+                    handleSearch();
+                }}>
                 <div className="w-100 d-flex justify-content-between">
                     <div className="w-75">
                         <input
@@ -74,12 +80,12 @@ function Search() {
                         />
                     </div>
                     <div className="w-25 text-center">
-                        <button className="white-button w-75" onClick={handleSearch}>
+                        <button type="submit" className="white-button w-75">
                             Buscar
                         </button>
                     </div>
                 </div>
-            </div>
+            </form>
 
             <div className="w-75 mx-auto mt-4">
                 {isLoading ? (
@@ -92,7 +98,7 @@ function Search() {
                                 post={post}
                                 onImageClick={setImagenSeleccionada}
                                 onClick={() =>
-                                    goTo(`/publication?post=${post.Id_publicacion}`)
+                                    navigate(`/publication?post=${post.Id_publicacion}`)
                                 }
                             />
                         ))}

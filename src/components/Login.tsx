@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { signIn, fetchAuthSession, signOut } from "aws-amplify/auth";
+import { signIn, fetchAuthSession, signInWithRedirect } from "aws-amplify/auth";
 import { useUserData } from "../utils/UserStore";
-import { goTo } from "../utils/globalVariables";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
+    const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loginFailedMessage, setLoginFailedMessage] = useState("");
@@ -52,10 +53,15 @@ function Login() {
         setIsSendingForm(true);
 
         try {
-            await signIn({
+            const signInOutput = await signIn({
                 username: email,
                 password: password,
             });
+
+            if (signInOutput.nextStep.signInStep === "CONFIRM_SIGN_IN_WITH_TOTP_CODE") {
+                navigate("/verify-mfa");
+                return;
+            }
 
             const session = await fetchAuthSession();
             const idToken = session.tokens?.idToken;
@@ -81,7 +87,7 @@ function Login() {
             setEmail("");
             setPassword("");
 
-            goTo("/");
+            navigate("/");
 
         } catch (error: any) {
             setIsSendingForm(false);
@@ -103,6 +109,15 @@ function Login() {
                     setLoginFailedMessage("Error al iniciar sesión");
                     console.error(error);
             }
+        }
+    };
+
+    const loginWithGoogle = async () => {
+        try {
+            await signInWithRedirect({ provider: "Google" });
+        } catch (error) {
+            console.error("Error al iniciar sesión con Google:", error);
+            setLoginFailedMessage("Error al iniciar sesión con Google");
         }
     };
 
@@ -163,14 +178,14 @@ function Login() {
 
                 <span className="text-white d-block mb-3">
                     ¿Olvidaste tu contraseña?{" "}
-                    <a className="text-white cursor-pointer" onClick={() => goTo("/forgot-password")}>
+                    <a className="text-white cursor-pointer" onClick={() => navigate("/forgot-password")}>
                         ¡Recupérala!
                     </a>
                 </span>
 
                 <span className="text-white">
                     ¿Todavía no tienes una cuenta?{" "}
-                    <a className="text-white cursor-pointer" onClick={() => goTo("/signUp")}>
+                    <a className="text-white cursor-pointer" onClick={() => navigate("/signUp")}>
                         Regístrate aquí
                     </a>
                 </span>
@@ -184,6 +199,11 @@ function Login() {
                             <div className="loader ms-3"></div>
                         </div>
                     )}
+                </button>
+
+                <button className="white-button w-100 d-flex align-items-center justify-content-center" onClick={loginWithGoogle}>
+                    <img src="Google.svg" alt="Google" className="me-2" style={{ width: "20px" }} />
+                    Iniciar sesión con Google
                 </button>
             </div>
         </div>

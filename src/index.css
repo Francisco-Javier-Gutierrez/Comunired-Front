@@ -6,7 +6,6 @@
 @import url('./css/SignUp.css');
 @import url('./css/SideNav.css');
 @import url('./css/Profile.css');
-@import url('./css/CreateReport.css');
 @import url('./css/Notifications.css');
 @import url('./css/CreatePublication.css');
 
@@ -32,6 +31,7 @@ body {
 .w-90 {
   width: 90% !important;
 }
+
 .cursor-pointer {
   cursor: pointer;
 }
@@ -71,6 +71,7 @@ body {
   border-radius: 0.5rem;
   border: solid 0.05rem #ffffff;
   color: #ffffff;
+  caret-color: #ffffff;
 }
 
 .text-input:focus,
@@ -78,6 +79,26 @@ body {
   outline: none !important;
   border: solid 0.05rem #7e7e7e;
   box-shadow: none;
+}
+
+.text-input:-webkit-autofill,
+.text-input:-webkit-autofill:hover,
+.text-input:-webkit-autofill:focus,
+.text-input:-webkit-autofill:active {
+  -webkit-text-fill-color: #ffffff;
+  -webkit-box-shadow: 0 0 0px 1000px #454545 inset;
+  box-shadow: 0 0 0px 1000px #454545 inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+.text-input:-webkit-autofill:focus-visible {
+  -webkit-text-fill-color: #ffffff;
+  -webkit-box-shadow: 0 0 0px 1000px #454545 inset;
+}
+
+.text-input:-moz-autofill {
+  background-color: #454545 !important;
+  color: #ffffff !important;
 }
 
 .textarea-input {

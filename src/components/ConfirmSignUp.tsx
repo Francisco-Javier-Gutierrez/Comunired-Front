@@ -93,7 +93,7 @@ function ConfirmSignUp() {
 
                 <span className="text-white d-block mt-3 cursor-pointer">
                     ¿No recibiste el código?{" "}
-                    <a className="text-white" onClick={() => navigate("/signup")}>
+                    <a className="text-white" onClick={() => navigate("/signUp")}>
                         Volver a registrarse
                     </a>
                 </span>

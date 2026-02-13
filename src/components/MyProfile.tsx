@@ -1,12 +1,17 @@
 import { useEffect, useState } from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import axios from "axios";
-import { BackendApi, goTo, getToken } from "../utils/globalVariables";
+import { apiRoutes, getToken } from "../utils/GlobalVariables";
 import { useUserData } from "../utils/UserStore";
-import PublicationCard from "../components/PublicationCard";
-import ImageModal from "../components/ImageModal";
-import { fetchAuthSession, signOut } from "aws-amplify/auth";
+import PublicationCard from "./PublicationCard";
+import ImageModal from "./modals/ImageModal";
+import ConfirmModal from "./modals/ConfirmModal";
+import { signOut, fetchMFAPreference, updateMFAPreference } from "aws-amplify/auth";
+import type { AuthContext } from "./layouts/LoggedLayout";
 
 export default function MyProfile() {
+  const navigate = useNavigate();
+  const authContext = useOutletContext<AuthContext>();
   const { name, email, profilePictureUrl, setName, setEmail, setProfilePictureUrl } = useUserData();
   const [posts, setPosts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -14,31 +19,21 @@ export default function MyProfile() {
   const [accion, setAccion] = useState<string | null>(null);
   const [isLoadingAction, setIsLoadingAction] = useState<boolean>(false);
   const [isBannedUser, setIsBannedUser] = useState<boolean | null>(null);
+  const [mfaEnabled, setMfaEnabled] = useState<boolean>(false);
 
   useEffect(() => {
     let mounted = true;
 
+    setName(authContext.name);
+    setEmail(authContext.email);
+    setProfilePictureUrl(authContext.picture);
+
     (async () => {
       try {
-        const session = await fetchAuthSession();
-        const payload = session.tokens?.idToken?.payload;
-
-        if (!payload) return null;
-
-        const user = {
-          email: payload.email as string,
-          name: payload.name as string | undefined,
-          picture: payload.picture as string | undefined,
-        };
-
-        setName(user?.name ?? null);
-        setEmail(user?.email ?? null);
-        setProfilePictureUrl(user?.picture ?? null);
-
         const token = await getToken();
 
         const listRes = await axios.post(
-          BackendApi.list_user_publications_user_auth_url,
+          apiRoutes.list_user_publications_user_auth_url,
           { Correo_electronico: email },
           {
             headers: {
@@ -69,7 +64,7 @@ export default function MyProfile() {
         if (status === 403) {
           if (mounted) setIsBannedUser(true);
         } else if (status === 401) {
-          goTo("/login");
+          navigate("/login");
         } else {
           console.error("Error cargando perfil:", err);
         }
@@ -78,21 +73,62 @@ export default function MyProfile() {
       }
     })();
 
+    (async () => {
+      if (authContext.isGoogleUser) {
+        setMfaEnabled(false);
+        return;
+      }
+
+      try {
+        const mfaPreference = await fetchMFAPreference();
+        setMfaEnabled(mfaPreference.preferred === "TOTP");
+      } catch {
+        setMfaEnabled(false);
+      }
+    })();
+
     return () => {
       mounted = false;
     };
   }, []);
 
+  const federatedLogout = async () => {
+    try {
+      await signOut({ global: true });
+    } catch (err) {
+    }
+    setName(null);
+    setEmail(null);
+    setProfilePictureUrl(null);
+
+    const domain = "us-east-1onmk5lddc.auth.us-east-1.amazoncognito.com";
+    const clientId = "3g9u29c5kol8tgdmcj1jccv9do";
+    const logoutUri = encodeURIComponent("https://comuni-red.com/");
+
+    window.location.href = `https://${domain}/logout?client_id=${clientId}&logout_uri=${logoutUri}`;
+    navigate("/");
+  };
+
   const handleConfirm = async () => {
     setIsLoadingAction(true);
     try {
-      if (accion === "cerrar") await signOut({ global: true }).catch(() => { });
-      else if (accion === "eliminar") await axios.post(BackendApi.delete_account_url, {}, { withCredentials: true });
+      if (accion === "cerrar") {
+        if (authContext.isGoogleUser) {
+          await federatedLogout();
+          return;
+        }
+        await signOut();
+        navigate("/");
+      } else if (accion === "desactivarMFA") {
+        await updateMFAPreference({ totp: "DISABLED" });
+        setMfaEnabled(false);
+        return;
+      }
 
       setName(null);
       setEmail(null);
       setProfilePictureUrl(null);
-      goTo("/");
+      navigate("/");
     } catch (err) {
       console.error("Error en acción de cuenta:", err);
     } finally {
@@ -103,8 +139,8 @@ export default function MyProfile() {
 
   if (isBannedUser) return <h3 className="text-center text-danger fw-bold display-1 mt-5">USUARIO BLOQUEADO</h3>;
 
-  return isLoading ? <div className="big-loader"></div> : (
-    <div className="d-flex justify-content-center">
+  return isLoading ? <div className="min-dvh-100"><div className="big-loader"></div></div> : (
+    <div className="d-flex justify-content-center min-dvh-100">
       <div className="profile-container">
         <div className="text-center">
           <h1 className="text-white mb-4">Tu perfil</h1>
@@ -116,9 +152,29 @@ export default function MyProfile() {
         <span className="text-white">Correo Electrónico:</span>
         <p className="text-white mb-5">{email}</p>
 
+        <span className="text-white">Autenticación de Dos Factores (MFA):</span>
+        <p className="text-white mb-3">
+          {mfaEnabled ? "✅ Activada" : authContext.isGoogleUser ? "🔒 MFA gestionada por Google" : "❌ Desactivada"}
+        </p>
+
+        {!authContext.isGoogleUser && (
+          mfaEnabled ? (
+            <button className="white-button mb-5" onClick={() => setAccion("desactivarMFA")}>
+              Desactivar MFA
+            </button>
+          ) : (
+            <button className="white-button mb-5" onClick={() => navigate("/setup-mfa")}>
+              Configurar MFA
+            </button>
+          )
+        )}
+
         <div className="py-4 d-flex align-items-center justify-content-around">
-          <button className="white-button w-30" onClick={() => goTo("/edit-profile")}>Editar mi perfil</button>
-          <button className="white-button w-30" onClick={() => setAccion("eliminar")}>Eliminar mi cuenta</button>
+          {!authContext.isGoogleUser && (
+            <>
+              <button className="white-button w-30" onClick={() => navigate("/edit-profile")}>Editar mi perfil</button>
+            </>
+          )}
           <button className="white-button w-30" onClick={() => setAccion("cerrar")}>Cerrar sesión</button>
         </div>
 
@@ -136,19 +192,16 @@ export default function MyProfile() {
         </div>
       </div>
 
-      {accion && (
-        <div className={`modal fade show d-block ${isLoadingAction ? "disabled" : ""}`} tabIndex={-1} onClick={() => setAccion(null)}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content bg-white rounded-4 shadow p-4 text-center" onClick={(e) => e.stopPropagation()}>
-              <h4 className="mb-4">{accion === "eliminar" ? "¿Estás seguro de que deseas eliminar tu cuenta?" : "¿Estás seguro de que deseas cerrar sesión?"}</h4>
-              <div className="w-75 mx-auto d-flex align-items-center justify-content-around mt-4">
-                {isLoadingAction ? <div className="mid-loader"></div> : <img src="Confirm.svg" alt="Confirmar" className="cursor-pointer" width={50} onClick={handleConfirm} />}
-                <img src="Cancel.svg" alt="Cancelar" className="cursor-pointer" width={50} onClick={() => setAccion(null)} />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={accion !== null}
+        title={
+          accion === "desactivarMFA" ? "¿Estás seguro de que deseas desactivar MFA?" :
+            "¿Estás seguro de que deseas cerrar sesión?"
+        }
+        isLoading={isLoadingAction}
+        onConfirm={handleConfirm}
+        onCancel={() => setAccion(null)}
+      />
     </div>
   );
 }

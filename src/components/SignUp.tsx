@@ -3,7 +3,7 @@ import { signUp, signInWithRedirect } from "aws-amplify/auth";
 import { useUserData } from "../utils/UserStore";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { BackendApi } from "../utils/globalVariables";
+import { apiRoutes } from "../utils/GlobalVariables";
 
 function SignUp() {
     const [email, setEmail] = useState("");
@@ -86,17 +86,16 @@ function SignUp() {
                 },
             });
 
+            setGlobalEmail(email);
+            setGlobalName(username);
+
             await axios.post(
-                BackendApi.create_user_url,
+                apiRoutes.create_user_url,
                 {
                     Correo_electronico: email,
                     Nombre_usuario: username
-                },
-                {}
+                }
             );
-
-            setGlobalEmail(email);
-            setGlobalName(username);
 
             setIsSendingForm(false);
             setIsValidName(null);

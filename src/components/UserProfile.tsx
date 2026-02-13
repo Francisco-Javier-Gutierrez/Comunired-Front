@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { BackendApi, goTo, useSearchParamsGlobal, isUserAuthenticated, getToken } from "../utils/globalVariables";
+import { useNavigate } from "react-router-dom";
+import { apiRoutes, useSearchParamsGlobal, isUserAuthenticated, getToken } from "../utils/GlobalVariables";
 import { useUserData } from "../utils/UserStore";
-import PublicationCard from "../components/PublicationCard";
-import ImageModal from "../components/ImageModal";
+import PublicationCard from "./PublicationCard";
+import ImageModal from "./modals/ImageModal";
 
 function UserProfile() {
+  const navigate = useNavigate();
   const [posts, setPosts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [imagenSeleccionada, setImagenSeleccionada] = useState<string | null>(null);
@@ -18,7 +20,11 @@ function UserProfile() {
 
   const userEmail = searchParams.get("user");
 
-  if (userEmail === globalEmail) goTo("/my-profile");
+  useEffect(() => {
+    if (userEmail === globalEmail) {
+      navigate("/my-profile");
+    }
+  }, [userEmail, globalEmail, navigate]);
 
   useEffect(() => {
     if (!userEmail) return;
@@ -29,8 +35,8 @@ function UserProfile() {
         const isAuth = await isUserAuthenticated();
         const token = isAuth ? await getToken() : null;
         const res = await axios.post((
-          isAuth ? BackendApi.list_user_publications_user_auth_url :
-            BackendApi.list_user_publications_url),
+          isAuth ? apiRoutes.list_user_publications_user_auth_url :
+            apiRoutes.list_user_publications_url),
           { Correo_electronico: userEmail },
           {
             ...(isAuth && {
@@ -61,9 +67,11 @@ function UserProfile() {
   }
 
   return isLoading ? (
-    <div className="big-loader"></div>
+    <div className="min-dvh-100 d-flex justify-content-center align-items-center">
+      <div className="big-loader"></div>
+    </div>
   ) : (
-    <div className="d-flex justify-content-center">
+    <div className="d-flex justify-content-center min-dvh-100">
       <div className="profile-container">
         <div className="text-center">
           <h1 className="text-white mb-4">Perfil de {userName}</h1>

@@ -10,8 +10,8 @@ Amplify.configure({
         oauth: {
           domain: "us-east-1onmk5lddc.auth.us-east-1.amazoncognito.com",
           scopes: ["openid", "email", "profile"],
-          redirectSignIn: ["http://localhost:5173/"],
-          redirectSignOut: ["http://localhost:5173/"],
+          redirectSignIn: ["https://comuni-red.com/oauth-callback"],
+          redirectSignOut: ["https://comuni-red.com/"],
           responseType: "code",
         },
       },

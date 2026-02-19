@@ -7,6 +7,7 @@ import { usePublicationData } from "../utils/PublicationStore";
 import { uploadFile } from "../utils/UploadUtils";
 import LocationPicker from "./LocationPicker";
 import ConfirmModal from "./modals/ConfirmModal";
+import { Flex, Box, Heading, Text, Textarea, Image, Button, Spinner, Input } from "@chakra-ui/react";
 
 function CreatePublication() {
     const navigate = useNavigate();
@@ -311,43 +312,70 @@ function CreatePublication() {
         navigate("/preview-publication");
     };
 
+    const isDisabled = isSendingForm || isUploadingImage || isUploadingVideo;
+
     return (
-        <div className={`${isSendingForm || isUploadingImage || isUploadingVideo ? "disabled-form no-select" : ""}`}>
-            <div className="w-75 mx-auto d-flex flex-column min-dvh-100">
-                <img className="footer-image d-md-none cursor-pointer my-4" src="Back.svg" alt="Regresar" onClick={() => navigate(-1)} />
+        <Box className={`${isDisabled ? "disabled-form" : ""}`} userSelect="none">
+            <Flex direction="column" minH="100vh" w={["90%", "75%"]} mx="auto">
+                <Image
+                    display={["block", "none"]}
+                    src="Back.svg"
+                    alt="Regresar"
+                    cursor="pointer"
+                    my={4}
+                    boxSize="1.5rem"
+                    onClick={() => navigate(-1)}
+                />
 
-                <h1 className="text-white text-center mb-4">Nueva publicación</h1>
+                <Heading as="h1" size="4xl" textAlign="center" color="white" mb={4}>Nueva publicación</Heading>
 
-                <div className="no-select my-3">
-                    <img src={profilePictureUrl ?? "/Profile.svg"} alt="Foto de perfil" className="rounded-circle me-1 user-image" />
-                    <span className="text-white">{name ?? "Usuario"} &gt; <span className="text-grey">Publicación</span></span>
-                </div>
+                <Flex align="center" my={3}>
+                    <Image
+                        src={profilePictureUrl ?? "/Profile.svg"}
+                        alt="Foto de perfil"
+                        borderRadius="full"
+                        mr={1}
+                        boxSize="1.5rem"
+                        userSelect="none"
+                    />
+                    <Text color="white">
+                        {name ?? "Usuario"} &gt; <Text as="span" color="#616161">Publicación</Text>
+                    </Text>
+                </Flex>
 
-                <span className="text-error">{textMessage}</span>
-                <textarea
+                <Text color="red.500">{textMessage}</Text>
+                <Textarea
                     ref={textareaRef}
-                    className={`textarea-input mb-3 ${isValidText === false && "input-error"}`}
+                    className={`textarea-input ${isValidText === false ? "input-error" : ""}`}
                     placeholder="Expresa tu idea u opinión aquí"
                     onInput={autoResize}
                     onChange={(e) => { setIsValidText(null); setTextMessage(""); setText(e.target.value); }}
-                    style={{ overflow: "hidden", resize: "none", minHeight: "80px" }}
+                    mb={3}
+                    minH="80px"
+                    resize="none"
+                    overflow="hidden"
+                    bg="#454545"
+                    color="white"
+                    borderColor={isValidText === false ? "red.500" : "white"}
+                    borderRadius="1rem"
+                    _placeholder={{ color: "gray.400" }}
                 />
 
-                <div className="d-flex align-items-center mb-3">
-                    <img src="/AddImage.svg" alt="Agregar imagen" className="create-publication-image cursor-pointer me-4" onClick={handleAddImage} />
-                    <img src="/AddVideo.svg" alt="Agregar video" className="create-publication-image cursor-pointer me-4" onClick={handleAddVideo} />
-                    <img src="/AddLocation.svg" alt="Agregar ubicación" className="create-publication-image cursor-pointer me-4" onClick={toggleLocation} />
-                </div>
+                <Flex align="center" mb={3} gap={4}>
+                    <Image src="/AddImage.svg" alt="Agregar imagen" boxSize="1.5rem" cursor="pointer" onClick={handleAddImage} />
+                    <Image src="/AddVideo.svg" alt="Agregar video" boxSize="1.5rem" cursor="pointer" onClick={handleAddVideo} />
+                    <Image src="/AddLocation.svg" alt="Agregar ubicación" boxSize="1.5rem" cursor="pointer" onClick={toggleLocation} />
+                </Flex>
 
-                {imageError && <span className="text-error text-center d-block mt-2">{imageError}</span>}
-                {videoError && <span className="text-error text-center d-block mt-2">{videoError}</span>}
-                {(isUploadingImage || isUploadingVideo) && <span className="text-white d-block mt-2">Subiendo archivo...</span>}
+                {imageError && <Text color="red.500" textAlign="center" mt={2}>{imageError}</Text>}
+                {videoError && <Text color="red.500" textAlign="center" mt={2}>{videoError}</Text>}
+                {(isUploadingImage || isUploadingVideo) && <Text color="white" mt={2}>Subiendo archivo...</Text>}
 
-                <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageSelected} style={{ display: "none" }} />
-                <input type="file" accept="video/*" ref={fileInputVideoRef} onChange={handleVideoSelected} style={{ display: "none" }} />
+                <Input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageSelected} display="none" />
+                <Input type="file" accept="video/*" ref={fileInputVideoRef} onChange={handleVideoSelected} display="none" />
 
                 {showMap && (
-                    <div className="mb-4 position-relative">
+                    <Box mb={4} pos="relative">
                         <LocationPicker
                             latitude={latitude}
                             longitude={longitude}
@@ -356,49 +384,84 @@ function CreatePublication() {
                                 setLongitude(lng);
                             }}
                         />
-                        <button
-                            type="button"
-                            className="btn-close position-absolute top-0 end-0 m-2 bg-light rounded-circle"
+                        <Button
+                            size="sm"
+                            pos="absolute"
+                            top={0}
+                            right={0}
+                            m={2}
+                            borderRadius="full"
                             onClick={handleRemoveLocation}
-                            style={{ zIndex: 1000 }}
-                        />
-                    </div>
+                            zIndex={1000}
+                            bg="gray.100"
+                            _hover={{ bg: "gray.200" }}
+                            color="black"
+                        >X</Button>
+                    </Box>
                 )}
 
                 {previewImage && (
-                    <div className="position-relative w-75 mx-auto mt-4">
-                        <img src={previewImage} alt="Vista previa" className="d-block w-100 rounded preview-image" />
-                        <button
-                            type="button"
-                            className="btn-close position-absolute top-0 end-0 m-2 bg-light rounded-circle"
+                    <Box pos="relative" w="75%" mx="auto" mt={4}>
+                        <Image src={previewImage} alt="Vista previa" w="100%" borderRadius="md" maxH="15rem" objectFit="contain" display="block" />
+                        <Button
+                            size="sm"
+                            pos="absolute"
+                            top={0}
+                            right={0}
+                            m={2}
+                            borderRadius="full"
                             onClick={handleRemoveImage}
-                        />
-                    </div>
+                            bg="gray.100"
+                            _hover={{ bg: "gray.200" }}
+                            color="black"
+                        >X</Button>
+                    </Box>
                 )}
 
                 {previewVideo && (
-                    <div className="position-relative w-75 mx-auto mt-4">
-                        <video src={previewVideo} controls className="d-block w-100 rounded" />
-                        <button
-                            type="button"
-                            className="btn-close position-absolute top-0 end-0 m-2 bg-light rounded-circle"
+                    <Box pos="relative" w="75%" mx="auto" mt={4}>
+                        <video src={previewVideo} controls style={{ width: "100%", borderRadius: "0.25rem", display: "block" }} />
+                        <Button
+                            size="sm"
+                            pos="absolute"
+                            top={0}
+                            right={0}
+                            m={2}
+                            borderRadius="full"
                             onClick={handleRemoveVideo}
-                            style={{ zIndex: 1 }}
-                        />
-                    </div>
+                            zIndex={1}
+                            bg="gray.100"
+                            _hover={{ bg: "gray.200" }}
+                            color="black"
+                        >X</Button>
+                    </Box>
                 )}
 
-                <div className="publication-actions w-100 mt-5 d-flex justify-content-center align-items-center">
-                    <div className="w-50 text-start">
-                        <button className="white-button" onClick={handleValidatePreviewPublication} disabled={isUploadingImage || isUploadingVideo || isSendingForm}>Previsualizar</button>
-                    </div>
-                    <div className="w-50 text-end">
-                        <button className="white-button" onClick={handleValidatePublicatePublication} disabled={isUploadingImage || isUploadingVideo || isSendingForm}>
-                            {!isSendingForm ? "Publicar" : (<div className="d-flex justify-content-center"><span>Publicando...</span><div className="loader ms-3"></div></div>)}
-                        </button>
-                    </div>
-                </div>
-            </div>
+                <Flex w="100%" mt={5} justify="center" align="center">
+                    <Box w="50%" textAlign="start">
+                        <Button
+                            bg="white"
+                            color="black"
+                            _hover={{ bg: "gray.200" }}
+                            onClick={handleValidatePreviewPublication}
+                            disabled={isDisabled}
+                            borderRadius="1rem"
+                        >Previsualizar</Button>
+                    </Box>
+                    <Box w="50%" textAlign="end">
+                        <Button
+                            bg="white"
+                            color="black"
+                            _hover={{ bg: "gray.200" }}
+                            onClick={handleValidatePublicatePublication}
+                            disabled={isDisabled}
+                            borderRadius="1rem"
+                        >
+                            {!isSendingForm ? "Publicar" : (<Flex justify="center" align="center"><Text mr={3}>Publicando...</Text><Spinner size="sm" color="black" /></Flex>)}
+                        </Button>
+                    </Box>
+                </Flex>
+            </Flex>
 
             <ConfirmModal
                 isOpen={modalData.isOpen}
@@ -407,7 +470,7 @@ function CreatePublication() {
                 onConfirm={modalData.onConfirm}
                 onCancel={() => setModalData(prev => ({ ...prev, isOpen: false }))}
             />
-        </div>
+        </Box>
     );
 }
 

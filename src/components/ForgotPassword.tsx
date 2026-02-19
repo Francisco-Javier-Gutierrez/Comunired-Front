@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { resetPassword } from "aws-amplify/auth";
+import { Flex, Heading, Text, Input, Button, Spinner, Link, Box } from "@chakra-ui/react";
 
 function ForgotPassword() {
     const [email, setEmail] = useState("");
@@ -57,47 +58,74 @@ function ForgotPassword() {
     };
 
     return (
-        <form onSubmit={handleValidateForm} className={`${isSendingForm ? "disabled-form no-select" : ""}`}>
-            <h1 className="text-white text-center mb-5">Recuperar contraseña</h1>
+        <form onSubmit={handleValidateForm}>
+            <Box
+                className={`${isSendingForm ? "disabled-form" : ""}`}
+                userSelect="none"
+                display="flex"
+                flexDirection="column"
+                justifyContent="center"
+                alignItems="center"
+                mt={10}
+            >
+                <Heading as="h1" size="4xl" color="white" mb={4}>Recuperar contraseña</Heading>
 
-            <h3 className="text-warning text-center mb-4">{requestMessage}</h3>
+                {requestMessage && (
+                    <Heading as="h3" size="md" color="yellow.400" textAlign="center" mb={4}>
+                        {requestMessage}
+                    </Heading>
+                )}
 
-            <div className="login-container w-50 mx-auto">
+                <Box w={{ base: "90%", md: "50%" }} mx="auto" px={4}>
+                    <Text color={isValidEmail === false ? "red.500" : "white"} mb={2}>
+                        {emailMessage}
+                    </Text>
 
-                <p className={`text-white ${isValidEmail === false ? "text-error" : ""}`}>
-                    {emailMessage}
-                </p>
+                    <Input
+                        type="email"
+                        value={email}
+                        onChange={(e) => {
+                            setEmail(e.target.value);
 
-                <input
-                    className={`text-input w-100 mb-4 ${isValidEmail === false ? "input-error" : ""}`}
-                    type="email"
-                    value={email}
-                    onChange={(e) => {
-                        setEmail(e.target.value);
+                            if (isValidEmail === false) {
+                                setIsValidEmail(null);
+                                setEmailMessage("Ingrese su correo electrónico");
+                            }
+                        }}
+                        w="100%"
+                        bg="#454545"
+                        color="white"
+                        borderColor={isValidEmail === false ? "red.500" : "inherit"}
+                        borderRadius="1rem"
+                        _placeholder={{ color: "gray.400" }}
+                        mb={4}
+                    />
 
-                        if (isValidEmail === false) {
-                            setIsValidEmail(null);
-                            setEmailMessage("Ingrese su correo electrónico");
-                        }
-                    }}
-                />
+                    <Button
+                        type="submit"
+                        bg="white"
+                        color="black"
+                        w="100%"
+                        my={4}
+                        _hover={{ bg: "gray.200" }}
+                        borderRadius="1rem"
+                    >
+                        {!isSendingForm ? "Enviar código" : (
+                            <Flex justify="center" align="center">
+                                <Text mr={3}>Enviando correo...</Text>
+                                <Spinner size="sm" color="black" />
+                            </Flex>
+                        )}
+                    </Button>
 
-                <button className="white-button w-100 my-4" type="submit">
-                    {!isSendingForm ? "Enviar código" : (
-                        <div className="d-flex justify-content-center">
-                            <span>Enviando correo...</span>
-                            <div className="loader ms-3"></div>
-                        </div>
-                    )}
-                </button>
-
-                <span className="text-white d-block mt-3 cursor-pointer">
-                    ¿Recordaste tu contraseña?{" "}
-                    <a className="text-white" onClick={() => navigate("/login")}>
-                        Volver al inicio de sesión
-                    </a>
-                </span>
-            </div>
+                    <Text color="white" display="block" mb={3} cursor="pointer">
+                        ¿Recordaste tu contraseña?{" "}
+                        <Link color="white" textDecoration="underline" onClick={() => navigate("/login")}>
+                            Volver al inicio de sesión
+                        </Link>
+                    </Text>
+                </Box>
+            </Box>
         </form>
     );
 }

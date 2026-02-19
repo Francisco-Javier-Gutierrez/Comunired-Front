@@ -25,9 +25,9 @@ export function useCommentActions(initialComments: any, publicationId: string, o
 
             if (res.data?.id) {
                 const newComm = {
-                    Id_comentario: res.data.id,
-                    Contenido: content,
-                    Fecha_comentario: new Date().toISOString(),
+                    id_comentario: res.data.id,
+                    contenido: content,
+                    fecha_comentario: new Date().toISOString(),
                     Is_mine: true,
                     Usuario: {
                         Nombre_usuario: name ?? "Usuario",
@@ -61,7 +61,7 @@ export function useCommentActions(initialComments: any, publicationId: string, o
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            setComments((prev: any[]) => prev.filter((c: any) => c.Id_comentario !== commentId));
+            setComments((prev: any[]) => prev.filter((c: any) => c.id_comentario !== commentId));
             setTotalComments((prev: number) => prev - 1);
             if (onDeleteSuccess) onDeleteSuccess();
             return true;

@@ -6,6 +6,7 @@ const base_url = 'https://nkuohbe6xa.execute-api.us-east-1.amazonaws.com';
 export const apiRoutes = {
   create_user_url: `${base_url}/user/create`,
   delete_account_url: `${base_url}/user/delete`,
+  update_user_url: `${base_url}/user/update`,
 
   push_resouce_url: `${base_url}/presigned/push-resource`,
 
@@ -52,7 +53,7 @@ let pathsData: Paths = {
   showLogoOnly: false
 };
 
-export const BanMensaje = "Usted se encuentra baneado. Si requiere asistencia adicional, envíe un correo a franciscojg.h.051130@gmail.com."
+export const BanMensaje = "Usted se encuentra baneado. Si requiere asistencia adicional, envíe un correo a [EMAIL_ADDRESS]."
 
 export const PathsInitializer = () => {
   const location = useLocation();
@@ -92,7 +93,8 @@ export const PathsInitializer = () => {
         "/not-found",
         "/notifications",
         "/create-publication",
-        "/preview-publication"
+        "/preview-publication",
+        "/edit-profile"
       ].includes(currentPath),
 
       showSideNav: [

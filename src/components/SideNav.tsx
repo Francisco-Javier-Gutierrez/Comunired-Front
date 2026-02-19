@@ -1,76 +1,131 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { paths } from "../utils/GlobalVariables";
+import { Flex, Image, Tooltip, Box } from "@chakra-ui/react";
+
+const NavTooltip = ({ label, children }: { label: string, children: React.ReactNode }) => {
+    return (
+        <Tooltip.Root positioning={{ placement: "bottom" }} openDelay={200} closeDelay={0}>
+            <Tooltip.Trigger asChild>
+                {children}
+            </Tooltip.Trigger>
+            <Tooltip.Positioner>
+                <Tooltip.Arrow>
+                    <Tooltip.ArrowTip />
+                </Tooltip.Arrow>
+                <Tooltip.Content bg="black" color="white" px={2} py={1} borderRadius="md" fontSize="sm">
+                    {label}
+                </Tooltip.Content>
+            </Tooltip.Positioner>
+        </Tooltip.Root>
+    );
+};
 
 function SideNav() {
     const navigate = useNavigate();
     const location = useLocation();
     const currentPath = location.pathname;
 
-    return (
-        <div className={`d-flex flex-column justify-content-around no-select align-items-center w-20 py-3
-     ${!paths.showLogoOnly && paths.showSideNav ? "side-nav" : "mx-auto"}`}>
+    const isSideNavVisible = !paths.showLogoOnly && paths.showSideNav;
 
+    return (
+        <Flex
+            direction="column"
+            justify="space-around"
+            align="center"
+            w={paths.showLogoOnly ? "100%" : "20%"}
+            py={4}
+            userSelect="none"
+            h={isSideNavVisible ? "100dvh" : "auto"}
+            pos={isSideNavVisible ? "sticky" : "static"}
+            top={0}
+            mx={!isSideNavVisible ? "auto" : undefined}
+        >
             {paths.showLogoOnly ? (
-                <img className="logo-image-side-nav" src="Logo.png" alt="Logo" />
+                <Image
+                    src="Logo.png"
+                    alt="Logo"
+                    mx="auto"
+                    w="7rem"
+                />
             ) : paths.showSideNav ? (
                 <>
+                    <NavTooltip label="Logo">
+                        <Box w="100%" display="flex" justifyContent="center">
+                            <Image
+                                src="Logo.png"
+                                alt="Logo"
+                                w="20%"
+                            />
+                        </Box>
+                    </NavTooltip>
 
-                    <div className="tooltip-wrapper" data-tooltip="Logo">
-                        <img
-                            className="side-nav-image pb-5"
-                            src="Logo.png"
-                            alt="Logo"
-                        />
-                    </div>
+                    <Box pb={24}></Box>
 
-                    <div className="tooltip-wrapper" data-tooltip="Buscar">
-                        <img
-                            className="side-nav-image pt-5 cursor-pointer"
-                            src="Search.svg"
-                            alt="Search"
-                            onClick={() => navigate("/search")}
-                        />
-                    </div>
+                    <NavTooltip label="Buscar">
+                        <Box w="100%" display="flex" justifyContent="center">
+                            <Image
+                                src="Search.svg"
+                                alt="Search"
+                                cursor="pointer"
+                                onClick={() => navigate("/search")}
+                                w="15%"
+                            />
+                        </Box>
+                    </NavTooltip>
 
-                    <div className="tooltip-wrapper" data-tooltip="Notificaciones">
-                        <img
-                            className="side-nav-image cursor-pointer"
-                            src={`${currentPath === "/notifications" ? "Messages_Grey.svg" : "Messages.svg"}`}
-                            alt="Messages"
-                            onClick={() => navigate("/notifications")}
-                        />
-                    </div>
+                    <NavTooltip label="Notificaciones">
+                        <Box w="100%" display="flex" justifyContent="center">
+                            <Image
+                                src={`${currentPath === "/notifications" ? "Messages_Grey.svg" : "Messages.svg"}`}
+                                alt="Messages"
+                                cursor="pointer"
+                                onClick={() => navigate("/notifications")}
+                                w="15%"
+                            />
+                        </Box>
+                    </NavTooltip>
 
-                    <div className="tooltip-wrapper" data-tooltip="Crear publicación">
-                        <img
-                            className="side-nav-image cursor-pointer footer-add-publication"
-                            src="AddPublication.svg"
-                            alt="AddPublication"
-                            onClick={() => navigate("/create-publication")}
-                        />
-                    </div>
+                    <NavTooltip label="Crear publicación">
+                        <Box w="100%" display="flex" justifyContent="center">
+                            <Image
+                                src="AddPublication.svg"
+                                alt="AddPublication"
+                                cursor="pointer"
+                                onClick={() => navigate("/create-publication")}
+                                w="15%"
+                                bg="#7F7F7F"
+                                borderRadius="0.5rem"
+                            />
+                        </Box>
+                    </NavTooltip>
 
-                    <div className="tooltip-wrapper" data-tooltip="Inicio">
-                        <img
-                            className="side-nav-image cursor-pointer"
-                            src={`${currentPath === "/" ? "Home_Grey.svg" : "Home.svg"}`}
-                            alt="Home"
-                            onClick={() => navigate("/")}
-                        />
-                    </div>
+                    <NavTooltip label="Inicio">
+                        <Box w="100%" display="flex" justifyContent="center">
+                            <Image
+                                src={`${currentPath === "/" ? "Home_Grey.svg" : "Home.svg"}`}
+                                alt="Home"
+                                cursor="pointer"
+                                onClick={() => navigate("/")}
+                                w="15%"
+                            />
+                        </Box>
+                    </NavTooltip>
 
-                    <div className="tooltip-wrapper" data-tooltip="Perfil">
-                        <img
-                            className="side-nav-image cursor-pointer"
-                            src={`${currentPath === "/my-profile" ? "Profile_Grey.svg" : "Profile.svg"}`}
-                            alt="ProfileImage"
-                            onClick={() => navigate("/my-profile")}
-                        />
-                    </div>
+                    <NavTooltip label="Perfil">
+                        <Box w="100%" display="flex" justifyContent="center">
+                            <Image
+                                src={`${currentPath === "/my-profile" ? "Profile_Grey.svg" : "Profile.svg"}`}
+                                alt="ProfileImage"
+                                cursor="pointer"
+                                onClick={() => navigate("/my-profile")}
+                                w="15%"
+                            />
+                        </Box>
+                    </NavTooltip>
 
                 </>
             ) : null}
-        </div>
+        </Flex>
     );
 }
 

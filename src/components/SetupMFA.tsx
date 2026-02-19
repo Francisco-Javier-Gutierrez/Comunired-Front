@@ -5,6 +5,7 @@ type TOTPSetupDetails = Awaited<ReturnType<typeof setUpTOTP>>;
 import { QRCodeSVG } from "qrcode.react";
 import { useNavigate } from "react-router-dom";
 import { useUserData } from "../utils/UserStore";
+import { Box, Flex, Heading, Text, Input, Button, Spinner, Code } from "@chakra-ui/react";
 
 function SetupMFA() {
     const navigate = useNavigate();
@@ -71,63 +72,86 @@ function SetupMFA() {
 
     if (isLoading) {
         return (
-            <div className="home-container d-flex flex-column align-items-center justify-content-center">
-                <div className="big-loader"></div>
-                <h3 className="text-white mt-4">Configurando MFA...</h3>
-            </div>
+            <Flex direction="column" align="center" justify="center" minH="100vh">
+                <Spinner
+                    color='blue.500'
+                    size='xl'
+                    w="15rem"
+                    h="15rem"
+                    borderWidth="4px"
+                    mb={4}
+                />
+                <Heading as="h3" color="white" mt={4}>Configurando MFA...</Heading>
+            </Flex>
         );
     }
 
     return (
-        <div className={`${isVerifying ? "disabled-form no-select" : ""}`}>
-            <h1 className="text-white text-center mb-5">Configurar Autenticación de Dos Factores (MFA)</h1>
+        <Box
+            className={isVerifying ? "disabled-form" : ""}
+            userSelect="none"
+            display="flex"
+            flexDirection="column"
+            justifyContent="center"
+            alignItems="center"
+            mt={10}
+        >
+            <Heading as="h1" size="4xl" color="white" mb={4}>Configurar Autenticación de Dos Factores (MFA)</Heading>
 
-            <div className="login-container w-50 mx-auto">
-                <div className="mb-4">
-                    <h4 className="text-white mb-3">Paso 1: Configura el identificador (Opcional)</h4>
-                    <p className="text-white mb-2">Este nombre aparecerá en tu aplicación de autenticación:</p>
-                    <input
-                        className="text-input w-100 mb-3"
+            <Box w={{ base: "90%", md: "50%" }} mx="auto" px={4}>
+                <Box mb={4}>
+                    <Heading as="h4" color="white" mb={3} size="md">Paso 1: Configura el identificador (Opcional)</Heading>
+                    <Text color="white" mb={2}>Este nombre aparecerá en tu aplicación de autenticación:</Text>
+                    <Input
+                        bg="#454545"
+                        color="white"
+                        borderRadius="1rem"
+                        _placeholder={{ color: "gray.400" }}
+                        mb={3}
                         type="text"
                         value={accountName}
                         onChange={(e) => setAccountName(e.target.value)}
                         placeholder="Ej: juan@comunired.com"
                     />
 
-                    <h4 className="text-white mb-3">Paso 2: Escanea el código QR</h4>
-                    <p className="text-white mb-3">
+                    <Heading as="h4" color="white" mb={3} size="md">Paso 2: Escanea el código QR</Heading>
+                    <Text color="white" mb={3}>
                         Usa una aplicación de autenticación como Google Authenticator, Microsoft Authenticator o Authy
                         para escanear el siguiente código QR:
-                    </p>
+                    </Text>
 
                     {qrCodeUrl && (
-                        <div className="d-flex justify-content-center mb-3 bg-white p-3 rounded">
+                        <Flex justify="center" mb={3} bg="white" p={3} borderRadius="md">
                             <QRCodeSVG value={qrCodeUrl} size={200} />
-                        </div>
+                        </Flex>
                     )}
-                </div>
+                </Box>
 
-                <div className="mb-4">
-                    <h4 className="text-white mb-3">Paso 3: Clave de configuración manual (opcional)</h4>
-                    <p className="text-white mb-2">
+                <Box mb={4}>
+                    <Heading as="h4" color="white" mb={3} size="md">Paso 3: Clave de configuración manual (opcional)</Heading>
+                    <Text color="white" mb={2}>
                         Si no puedes escanear el código QR, ingresa esta clave manualmente en tu aplicación:
-                    </p>
-                    <div className="bg-dark text-white p-3 rounded text-center">
-                        <code style={{ fontSize: "16px", letterSpacing: "2px" }}>{secretKey}</code>
-                    </div>
-                </div>
+                    </Text>
+                    <Box bg="gray.800" color="white" p={3} borderRadius="md" textAlign="center">
+                        <Code fontSize="16px" wordBreak="break-word" letterSpacing="2px" bg="transparent" color="white">{secretKey}</Code>
+                    </Box>
+                </Box>
 
-                <div className="mb-4">
-                    <h4 className="text-white mb-3">Paso 4: Verifica el código</h4>
-                    <p className="text-white mb-3">
+                <Box mb={4}>
+                    <Heading as="h4" color="white" mb={3} size="md">Paso 4: Verifica el código</Heading>
+                    <Text color="white" mb={3}>
                         Ingresa el código de 6 dígitos que aparece en tu aplicación de autenticación:
-                    </p>
+                    </Text>
 
-                    {error && <p className="text-error mb-3">{error}</p>}
-                    {isSuccess && <p className="text-success mb-3 text-center fw-bold">¡MFA configurado exitosamente!</p>}
+                    {error && <Text color="red.500" mb={3}>{error}</Text>}
+                    {isSuccess && <Text color="green.500" mb={3} textAlign="center" fontWeight="bold">¡MFA configurado exitosamente!</Text>}
 
-                    <input
-                        className="text-input w-100 mb-3"
+                    <Input
+                        bg="#454545"
+                        color="white"
+                        borderRadius="1rem"
+                        _placeholder={{ color: "gray.400" }}
+                        mb={3}
                         type="text"
                         maxLength={6}
                         placeholder="000000"
@@ -137,35 +161,46 @@ function SetupMFA() {
                             setTotpCode(value);
                             if (error) setError("");
                         }}
-                        style={{ textAlign: "center", fontSize: "24px", letterSpacing: "8px" }}
+                        textAlign="center"
+                        fontSize="24px"
+                        letterSpacing="8px"
                     />
-                </div>
+                </Box>
 
-                <button
-                    className="white-button w-100 mb-3"
+                <Button
+                    bg="white"
+                    color="black"
+                    w="100%"
+                    mb={3}
+                    _hover={{ bg: "gray.200" }}
                     onClick={handleVerifyCode}
                     disabled={isVerifying || totpCode.length !== 6 || isSuccess}
+                    borderRadius="1rem"
                 >
                     {isSuccess ? (
                         "¡Éxito! Redirigiendo..."
                     ) : !isVerifying ? (
                         "Verificar y Activar MFA"
                     ) : (
-                        <div className="d-flex justify-content-center">
-                            <span>Verificando...</span>
-                            <div className="loader ms-3"></div>
-                        </div>
+                        <Flex justify="center" align="center">
+                            <Text mr={3}>Verificando...</Text>
+                            <Spinner size="sm" color="black" />
+                        </Flex>
                     )}
-                </button>
+                </Button>
 
-                <button
-                    className="white-button w-100"
+                <Button
+                    bg="white"
+                    color="black"
+                    w="100%"
+                    _hover={{ bg: "gray.200" }}
                     onClick={() => navigate("/my-profile")}
+                    borderRadius="1rem"
                 >
                     Cancelar
-                </button>
-            </div>
-        </div>
+                </Button>
+            </Box>
+        </Box>
     );
 }
 

@@ -4,6 +4,7 @@ import { formatFecha } from "../utils/GlobalVariables";
 import { usePublicationActions } from "./hooks/PublicationsActions";
 import ConfirmModal from "./modals/ConfirmModal";
 import LocationPicker from "./LocationPicker";
+import { Box, Flex, Image, Text, chakra } from "@chakra-ui/react";
 
 export default function PublicationCard({ post, onImageClick, onClickComent, isPreview = false }: any) {
     const navigate = useNavigate();
@@ -13,74 +14,107 @@ export default function PublicationCard({ post, onImageClick, onClickComent, isP
         usePublicationActions(post);
 
     return (
-        <>
-            <div className={`d-flex my-3 no-select ${isPreview ? "" : "cursor-pointer"}`} onClick={() => !isPreview && navigate("/publication?post=" + post.Id_publicacion)}>
-                <div>
-                    <img src={post.Usuario?.Url_foto_perfil ?? "/Profile.svg"} className="cursor-pointer rounded-circle me-1 user-image"
-                        onClick={e => { e.stopPropagation(); onImageClick(post.Usuario?.Url_foto_perfil ?? "/Profile.svg"); }} />
-                </div>
+        <Box>
+            <Flex
+                my={3}
+                userSelect="none"
+                cursor={isPreview ? "default" : "pointer"}
+                onClick={() => !isPreview && navigate("/publication?post=" + post.Id_publicacion)}
+                alignItems="flex-start"
+            >
+                <Box>
+                    <Image
+                        src={post.Usuario?.Url_foto_perfil ?? "/Profile.svg"}
+                        cursor="pointer"
+                        borderRadius="full"
+                        boxSize="1.5rem"
+                        mr={3}
+                        onClick={e => { e.stopPropagation(); onImageClick(post.Usuario?.Url_foto_perfil ?? "/Profile.svg"); }}
+                    />
+                </Box>
 
-                <div className="text-white flex-grow-1">
-                    <div className="d-flex justify-content-between mb-3">
-                        <a className={`text-white ${isPreview ? "" : "cursor-pointer"}`}
-                            onClick={e => { e.stopPropagation(); !isPreview && navigate("/profile?user=" + post.Usuario?.Correo_electronico); }}>
+                <Box color="white" flex="1">
+                    <Flex justify="space-between" mb={3}>
+                        <Text
+                            as="a"
+                            color="white"
+                            fontWeight="bold"
+                            cursor={isPreview ? "default" : "pointer"}
+                            onClick={(e: any) => { e.stopPropagation(); !isPreview && navigate("/profile?user=" + post.Usuario?.Correo_electronico); }}
+                        >
                             {post.Usuario?.nombre_usuario}
-                        </a>
-                        <div className="d-flex align-items-center">
-                            <span className="me-3">{formatFecha(post.Fecha_publicacion)}</span>
+                        </Text>
+                        <Flex align="center">
+                            <Text as="span" mr={3} fontSize="sm" color="gray.400">{formatFecha(post.Fecha_publicacion)}</Text>
                             {post.Is_mine && (
-                                <img
+                                <Image
                                     src="Delete.svg"
-                                    className={`cursor-pointer`}
-                                    width={20}
+                                    cursor="pointer"
+                                    width="20px"
                                     alt="Eliminar"
                                     onClick={e => { e.stopPropagation(); !isPreview && setShowDeleteModal(true); }}
                                 />
                             )}
-                        </div>
-                    </div>
+                        </Flex>
+                    </Flex>
 
-                    <p>{post.Contenido}</p>
+                    <Text mb={3}>{post.Contenido}</Text>
 
                     {post.Lat && post.Long && (
-                        <div className="mb-3 w-75 mx-auto" onClick={e => e.stopPropagation()}>
+                        <Box mb={3} w={["100%", "75%"]} mx="auto" onClick={e => e.stopPropagation()}>
                             <LocationPicker
                                 latitude={Number(post.Lat)}
                                 longitude={Number(post.Long)}
                                 readOnly={true}
                             />
-                        </div>
+                        </Box>
                     )}
 
                     {post.Url_imagen && (
-                        <img src={post.Url_imagen} className="rounded-3 mb-3 w-50 d-block mx-auto cursor-pointer"
-                            onClick={e => { e.stopPropagation(); onImageClick(post.Url_imagen); }} />
+                        <Image
+                            src={post.Url_imagen}
+                            borderRadius="md"
+                            mb={3}
+                            w={["100%", "50%"]}
+                            display="block"
+                            mx="auto"
+                            cursor="pointer"
+                            onClick={e => { e.stopPropagation(); onImageClick(post.Url_imagen); }}
+                        />
                     )}
 
                     {post.Url_video && (
-                        <video src={post.Url_video} className="rounded-3 mb-3 w-75 d-block mx-auto" controls
-                            onClick={e => e.stopPropagation()} />
+                        <chakra.video
+                            src={post.Url_video}
+                            borderRadius="md"
+                            mb={3}
+                            w={["100%", "75%"]}
+                            display="block"
+                            mx="auto"
+                            controls
+                            onClick={(e: any) => e.stopPropagation()}
+                        />
                     )}
 
-                    <div className="d-flex justify-content-between mt-2">
-                        <div onClick={e => { e.stopPropagation(); !isPreview && handleLike(); }}>
-                            <img className="me-1 cursor-pointer" src={isLiked ? "Like_active.svg" : "Like.svg"} width={20} />
-                            {likes}
-                        </div>
+                    <Flex justify="space-between" mt={2}>
+                        <Flex onClick={e => { e.stopPropagation(); !isPreview && handleLike(); }} align="center">
+                            <Image mr={1} cursor="pointer" src={isLiked ? "Like_active.svg" : "Like.svg"} width="20px" />
+                            <Text>{likes}</Text>
+                        </Flex>
 
-                        <div onClick={e => { if (onClickComent) { e.stopPropagation(); !isPreview && onClickComent(); } }}>
-                            <img className="me-1 cursor-pointer" src="Comment.svg" width={20} />
-                            {post.comentarios?.total ?? 0}
-                        </div>
+                        <Flex onClick={e => { if (onClickComent) { e.stopPropagation(); !isPreview && onClickComent(); } }} align="center">
+                            <Image mr={1} cursor="pointer" src="Comment.svg" width="20px" />
+                            <Text>{post.comentarios?.total ?? 0}</Text>
+                        </Flex>
 
-                        <div onClick={e => { e.stopPropagation(); !isPreview && handleShare(); }}>
-                            <img className="me-1 cursor-pointer" src="Share.svg" width={20} />
-                            {sharedCount}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <hr className="text-white m-0" />
+                        <Flex onClick={e => { e.stopPropagation(); !isPreview && handleShare(); }} align="center">
+                            <Image mr={1} cursor="pointer" src="Share.svg" width="20px" />
+                            <Text>{sharedCount}</Text>
+                        </Flex>
+                    </Flex>
+                </Box>
+            </Flex>
+            <Box as="hr" borderColor="gray.600" m={0} />
             <ConfirmModal
                 isOpen={showDeleteModal}
                 title="¿Estás seguro de que deseas eliminar esta publicación?"
@@ -93,6 +127,6 @@ export default function PublicationCard({ post, onImageClick, onClickComent, isP
                 }}
                 onCancel={() => setShowDeleteModal(false)}
             />
-        </>
+        </Box>
     );
 }

@@ -1,25 +1,34 @@
+import { Dialog, Image, Button } from "@chakra-ui/react";
+
 interface Props {
   image: string | null;
   onClose: () => void;
 }
 
 export default function ImageModal({ image, onClose }: Props) {
-  if (!image) return null;
-
   return (
-    <div className="modal fade show d-block" tabIndex={-1} onClick={onClose}>
-      <div className="modal-dialog modal-dialog-centered modal-lg">
-        <div className="modal-content bg-transparent border-0">
-          <div className="modal-body p-0 text-center position-relative">
-            <img src={image} className="img-fluid rounded-3 selected-image" />
-            <button
-              type="button"
-              className="btn-close position-absolute top-0 end-0 m-3 bg-light rounded-circle"
+    <Dialog.Root open={!!image} onOpenChange={(e) => !e.open && onClose()} size="xl" placement="center">
+      <Dialog.Backdrop />
+      <Dialog.Positioner>
+        <Dialog.Content bg="transparent" boxShadow="none" p={0}>
+          <Dialog.Body p={0} position="relative" textAlign="center">
+            {image && <Image src={image} borderRadius="md" mx="auto" maxH="80vh" objectFit="contain" />}
+            <Button
+              size="sm"
+              pos="absolute"
+              top={0}
+              right={0}
+              m={2}
+              borderRadius="full"
               onClick={onClose}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+              zIndex={1000}
+              bg="gray.100"
+              _hover={{ bg: "gray.200" }}
+              color="black"
+            >X</Button>
+          </Dialog.Body>
+        </Dialog.Content>
+      </Dialog.Positioner>
+    </Dialog.Root>
   );
 }

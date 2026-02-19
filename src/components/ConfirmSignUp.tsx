@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserData } from "../utils/UserStore";
 import { confirmSignUp } from "aws-amplify/auth";
+import { Box, Heading, Input, Button, Spinner, Text, Link, Flex } from "@chakra-ui/react";
 
 function ConfirmSignUp() {
     const [code, setCode] = useState("");
@@ -64,41 +65,65 @@ function ConfirmSignUp() {
     };
 
     return (
-        <div className={`${isSendingForm ? "disabled-form no-select" : ""}`}>
-            <h1 className="text-white text-center mb-5">Verificar código</h1>
+        <Box
+            className={`${isSendingForm ? "disabled-form" : ""}`}
+            userSelect="none"
+            display="flex"
+            flexDirection="column"
+            justifyContent="center"
+            alignItems="center"
+            mt={10}
+        >
+            <Heading as="h1" size="4xl" color="white" mb={4}>Verificar código</Heading>
 
             {requestMessage && (
-                <h3 className={`text-center mb-4 ${isValidCode === false ? "text-error" : "text-warning"}`}>
+                <Heading as="h3" size="md" textAlign="center" mb={4} color={isValidCode === false ? "red.500" : "yellow.400"}>
                     {requestMessage}
-                </h3>
+                </Heading>
             )}
 
-            <div className="login-container w-50 mx-auto">
-                <input
-                    className={`text-input w-100 mb-4 ${isValidCode === false ? "input-error" : ""}`}
+            <Box w={{ base: "90%", md: "50%" }} mx="auto" px={4}>
+                <Input
+                    className="text-input"
+                    w="100%"
+                    mb={4}
                     type="text"
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
                     placeholder="Ingresa tu código de 6 dígitos"
+                    borderColor={isValidCode === false ? "red.500" : "inherit"}
+                    bg="#454545"
+                    color="white"
+                    _placeholder={{ color: "gray.400" }}
+                    borderRadius="1rem"
                 />
 
-                <button className="white-button w-100 my-4" onClick={sendCode}>
+                <Button
+                    bg="white"
+                    color="black"
+                    w="100%"
+                    my={4}
+                    onClick={sendCode}
+                    disabled={isSendingForm}
+                    _hover={{ bg: "gray.200" }}
+                    borderRadius="1rem"
+                >
                     {!isSendingForm ? "Verificar código" : (
-                        <div className="d-flex justify-content-center">
-                            <span>Verificando...</span>
-                            <div className="loader ms-3"></div>
-                        </div>
+                        <Flex justify="center" align="center">
+                            <Text mr={3}>Verificando...</Text>
+                            <Spinner size="sm" color="black" />
+                        </Flex>
                     )}
-                </button>
+                </Button>
 
-                <span className="text-white d-block mt-3 cursor-pointer">
+                <Text color="white" display="block" mt={3} cursor="pointer">
                     ¿No recibiste el código?{" "}
-                    <a className="text-white" onClick={() => navigate("/signUp")}>
+                    <Link color="white" onClick={() => navigate("/signUp")} _hover={{ textDecoration: "underline" }}>
                         Volver a registrarse
-                    </a>
-                </span>
-            </div>
-        </div>
+                    </Link>
+                </Text>
+            </Box>
+        </Box>
     );
 }
 

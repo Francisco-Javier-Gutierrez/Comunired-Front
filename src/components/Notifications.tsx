@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { apiRoutes, getToken } from "../utils/GlobalVariables";
 import { useNavigate } from "react-router-dom";
+import { Box, Flex, Heading, Text, Spinner, Image, VStack } from "@chakra-ui/react";
 
 function Notifications() {
     const navigate = useNavigate();
@@ -41,7 +42,7 @@ function Notifications() {
             );
 
             setNotificaciones(prev =>
-                prev.filter(n => n.Id_notificacion !== id)
+                prev.filter(n => n.id_notificacion !== id)
             );
         } catch (err) {
             console.error("Error leyendo notificación:", err);
@@ -51,54 +52,70 @@ function Notifications() {
     const hasNotificaciones = notificaciones.length > 0;
 
     return (
-        <div className="text-center flex-column min-dvh-100">
-            <h1 className="text-white mb-5 text-center">Notificaciones</h1>
+        <Flex direction="column" minH="100vh" textAlign="center">
+            <Heading as="h1" size="4xl" color="white" mb={4}>Notificaciones</Heading>
 
             {isLoading && (
-                <div className="big-loader"></div>
+                <Flex justify="center" mt="5rem">
+                    <Spinner size="xl" color="white" boxSize="15rem" borderWidth="8px" />
+                </Flex>
             )}
 
             {!isLoading && !hasNotificaciones && (
-                <p className="text-white text-center">No tienes notificaciones</p>
+                <Text color="white" textAlign="center">No tienes notificaciones</Text>
             )}
 
             {!isLoading && hasNotificaciones && (
-                <div className="d-flex w-75 mx-auto flex-column">
+                <VStack w={["90%", "75%"]} mx="auto" gap={3}>
                     {notificaciones.map((noti) => (
-                        <React.Fragment key={noti.Id_notificacion}>
-                            <div
-                                className="d-flex align-items-start p-1 mb-3 w-100 text-white justify-content-between notifications-container cursor-pointer"
+                        <React.Fragment key={noti.id_notificacion}>
+                            <Flex
+                                align="start"
+                                p={1}
+                                mb={3}
+                                w="100%"
+                                color="white"
+                                justify="space-between"
+                                bg="#8A8A8A"
+                                borderRadius="md"
+                                cursor="pointer"
                                 onClick={() => {
-                                    leerNotificacion(noti.Id_notificacion);
-                                    navigate("/publication?post=" + noti.Id_objetivo);
+                                    leerNotificacion(noti.id_notificacion);
+                                    navigate("/publication?post=" + noti.id_objetivo);
                                 }}
                             >
-                                <div className="mb-2 d-flex align-items-center">
-                                    <img
-                                        src={noti.Usuario?.Url_foto_perfil ?? "/Profile.svg"}
-                                        alt={noti.Usuario?.nombre_usuario ?? "Usuario"}
-                                        className="cursor-pointer no-select me-2 rounded-circle me-1 user-notification-image"
+                                <Flex mb={2} align="center">
+                                    <Image
+                                        src={noti.usuario?.url_foto_perfil ?? "/Profile.svg"}
+                                        alt={noti.usuario?.nombre_usuario ?? "Usuario"}
+                                        cursor="pointer"
+                                        userSelect="none"
+                                        mr={2}
+                                        borderRadius="full"
+                                        boxSize="1.3rem"
                                     />
-                                    <div>
-                                        <span>{noti.Mensaje}</span>
-                                    </div>
-                                </div>
+                                    <Box>
+                                        <Text as="span">{noti.mensaje}</Text>
+                                    </Box>
+                                </Flex>
 
-                                <img
+                                <Image
                                     src="/Cancel-white.svg"
-                                    className="notification-image cursor-pointer m-1"
+                                    cursor="pointer"
+                                    m={1}
+                                    boxSize="1rem"
                                     alt="Eliminar"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        leerNotificacion(noti.Id_notificacion);
+                                        leerNotificacion(noti.id_notificacion);
                                     }}
                                 />
-                            </div>
+                            </Flex>
                         </React.Fragment>
                     ))}
-                </div>
+                </VStack>
             )}
-        </div>
+        </Flex>
     );
 }
 

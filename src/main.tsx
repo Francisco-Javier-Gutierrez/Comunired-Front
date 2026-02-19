@@ -1,12 +1,34 @@
+import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react';
 import './index.css';
-import './AwsConfig.ts';
+import './awsConfig.ts';
 import { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter as Router, useLocation } from "react-router-dom";
 import { PathsInitializer, paths } from "./utils/GlobalVariables.tsx";
-import { useMediaQuery } from './components/hooks/UseMediaQuery.ts';
+import { useMediaQuery } from "./components/hooks/UseMediaQuery.ts";
+
 import DesktopLayout from './components/layouts/DesktopLayout.tsx';
 import MobileLayout from './components/layouts/MobileLayout.tsx';
+import { StrictMode } from 'react';
+
+const system = createSystem(defaultConfig, {
+    theme: {
+        tokens: {
+            colors: {
+                brand: {
+                    100: { value: '#f7fafc' },
+                    900: { value: '#171923' },
+                },
+            },
+        },
+    },
+    globalCss: {
+        body: {
+            bg: '#000000',
+            color: 'white',
+        },
+    },
+});
 
 function NavigatorAndPaths({ setPathsState }: { setPathsState: any }) {
     const location = useLocation();
@@ -30,7 +52,7 @@ function ScrollToTop() {
 
 function App() {
     const [pathsState, setPathsState] = useState(paths);
-    const isDesktop = useMediaQuery("(min-width: 768px)");
+    const isDesktop = useMediaQuery("(min-width: 1024px)");
 
     return (
         <Router>
@@ -47,5 +69,9 @@ function App() {
 }
 
 createRoot(document.getElementById("root")!).render(
-    <App />
+    <StrictMode>
+        <ChakraProvider value={system}>
+            <App />
+        </ChakraProvider>
+    </StrictMode>
 );

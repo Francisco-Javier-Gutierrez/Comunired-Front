@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { updatePassword } from "aws-amplify/auth";
-import type { AuthContext } from "./layouts/LoggedLayout";
+import { Box, Flex, Heading, Text, Input, Button, Spinner, Image, Alert } from "@chakra-ui/react";
 
 function EditPassword() {
     const navigate = useNavigate();
-    const authContext = useOutletContext<AuthContext>();
 
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
@@ -86,127 +85,144 @@ function EditPassword() {
         }
     };
 
-    if (authContext.isGoogleUser) {
-        return (
-            <div className="w-75 mx-auto d-flex flex-column min-dvh-100">
-                <img
-                    className="footer-image d-md-none cursor-pointer my-4"
-                    src="Back.svg"
-                    alt="Regresar"
-                    onClick={() => navigate("/my-profile")}
-                />
-                <h1 className="text-white text-center mb-4">Cambiar contraseña</h1>
-                <div className="text-center mt-5">
-                    <p className="text-white fs-5">
-                        Tu cuenta está vinculada con Google.
-                    </p>
-                    <p className="text-white">
-                        Para cambiar tu contraseña, debes hacerlo desde tu cuenta de Google.
-                    </p>
-                    <button
-                        className="white-button mt-4"
-                        onClick={() => navigate("/my-profile")}
-                    >
-                        Volver a mi perfil
-                    </button>
-                </div>
-            </div>
-        );
-    }
+
 
     return (
-        <div className={`${isSendingForm ? "disabled-form no-select" : ""}`}>
-            <div className="w-75 mx-auto d-flex flex-column min-dvh-100">
-                <img
-                    className="footer-image d-md-none cursor-pointer my-4"
+        <Box className={`${isSendingForm ? "disabled-form" : ""}`} userSelect="none">
+            <Flex direction="column" minH="100vh" w={["90%", "75%"]} mx="auto">
+                <Image
+                    display={["block", "none"]}
                     src="Back.svg"
                     alt="Regresar"
+                    cursor="pointer"
+                    my={4}
+                    boxSize="1.5rem"
                     onClick={() => navigate("/my-profile")}
                 />
 
-                <h1 className="text-white text-center mb-4">Cambiar mi contraseña</h1>
+                <Heading as="h1" size="4xl" color="white" mb={4}>Cambiar mi contraseña</Heading>
 
                 {errorMessage && (
-                    <div className="alert alert-danger" role="alert">
-                        {errorMessage}
-                    </div>
+                    <Alert.Root status="error" mb={4} borderRadius="md">
+                        <Alert.Indicator />
+                        <Alert.Content>
+                            <Alert.Title>{errorMessage}</Alert.Title>
+                        </Alert.Content>
+                    </Alert.Root>
                 )}
 
                 {successMessage && (
-                    <div className="alert alert-success" role="alert">
-                        {successMessage}
-                    </div>
+                    <Alert.Root status="success" mb={4} borderRadius="md">
+                        <Alert.Indicator />
+                        <Alert.Content>
+                            <Alert.Title>{successMessage}</Alert.Title>
+                        </Alert.Content>
+                    </Alert.Root>
                 )}
 
-                <p className="text-white">Contraseña actual</p>
-                <div className="position-relative d-flex align-items-center mb-4">
-                    <input
-                        className="text-input w-100"
+                <Text color="white">Contraseña actual</Text>
+                <Box pos="relative" display="flex" alignItems="center" mb={4}>
+                    <Input
+                        w="100%"
                         type={showCurrentPassword ? "text" : "password"}
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
                         placeholder="Ingresa tu contraseña actual"
+                        bg="#454545"
+                        color="white"
+                        _placeholder={{ color: "gray.400" }}
+                        borderColor="white"
+                        borderRadius="1rem"
                     />
-                    <img
-                        className="position-absolute end-0 top-50 input-change-image translate-middle-y me-3 cursor-pointer"
+                    <Image
+                        position="absolute"
+                        right="1rem"
+                        top="50%"
+                        transform="translateY(-50%)"
+                        width="1.5rem"
+                        cursor="pointer"
                         src={!showCurrentPassword ? "Text.svg" : "Password.svg"}
                         alt="Mostrar u ocultar contraseña"
                         onClick={handleToggleCurrentPassword}
                     />
-                </div>
+                </Box>
 
-                <p className="text-white">Nueva contraseña</p>
-                <div className="position-relative d-flex align-items-center mb-4">
-                    <input
-                        className="text-input w-100"
+                <Text color="white">Nueva contraseña</Text>
+                <Box pos="relative" display="flex" alignItems="center" mb={4}>
+                    <Input
+                        w="100%"
                         type={showNewPassword ? "text" : "password"}
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="Ingresa tu nueva contraseña"
+                        bg="#454545"
+                        color="white"
+                        _placeholder={{ color: "gray.400" }}
+                        borderColor="white"
+                        borderRadius="1rem"
                     />
-                    <img
-                        className="position-absolute end-0 top-50 input-change-image translate-middle-y me-3 cursor-pointer"
+                    <Image
+                        position="absolute"
+                        right="1rem"
+                        top="50%"
+                        transform="translateY(-50%)"
+                        width="1.5rem"
+                        cursor="pointer"
                         src={!showNewPassword ? "Text.svg" : "Password.svg"}
                         alt="Mostrar u ocultar contraseña"
                         onClick={handleToggleNewPassword}
                     />
-                </div>
+                </Box>
 
-                <p className="text-white">Confirmar nueva contraseña</p>
-                <div className="position-relative d-flex align-items-center mb-4">
-                    <input
-                        className="text-input w-100"
+                <Text color="white">Confirmar nueva contraseña</Text>
+                <Box pos="relative" display="flex" alignItems="center" mb={4}>
+                    <Input
+                        w="100%"
                         type={showConfirmPassword ? "text" : "password"}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Confirma tu nueva contraseña"
+                        bg="#454545"
+                        color="white"
+                        _placeholder={{ color: "gray.400" }}
+                        borderColor="white"
+                        borderRadius="1rem"
                     />
-                    <img
-                        className="position-absolute end-0 top-50 input-change-image translate-middle-y me-3 cursor-pointer"
+                    <Image
+                        position="absolute"
+                        right="1rem"
+                        top="50%"
+                        transform="translateY(-50%)"
+                        width="1.5rem"
+                        cursor="pointer"
                         src={!showConfirmPassword ? "Text.svg" : "Password.svg"}
                         alt="Mostrar u ocultar contraseña"
                         onClick={handleToggleConfirmPassword}
                     />
-                </div>
+                </Box>
 
-                <div className="publication-actions w-100 d-flex justify-content-end">
-                    <button
-                        className="white-button my-4"
+                <Flex w="100%" justify="end">
+                    <Button
+                        bg="white"
+                        color="black"
+                        _hover={{ bg: "gray.200" }}
+                        my={4}
                         onClick={handleChangePassword}
                         disabled={isSendingForm}
+                        borderRadius="1rem"
                     >
                         {!isSendingForm ? (
                             "Actualizar contraseña"
                         ) : (
-                            <div className="d-flex justify-content-center">
-                                <span>Actualizando...</span>
-                                <div className="loader ms-3"></div>
-                            </div>
+                            <Flex justify="center" align="center">
+                                <Text mr={3}>Actualizando...</Text>
+                                <Spinner size="sm" color="black" />
+                            </Flex>
                         )}
-                    </button>
-                </div>
-            </div>
-        </div>
+                    </Button>
+                </Flex>
+            </Flex>
+        </Box>
     );
 }
 

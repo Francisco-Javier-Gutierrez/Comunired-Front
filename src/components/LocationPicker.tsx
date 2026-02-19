@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { Box, Text, Button } from "@chakra-ui/react"; // Chakra UI imports
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -65,8 +66,8 @@ export default function LocationPicker({ latitude, longitude, setLocation, readO
     }, []);
 
     return (
-        <div className="w-100 mb-3">
-            <div style={{ height: '300px', width: '100%', position: 'relative', zIndex: 0 }}>
+        <Box w="100%" mb={3}>
+            <Box h="300px" w="100%" pos="relative" zIndex={0}>
                 <MapContainer
                     center={center}
                     zoom={13}
@@ -84,22 +85,30 @@ export default function LocationPicker({ latitude, longitude, setLocation, readO
                     <LocationMarker position={position} setPosition={setPosition} readOnly={readOnly} />
                     <MapUpdater center={center} />
                 </MapContainer>
-            </div>
+            </Box>
             {!readOnly && (
                 <>
-                    <p className="text-white mt-2 small text-center" style={{ opacity: 0.7 }}>
+                    <Text color="white" mt={2} fontSize="sm" textAlign="center" opacity={0.7}>
                         Toca en el mapa para marcar la ubicación del suceso (Opcional)
-                    </p>
+                    </Text>
                     {position && (
-                        <button
-                            className="d-block mx-auto mt-2 btn btn-sm btn-outline-light"
+                        <Button
+                            display="block"
+                            mx="auto"
+                            mt={2}
+                            size="sm"
+                            variant="outline"
+                            colorScheme="whiteAlpha"
+                            color="white"
+                            _hover={{ bg: "whiteAlpha.200" }}
                             onClick={() => { setPosition(null); setLocation(null, null); }}
+                            borderRadius="1rem"
                         >
                             Borrar ubicación
-                        </button>
+                        </Button>
                     )}
                 </>
             )}
-        </div>
+        </Box>
     );
 }

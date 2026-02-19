@@ -4,6 +4,9 @@ import { uploadFile } from "../utils/UploadUtils";
 import { updateUserAttributes, fetchAuthSession } from "aws-amplify/auth";
 import { useUserData } from "../utils/UserStore";
 import type { AuthContext } from "./layouts/LoggedLayout";
+import { apiRoutes, getToken } from "../utils/GlobalVariables";
+import { Box, Flex, Heading, Text, Input, Button, Spinner, Image } from "@chakra-ui/react";
+import axios from "axios";
 
 function EditProfile() {
     const navigate = useNavigate();
@@ -114,10 +117,20 @@ function EditProfile() {
                 userAttributes.picture = profileImage;
             }
 
+            const token = await getToken();
+
+            await axios.post(
+                apiRoutes.update_user_url,
+                {
+                    nombre_usuario: trimmedName,
+                    foto_perfil: profileImage,
+                },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
             await updateUserAttributes({ userAttributes });
 
             await fetchAuthSession({ forceRefresh: true });
-
             if (hasNameChange) setGlobalName(trimmedName);
             if (hasPictureChange && profileImage) setProfilePictureUrl(profileImage);
 
@@ -133,90 +146,126 @@ function EditProfile() {
     const isFormDisabled = isSendingForm || isUploadingImage;
 
     return (
-        <div className={`${isFormDisabled ? "disabled-form no-select" : ""}`}>
-            <div className="w-75 mx-auto d-flex flex-column min-dvh-100">
-                <img
-                    className="footer-image d-md-none cursor-pointer my-4"
+        <Box className={`${isFormDisabled ? "disabled-form" : ""}`} userSelect="none">
+            <Flex direction="column" minH="100vh" w={["90%", "75%"]} mx="auto">
+                <Image
+                    display={["block", "none"]}
                     src="Back.svg"
                     alt="Regresar"
+                    cursor="pointer"
+                    my={4}
+                    boxSize="1.5rem"
                     onClick={() => navigate("/my-profile")}
                 />
 
-                <h1 className="text-white text-center mb-4">Actualizar mis datos</h1>
+                <Heading as="h1" size="4xl" color="white" mb={4}>Actualizar mis datos</Heading>
 
-                {errorMessage && <h6 className="text-error">{errorMessage}</h6>}
+                {errorMessage && <Heading as="h6" size="sm" color="red.500">{errorMessage}</Heading>}
 
-                <p className={`text-white ${!isValidImage ? "text-error" : ""}`}>
+                <Text color={!isValidImage ? "red.500" : "white"}>
                     {imageError || "Foto de perfil"}
-                </p>
+                </Text>
 
-                <div
-                    className={`text-center mb-4 info-publication w-100 cursor-pointer ${isDragging ? "drag-active" : ""}`}
+                <Box
+                    textAlign="center"
+                    mb={4}
+                    border="0.05rem solid #ffffff"
+                    borderRadius="0.5rem"
+                    w="100%"
+                    cursor="pointer"
                     onClick={openImageSelector}
                     onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                     onDragLeave={() => setIsDragging(false)}
                     onDrop={handleDropImage}
+                    bg={isDragging ? "rgba(255, 255, 255, 0.1)" : "#454545"}
+                    borderColor={isDragging ? "white" : "white"}
+                    borderStyle={isDragging ? "dashed" : "solid"}
+                    borderWidth={isDragging ? "2px" : "0.05rem"}
+                    transition="0.2s ease-in-out"
                 >
                     {isUploadingImage ? (
-                        <div className="d-flex flex-column align-items-center py-4">
-                            <div className="loader mb-2"></div>
-                            <p className="text-white">Subiendo imagen...</p>
-                        </div>
-                    ) : previewImage ? (
-                        <img
-                            src={previewImage}
-                            alt="Vista previa"
-                            className="d-block w-75 mx-auto rounded preview-image"
-                        />
+                        <Flex direction="column" align="center" py={4}>
+                            <Spinner mb={2} color="white" />
+                            <Text color="white">Subiendo imagen...</Text>
+                        </Flex>
                     ) : (
-                        <>
-                            <p className="d-block text-white">Haz click o arrastra una imagen aquí</p>
-                            <img src="/AddImage.svg" alt="Agregar imagen" className="publication-add-image mb-2" />
-                        </>
+                        previewImage ? (
+                            <Image
+                                src={previewImage}
+                                alt="Vista previa"
+                                display="block"
+                                w="75%"
+                                mx="auto"
+                                borderRadius="md"
+                                maxH="15rem"
+                                objectFit="contain"
+                            />
+                        ) : (
+                            <>
+                                <Text display="block" color="white">Haz click o arrastra una imagen aquí</Text>
+                                <Image src="/AddImage.svg" alt="Agregar imagen" w="4rem" mb={2} mx="auto" />
+                            </>
+                        )
                     )}
-                </div>
+                </Box>
 
-                <input
+                <Input
                     type="file"
                     accept="image/*"
                     ref={fileInputRef}
                     onChange={handleImageSelected}
-                    style={{ display: "none" }}
+                    display="none"
                 />
 
-                <p className="text-white">Nombre</p>
-                <input
-                    className="text-input w-100 mb-4"
+                <Text color="white">Nombre</Text>
+                <Input
+                    w="100%"
+                    mb={4}
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder={authContext.name || "Tu nombre"}
+                    bg="#454545"
+                    color="white"
+                    _placeholder={{ color: "gray.400" }}
+                    borderColor="white"
+                    borderRadius="1rem"
                 />
 
-                <div className="publication-actions nav-bar w-100 d-flex justify-content-center align-items-center">
-                    <div className="w-50 text-start">
-                        <button
-                            className="white-button"
+                <Flex w="100%" justify="center" align="center">
+                    <Box w="50%" textAlign="start">
+                        <Button
+                            bg="white"
+                            color="black"
+                            _hover={{ bg: "gray.200" }}
                             onClick={() => navigate("/edit-password")}
+                            borderRadius="1rem"
                         >
                             Cambiar contraseña
-                        </button>
-                    </div>
-                    <div className="w-50 text-end">
-                        <button className="white-button" onClick={handleSave} disabled={isFormDisabled}>
+                        </Button>
+                    </Box>
+                    <Box w="50%" textAlign="end">
+                        <Button
+                            bg="white"
+                            color="black"
+                            _hover={{ bg: "gray.200" }}
+                            onClick={handleSave}
+                            disabled={isFormDisabled}
+                            borderRadius="1rem"
+                        >
                             {!isSendingForm ? (
                                 "Actualizar"
                             ) : (
-                                <div className="d-flex justify-content-center">
-                                    <span>Actualizando...</span>
-                                    <div className="loader ms-3"></div>
-                                </div>
+                                <Flex justify="center" align="center">
+                                    <Text mr={3}>Actualizando...</Text>
+                                    <Spinner size="sm" color="black" />
+                                </Flex>
                             )}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+                        </Button>
+                    </Box>
+                </Flex>
+            </Flex>
+        </Box>
     );
 }
 

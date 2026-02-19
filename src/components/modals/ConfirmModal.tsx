@@ -1,4 +1,11 @@
 import React from "react";
+import {
+    Dialog,
+    Image,
+    Text,
+    Flex,
+    Spinner
+} from "@chakra-ui/react";
 
 interface ConfirmModalProps {
     isOpen: boolean;
@@ -21,46 +28,46 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
     onConfirm,
     onCancel,
 }) => {
-    if (!isOpen) return null;
-
     return (
-        <div
-            className={`modal fade show d-block ${isLoading ? "disabled" : ""}`}
-            tabIndex={-1}
-            onClick={onCancel}
-            style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-        >
-            <div className="modal-dialog modal-dialog-centered">
-                <div
-                    className="modal-content bg-white rounded-4 shadow p-4 text-center"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <h4 className={description ? "mb-2" : "mb-4"}>{title}</h4>
-                    {description && <p className="text-muted mb-4">{description}</p>}
-
-                    <div className="w-75 mx-auto d-flex align-items-center justify-content-around mt-4">
-                        {isLoading ? (
-                            <div className="mid-loader"></div>
-                        ) : (
-                            <img
-                                src={confirmImage}
-                                alt="Confirmar"
-                                className="cursor-pointer"
-                                width={50}
-                                onClick={onConfirm}
+        <Dialog.Root open={isOpen} onOpenChange={(e) => !e.open && onCancel()} size="sm" placement="center">
+            <Dialog.Backdrop />
+            <Dialog.Positioner>
+                <Dialog.Content borderRadius="xl" p={4} textAlign="center">
+                    <Dialog.Header color="black" fontWeight="bold" textAlign="center" fontSize="2xl" p={0} mb={2}>
+                        <Dialog.Title>{title}</Dialog.Title>
+                    </Dialog.Header>
+                    <Dialog.Body p={0}>
+                        <Text fontSize="md" color="gray.600" mb={4}>{description}</Text>
+                        <Flex justify="space-around" align="center" mt={4} w="75%" mx="auto">
+                            {isLoading ? (
+                                <Flex justify="center" align="center" boxSize="50px">
+                                    <Spinner size="xl" color="black" />
+                                </Flex>
+                            ) : (
+                                <Image
+                                    src={confirmImage}
+                                    alt="Confirmar"
+                                    cursor="pointer"
+                                    w="4rem"
+                                    onPointerDown={(e) => { e.preventDefault(); onConfirm(); }}
+                                    _hover={{ transform: "scale(1.1)" }}
+                                    transition="transform 0.2s"
+                                />
+                            )}
+                            <Image
+                                src={cancelImage}
+                                alt="Cancelar"
+                                cursor="pointer"
+                                w="3rem"
+                                onPointerDown={(e) => { e.preventDefault(); onCancel(); }}
+                                _hover={{ transform: "scale(1.1)" }}
+                                transition="transform 0.2s"
                             />
-                        )}
-                        <img
-                            src={cancelImage}
-                            alt="Cancelar"
-                            className="cursor-pointer"
-                            width={50}
-                            onClick={onCancel}
-                        />
-                    </div>
-                </div>
-            </div>
-        </div>
+                        </Flex>
+                    </Dialog.Body>
+                </Dialog.Content>
+            </Dialog.Positioner>
+        </Dialog.Root>
     );
 };
 

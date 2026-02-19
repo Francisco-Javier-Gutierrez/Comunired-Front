@@ -1,4 +1,3 @@
-import './ComuniRed.css';
 import Home from './components/Home';
 import Login from './components/Login';
 import SignUp from './components/SignUp';
@@ -17,7 +16,6 @@ import ForgotPassword from './components/ForgotPassword';
 import ViewPublication from './components/ViewPublication';
 import CreatePublication from './components/CreatePublication';
 import PreviewPublication from './components/PreviewPublication';
-import OAuthCallback from './components/OAuthCallback';
 import SetupMFA from './components/SetupMFA';
 import VerifyMFA from './components/VerifyMFA';
 
@@ -34,7 +32,6 @@ function ComuniRed() {
       <Route path="/verify-mfa" element={<VerifyMFA />} />
 
       <Route path="/publication" element={<ViewPublication />} />
-      <Route path="/oauth-callback" element={<OAuthCallback />} />
       <Route path="/confirm-signup" element={<ConfirmSignUp />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />

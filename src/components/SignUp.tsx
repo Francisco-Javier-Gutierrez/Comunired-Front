@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { signUp, signInWithRedirect } from "aws-amplify/auth";
+import { signUp } from "aws-amplify/auth";
 import { useUserData } from "../utils/UserStore";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { apiRoutes } from "../utils/GlobalVariables";
+import { Box, Flex, Heading, Text, Input, Button, Spinner, Link, Checkbox, Image } from "@chakra-ui/react";
 
 function SignUp() {
     const [email, setEmail] = useState("");
@@ -134,14 +135,6 @@ function SignUp() {
         }
     };
 
-    const signUpWithGoogle = async () => {
-        try {
-            await signInWithRedirect({ provider: "Google" });
-        } catch (error) {
-            console.error("Error al registrarse con Google:", error);
-        }
-    };
-
     const handleValidateForm = () => {
         const emailIsValid = validateEmail();
         const nameIsValid = validateName();
@@ -153,16 +146,21 @@ function SignUp() {
     };
 
     return (
-        <div className={`${isSendingForm ? "disabled-form no-select" : ""}`}>
-            <h1 className="text-white text-center m-5">Registrarse</h1>
+        <Box
+            className={isSendingForm ? "disabled-form" : ""}
+            userSelect="none"
+            display="flex"
+            flexDirection="column"
+            justifyContent="center"
+            alignItems="center"
+            color="white"
+            mt={10}
+        >
+            <Heading as="h1" size="4xl" color="white" mb={4}>Registrarse</Heading>
 
-            <div className="signUp-container w-50 mx-auto">
-                <p className={`text-white ${isValidName === false ? "text-error" : ""}`}>
-                    {nameMessage}
-                </p>
-
-                <input
-                    className={`text-input w-100 mb-4 ${isValidName === false ? "input-error" : ""}`}
+            <Box w={{ base: "90%", md: "50%" }} mx="auto" px={4}>
+                <Text color={isValidName === false ? "red.500" : "white"} mb={2}>{nameMessage}</Text>
+                <Input
                     type="text"
                     value={username}
                     onChange={(e) => {
@@ -172,14 +170,16 @@ function SignUp() {
                             setNameMessage("Ingrese un nombre de usuario");
                         }
                     }}
+                    bg="#454545"
+                    color="white"
+                    borderColor={isValidName === false ? "red.500" : "inherit"}
+                    borderRadius="1rem"
+                    _placeholder={{ color: "gray.400" }}
+                    mb={4}
                 />
 
-                <p className={`text-white ${isValidEmail === false ? "text-error" : ""}`}>
-                    {emailMessage}
-                </p>
-
-                <input
-                    className={`text-input w-100 mb-4 ${isValidEmail === false ? "input-error" : ""}`}
+                <Text color={isValidEmail === false ? "red.500" : "white"} mb={2}>{emailMessage}</Text>
+                <Input
                     type="email"
                     value={email}
                     onChange={(e) => {
@@ -190,15 +190,17 @@ function SignUp() {
                             setEmailMessage("Ingrese su correo electrónico");
                         }
                     }}
+                    bg="#454545"
+                    color="white"
+                    borderColor={isValidEmail === false ? "red.500" : "inherit"}
+                    borderRadius="1rem"
+                    _placeholder={{ color: "gray.400" }}
+                    mb={4}
                 />
 
-                <p className={`text-white ${isValidPassword === false ? "text-error" : ""}`}>
-                    {passwordMessage}
-                </p>
-
-                <div className="position-relative mb-3">
-                    <input
-                        className={`text-input w-100 ${isValidPassword === false ? "input-error" : ""}`}
+                <Text color={isValidPassword === false ? "red.500" : "white"} mb={2}>{passwordMessage}</Text>
+                <Box pos="relative" display="flex" alignItems="center" mb={4}>
+                    <Input
                         type={showPassword ? "text" : "password"}
                         value={password}
                         onChange={(e) => {
@@ -208,64 +210,98 @@ function SignUp() {
                                 setPasswordMessage("Ingrese su contraseña");
                             }
                         }}
+                        bg="#454545"
+                        color="white"
+                        borderColor={isValidPassword === false ? "red.500" : "inherit"}
+                        borderRadius="1rem"
+                        _placeholder={{ color: "gray.400" }}
                     />
-
-                    <img
-                        className="position-absolute end-0 top-50 input-change-image translate-middle-y me-3 cursor-pointer"
+                    <Image
+                        position="absolute"
+                        right="1rem"
+                        top="50%"
+                        transform="translateY(-50%)"
+                        width="1.5rem"
+                        cursor="pointer"
                         src={!showPassword ? "Text.svg" : "Password.svg"}
                         alt="Mostrar u ocultar contraseña"
                         onClick={handleTogglePassword}
                     />
-                </div>
+                </Box>
 
-                <div className="px-2 pb-2 mb-4 rounded no-select-no-click bg-dark text-white">
-                    <p className="mb-2">La contraseña debe contener:</p>
+                <Box p={2} mb={4} borderRadius="md" className="no-select-no-click" bg="gray.800" color="white">
+                    <Text mb={2}>La contraseña debe contener:</Text>
 
-                    <div className="d-flex flex-column">
-                        <span>
-                            <input type="checkbox" className="form-check-input me-2" checked={require.length} readOnly /> Al menos 8 caracteres
-                        </span>
-                        <span>
-                            <input type="checkbox" className="form-check-input me-2" checked={require.mayuscula} readOnly /> Al menos una letra mayúscula
-                        </span>
-                        <span>
-                            <input type="checkbox" className="form-check-input me-2" checked={require.minuscula} readOnly /> Al menos una letra minúscula
-                        </span>
-                        <span>
-                            <input type="checkbox" className="form-check-input me-2" checked={require.numero} readOnly /> Al menos un número
-                        </span>
-                        <span>
-                            <input type="checkbox" className="form-check-input me-2" checked={require.especial} readOnly /> Al menos un carácter especial (@$!%*?&._-)
-                        </span>
-                    </div>
-                </div>
+                    <Flex direction="column" gap={1}>
+                        <Checkbox.Root disabled checked={require.length} colorPalette="green">
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control>
+                                <Checkbox.Indicator />
+                            </Checkbox.Control>
+                            <Checkbox.Label>Al menos 8 caracteres</Checkbox.Label>
+                        </Checkbox.Root>
+                        <Checkbox.Root disabled checked={require.mayuscula} colorPalette="green">
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control>
+                                <Checkbox.Indicator />
+                            </Checkbox.Control>
+                            <Checkbox.Label>Al menos una letra mayúscula</Checkbox.Label>
+                        </Checkbox.Root>
+                        <Checkbox.Root disabled checked={require.minuscula} colorPalette="green">
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control>
+                                <Checkbox.Indicator />
+                            </Checkbox.Control>
+                            <Checkbox.Label>Al menos una letra minúscula</Checkbox.Label>
+                        </Checkbox.Root>
+                        <Checkbox.Root disabled checked={require.numero} colorPalette="green">
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control>
+                                <Checkbox.Indicator />
+                            </Checkbox.Control>
+                            <Checkbox.Label>Al menos un número</Checkbox.Label>
+                        </Checkbox.Root>
+                        <Checkbox.Root disabled checked={require.especial} colorPalette="green">
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control>
+                                <Checkbox.Indicator />
+                            </Checkbox.Control>
+                            <Checkbox.Label>Al menos un carácter especial (@$!%*?&._-)</Checkbox.Label>
+                        </Checkbox.Root>
+                    </Flex>
+                </Box>
 
-                <span>
-                    <a
-                        className={`text-white cursor-pointer ${focusLogin === true ? "text-error" : ""}`}
+                <Text>
+                    <Link
+                        color={focusLogin === true ? "red.500" : "white"}
+                        cursor="pointer"
+                        textDecoration="underline"
                         onClick={() => navigate("/login")}
                     >
                         ¿Ya tienes una cuenta?
-                    </a>
-                </span>
+                    </Link>
+                </Text>
 
-                <button className="white-button w-100 my-4" onClick={handleValidateForm}>
+                <Button
+                    bg="white"
+                    color="black"
+                    w="100%"
+                    my={4}
+                    _hover={{ bg: "gray.200" }}
+                    onClick={handleValidateForm}
+                    borderRadius="1rem"
+                >
                     {!isSendingForm ? (
                         "Registrarse"
                     ) : (
-                        <div className="d-flex justify-content-center">
-                            <span>Registrándote...</span>
-                            <div className="loader ms-3"></div>
-                        </div>
+                        <Flex justify="center" align="center">
+                            <Text mr={3}>Registrándote...</Text>
+                            <Spinner size="sm" color="black" />
+                        </Flex>
                     )}
-                </button>
-
-                <button className="white-button w-100 d-flex align-items-center justify-content-center" onClick={signUpWithGoogle}>
-                    <img src="Google.svg" alt="Google" className="me-2" style={{ width: "20px" }} />
-                    Registrarse con Google
-                </button>
-            </div>
-        </div>
+                </Button>
+            </Box>
+        </Box>
     );
 }
 

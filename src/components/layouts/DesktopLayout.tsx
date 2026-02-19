@@ -1,3 +1,4 @@
+import { Box, Flex } from "@chakra-ui/react";
 import ComuniRed from "../../ComuniRed";
 import SideNav from "../SideNav";
 
@@ -11,26 +12,26 @@ export default function DesktopLayout({ pathsState }: any) {
 
 function DesktopFullLayout({ pathsState }: any) {
     return (
-        <div className="d-flex min-vh-100">
+        <Flex minH="100vh">
             {pathsState.showSideNav && <SideNav />}
 
-            <div className="flex-grow-1 w-100">
+            <Box flexGrow={1} w="100%">
                 <ComuniRed />
-            </div>
-        </div>
+            </Box>
+        </Flex>
     );
 }
 
 
 function DesktopLogoOnlyLayout({ pathsState }: any) {
     return (
-        <div className="d-flex flex-column min-vh-100">
+        <Flex direction="column" minH="100vh">
             {pathsState.showSideNav && <SideNav />}
 
-            <div className="flex-grow-1">
+            <Box flexGrow={1}>
                 <ComuniRed />
-            </div>
-        </div>
+            </Box>
+        </Flex>
     );
 }
 

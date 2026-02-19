@@ -23,7 +23,7 @@ function NavBar() {
             className="no-select"
         >
             {paths.showLogoOnly ? (
-                <Image src="Logo.png" mx="auto" alt="Logo"
+                <Image src="logo.svg" mx="auto" alt="Logo"
                     boxSize="25%" />
             ) : (
                 <>
@@ -34,7 +34,7 @@ function NavBar() {
                         boxSize="10%"
                         onClick={() => navigate("/search")}
                     />
-                    <Image src="Logo.png" alt="Logo" boxSize="10%" />
+                    <Image src="logo.svg" alt="Logo" boxSize="10%" />
                     <Image
                         src="Profile.svg"
                         alt="Profile"

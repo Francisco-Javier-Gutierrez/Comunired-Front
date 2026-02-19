@@ -42,7 +42,7 @@ function SideNav() {
         >
             {paths.showLogoOnly ? (
                 <Image
-                    src="Logo.png"
+                    src="logo.svg"
                     alt="Logo"
                     mx="auto"
                     w="7rem"
@@ -52,7 +52,7 @@ function SideNav() {
                     <NavTooltip label="Logo">
                         <Box w="100%" display="flex" justifyContent="center">
                             <Image
-                                src="Logo.png"
+                                src="logo.svg"
                                 alt="Logo"
                                 w="20%"
                             />

@@ -10,12 +10,18 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/android": "^8.1.0",
+    "@capacitor/cli": "^8.1.0",
+    "@capacitor/core": "^8.1.0",
     "@chakra-ui/react": "^3.33.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@ionic/react": "^8.7.17",
+    "@ionic/react-router": "^8.7.17",
     "aws-amplify": "^6.15.9",
     "axios": "^1.13.2",
     "framer-motion": "^12.34.0",
+    "ionicons": "^8.0.13",
     "leaflet": "^1.9.4",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.4",

@@ -9,6 +9,7 @@ import {
 import PublicationCard from "./PublicationCard";
 import ImageModal from "./modals/ImageModal";
 import PublicationComments from "./PublicationComments";
+import { Flex, Box, Heading, Spinner } from "@chakra-ui/react";
 
 function ViewPublication() {
     const [publication, setPublication] = useState<any>(null);
@@ -85,28 +86,26 @@ function ViewPublication() {
         });
     };
 
-    if (isLoading) {
-        return (
-            <div className="home-container min-dvh-100 d-flex justify-content-center align-items-center">
-                <div className="big-loader"></div>
-            </div>
-        );
-    }
+    if (isLoading) return (
+        <Flex minH="100vh" justify="center" align="center">
+            <Spinner size="xl" color="white" boxSize="15rem" borderWidth="8px" />
+        </Flex>
+    );
 
-    if (error) return <div className="min-dvh-100 d-flex justify-content-center align-items-center"><h1 className="text-danger">{error}</h1></div>;
-    if (!publication) return <div className="min-dvh-100 d-flex justify-content-center align-items-center"><h1 className="text-white">No hay publicación para mostrar</h1></div>;
+    if (error) return <Flex minH="100vh" justify="center" align="center"><Heading color="red.500">{error}</Heading></Flex>;
+    if (!publication) return <Flex minH="100vh" justify="center" align="center"><Heading color="white">No hay publicación para mostrar</Heading></Flex>;
 
     return (
-        <div className="w-75 mx-auto home-container d-flex flex-column">
+        <Flex direction="column" w={["90%", "75%"]} mx="auto" minH="100vh" py={4}>
             <PublicationCard
                 post={publication}
                 onImageClick={setImagenSeleccionada}
                 onClickComent={() => setShowCommentInput(prev => !prev)}
             />
 
-            <hr className="text-white mt-3 m-0" />
-            <h6 className="text-white my-2">Comentarios</h6>
-            <hr className="text-white mb-3 m-0" />
+            <Box as="hr" borderColor="white" mt={3} mb={0} />
+            <Heading as="h6" size="sm" color="white" my={2}>Comentarios</Heading>
+            <Box as="hr" borderColor="white" mb={3} mt={0} />
 
             <PublicationComments
                 publication={publication}
@@ -121,7 +120,7 @@ function ViewPublication() {
                 image={imagenSeleccionada}
                 onClose={() => setImagenSeleccionada(null)}
             />
-        </div>
+        </Flex>
     );
 }
 

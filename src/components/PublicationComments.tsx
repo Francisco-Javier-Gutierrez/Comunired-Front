@@ -3,6 +3,8 @@ import { formatFecha } from "../utils/GlobalVariables";
 import { useUserData } from "../utils/UserStore";
 import { useCommentActions } from "./hooks/CommentActions";
 import ConfirmModal from "./modals/ConfirmModal";
+import { Box, Flex, Text, Textarea, Button, Spinner, Image, Link } from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
 
 export default function PublicationComments({ publication, showInput, setShowInput, onImageClick, onCommentAdded, onCommentDeleted }: any) {
     const { comments, isCreatingComment, handleAddComment, handleDeleteComment } = useCommentActions(publication.comentarios, publication.Id_publicacion, onCommentAdded, onCommentDeleted);
@@ -10,7 +12,9 @@ export default function PublicationComments({ publication, showInput, setShowInp
     const [newComment, setNewComment] = useState("");
     const [commentToDeleteId, setCommentToDeleteId] = useState<string | null>(null);
     const [isDeletingComment, setIsDeletingComment] = useState(false);
+    const commentToDeleteIdRef = useRef<string | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const navigate = useNavigate();
 
     const autoResize = () => {
         if (textareaRef.current) {
@@ -27,25 +31,45 @@ export default function PublicationComments({ publication, showInput, setShowInp
         }
     };
 
+    const openDeleteModal = (id: string) => {
+        commentToDeleteIdRef.current = id;
+        setCommentToDeleteId(id);
+    };
+
+    const handleConfirmDelete = async () => {
+        const id = commentToDeleteIdRef.current;
+        if (!id) return;
+        setIsDeletingComment(true);
+        await handleDeleteComment(id);
+        setIsDeletingComment(false);
+        commentToDeleteIdRef.current = null;
+        setCommentToDeleteId(null);
+    };
+
     return (
-        <div>
+        <Box>
             {showInput && (
-                <div className={`d-flex my-3 ${isCreatingComment ? "disabled-form no-select" : ""}`}>
-                    <div>
-                        <img
+                <Flex my={3} className={isCreatingComment ? "disabled-form" : ""} userSelect="none">
+                    <Box>
+                        <Image
                             src={profilePictureUrl ?? "/Profile.svg"}
                             alt={name ?? "Usuario"}
-                            className="cursor-pointer no-select rounded-circle me-1 user-image"
+                            cursor="pointer"
+                            userSelect="none"
+                            borderRadius="full"
+                            mr={1}
+                            boxSize="1.5rem"
+                            objectFit="cover"
                             onClick={() => onImageClick(profilePictureUrl ?? "/Profile.svg")}
                         />
-                    </div>
+                    </Box>
 
-                    <div className="text-white flex-grow-1">
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                            <span className="no-select">{name ?? "Usuario"}</span>
-                        </div>
+                    <Box color="white" flexGrow={1}>
+                        <Flex justify="space-between" align="center" mb={2}>
+                            <Text userSelect="none">{name ?? "Usuario"}</Text>
+                        </Flex>
 
-                        <textarea
+                        <Textarea
                             ref={textareaRef}
                             value={newComment}
                             onChange={e => {
@@ -62,39 +86,58 @@ export default function PublicationComments({ publication, showInput, setShowInp
                                 }
                             }}
                             placeholder="Escribe un comentario..."
-                            className="textarea-input mb-2"
-                            style={{ overflow: "hidden", resize: "none", minHeight: "80px" }}
+                            mb={2}
+                            bg="#454545"
+                            color="white"
+                            borderRadius="0.5rem"
+                            borderColor="white"
+                            _placeholder={{ color: "gray.400" }}
+                            minH="80px"
+                            overflow="hidden"
+                            resize="none"
                         />
 
-                        <button className="white-button" onClick={submitComment}>
+                        <Button
+                            bg="white"
+                            color="black"
+                            width="100%"
+                            _hover={{ bg: "gray.200" }}
+                            onClick={submitComment}
+                            borderRadius="1rem"
+                        >
                             {!isCreatingComment
                                 ? "Comentar"
                                 : (
-                                    <div className="d-flex justify-content-center">
-                                        <span>Creando comentario...</span>
-                                        <div className="loader ms-3"></div>
-                                    </div>
+                                    <Flex justify="center" align="center">
+                                        <Text mr={3}>Creando comentario...</Text>
+                                        <Spinner size="sm" color="black" />
+                                    </Flex>
                                 )
                             }
-                        </button>
-                    </div>
-                </div>
+                        </Button>
+                    </Box>
+                </Flex>
             )}
 
-            {(!comments || comments.length === 0) && (
-                <h4 className="text-white text-center mb-3">
+            {(!comments || comments.length === 0) && !showInput && (
+                <Text as="h4" color="white" textAlign="center" mb={3} fontSize="lg" fontWeight="bold">
                     No hay comentarios en la publicación
-                </h4>
+                </Text>
             )}
 
             {comments.map((c: any, index: number) => (
-                <div key={c.Id_comentario || `comment-${index}`}>
-                    <div className="d-flex my-3">
-                        <div>
-                            <img
+                <Box key={c.id_comentario || `comment-${index}`}>
+                    <Flex my={3}>
+                        <Box>
+                            <Image
                                 src={c.Usuario?.Url_foto_perfil ?? c.Usuario?.url_foto_perfil ?? "/Profile.svg"}
                                 alt={c.Usuario?.Nombre_usuario ?? c.Usuario?.nombre_usuario ?? "Usuario"}
-                                className="cursor-pointer no-select rounded-circle me-1 user-image"
+                                cursor="pointer"
+                                userSelect="none"
+                                borderRadius="full"
+                                mr={1}
+                                boxSize="1rem"
+                                objectFit="cover"
                                 onClick={() =>
                                     onImageClick(
                                         c.Usuario?.Url_foto_perfil ??
@@ -103,53 +146,47 @@ export default function PublicationComments({ publication, showInput, setShowInp
                                     )
                                 }
                             />
-                        </div>
+                        </Box>
 
-                        <div className="text-white flex-grow-1">
-                            <div className="d-flex justify-content-between align-items-center mb-2">
-                                <span className="no-select">
-                                    <a
-                                        className="text-white"
-                                        href={"/profile?user=" + c.Usuario?.Correo_electronico}
+                        <Box color="white" flexGrow={1}>
+                            <Flex justify="space-between" align="center" mb={2}>
+                                <Text userSelect="none">
+                                    <Link
+                                        color="white"
+                                        onClick={() => navigate("/profile?user=" + c.Usuario?.Correo_electronico)}
+                                        _hover={{ textDecoration: "underline" }}
                                     >
                                         {c.Usuario?.Nombre_usuario ?? c.Usuario?.nombre_usuario ?? "Usuario"}
-                                    </a>
-                                </span>
-                                <div className="d-flex align-items-center gap-2">
-                                    <span>{formatFecha(c.Fecha_comentario)}</span>
+                                    </Link>
+                                </Text>
+                                <Flex align="center" gap={2}>
+                                    <Text>{formatFecha(c.fecha_comentario)}</Text>
                                     {c.Is_mine && (
-                                        <img
+                                        <Image
                                             src="/Delete.svg"
                                             alt="Eliminar comentario"
-                                            className="cursor-pointer"
-                                            onClick={() => setCommentToDeleteId(c.Id_comentario)}
-                                            style={{ width: "20px", height: "20px" }}
+                                            cursor="pointer"
+                                            onClick={() => openDeleteModal(c.id_comentario)}
+                                            boxSize="20px"
                                         />
                                     )}
-                                </div>
-                            </div>
+                                </Flex>
+                            </Flex>
 
-                            <p className="mb-3">{c.Contenido}</p>
-                        </div>
-                    </div>
-                    <hr className="text-white mb-3 m-0" />
-                </div>
+                            <Text mb={3}>{c.contenido}</Text>
+                        </Box>
+                    </Flex>
+                    <Box as="hr" borderColor="white" mb={3} m={0} />
+                </Box>
             ))
             }
             <ConfirmModal
                 isOpen={commentToDeleteId !== null}
                 title="¿Estás seguro de que deseas eliminar este comentario?"
                 isLoading={isDeletingComment}
-                onConfirm={async () => {
-                    if (commentToDeleteId) {
-                        setIsDeletingComment(true);
-                        await handleDeleteComment(commentToDeleteId);
-                        setIsDeletingComment(false);
-                        setCommentToDeleteId(null);
-                    }
-                }}
-                onCancel={() => setCommentToDeleteId(null)}
+                onConfirm={handleConfirmDelete}
+                onCancel={() => { commentToDeleteIdRef.current = null; setCommentToDeleteId(null); }}
             />
-        </div >
+        </Box >
     );
 }

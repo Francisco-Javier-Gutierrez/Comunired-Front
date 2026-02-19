@@ -1,8 +1,10 @@
+import { Flex, Heading } from "@chakra-ui/react";
+
 function NotFound() {
     return (
-        <div className="d-flex justify-content-center min-dvh-100 mt-5">
-            <h1 className="text-white">Error 404 página no encontrada</h1>
-        </div>
+        <Flex justify="center" minH="100vh" mt={5}>
+            <Heading as="h1" size="4xl" color="white">Error 404 página no encontrada</Heading>
+        </Flex>
     );
 }
 

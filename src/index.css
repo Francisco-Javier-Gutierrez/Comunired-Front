@@ -1,35 +1,8 @@
-@import url('bootstrap/dist/css/bootstrap.min.css');
-@import url('./css/Home.css');
-@import url('./css/Login.css');
-@import url('./css/Footer.css');
-@import url('./css/NavBar.css');
-@import url('./css/SignUp.css');
-@import url('./css/SideNav.css');
-@import url('./css/Profile.css');
-@import url('./css/Notifications.css');
-@import url('./css/CreatePublication.css');
-
 body {
   margin: 0;
   background-color: black;
   width: 100%;
   height: 100%;
-}
-
-.w-20 {
-  width: 20% !important;
-}
-
-.w-30 {
-  width: 30% !important;
-}
-
-.w-40 {
-  width: 40% !important;
-}
-
-.w-90 {
-  width: 90% !important;
 }
 
 .cursor-pointer {
@@ -57,13 +30,6 @@ body {
   cursor: default !important;
   caret-color: transparent !important;
   outline: none !important;
-}
-
-.white-button {
-  background-color: #ffffff;
-  color: #000000;
-  border-radius: 0.5rem;
-  border: #000000;
 }
 
 .text-input {
@@ -210,4 +176,13 @@ body {
   to {
     transform: rotate(360deg);
   }
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #454545 inset !important;
+  -webkit-text-fill-color: white !important;
+  caret-color: white !important;
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { confirmResetPassword, resetPassword } from "aws-amplify/auth";
+import { Box, Flex, Heading, Text, Input, Button, Spinner, Link, Checkbox, Image } from "@chakra-ui/react";
 
 function ResetPassword() {
     const location = useLocation();
@@ -112,101 +113,162 @@ function ResetPassword() {
     };
 
     return (
-        <div className={`${isSendingForm ? "disabled-form no-select" : ""}`}>
-            <h1 className="text-white text-center mb-5">Restablecer contraseña</h1>
-            <h3 className="text-warning text-center mb-4">{requestMessage}</h3>
+        <Box
+            className={isSendingForm ? "disabled-form" : ""}
+            userSelect="none"
+            display="flex"
+            flexDirection="column"
+            justifyContent="center"
+            alignItems="center"
+            mt={10}
+        >
+            <Heading as="h1" size="4xl" color="white" mb={4}>Restablecer contraseña</Heading>
+            <Heading as="h3" size="md" color="yellow.400" textAlign="center" mb={4}>{requestMessage}</Heading>
 
-            <div className="login-container w-50 mx-auto">
-                <input
-                    className="text-input w-100 mb-4"
-                    type="text"
-                    value={confirmationCode}
+            <Box w={{ base: "90%", md: "50%" }} mx="auto" px={4}>
+                <Input
                     placeholder="Código de verificación"
+                    value={confirmationCode}
                     onChange={e => setConfirmationCode(e.target.value)}
+                    bg="#454545"
+                    color="white"
+                    borderRadius="1rem"
+                    _placeholder={{ color: "gray.400" }}
+                    mb={4}
                 />
 
-                <p className={`text-white ${isValidPassword === false ? "text-error" : ""}`}>{passwordMessage}</p>
+                <Text color={isValidPassword === false ? "red.500" : "white"} mb={2}>{passwordMessage}</Text>
 
-                <div className="position-relative mb-4">
-                    <input
-                        className={`text-input w-100 ${isValidPassword === false ? "input-error" : ""}`}
+                <Box pos="relative" display="flex" alignItems="center" mb={4}>
+                    <Input
                         type={showPassword ? "text" : "password"}
                         value={password}
                         placeholder="Nueva contraseña"
                         onChange={e => setPassword(e.target.value)}
+                        bg="#454545"
+                        color="white"
+                        borderColor={isValidPassword === false ? "red.500" : "inherit"}
+                        borderRadius="1rem"
+                        _placeholder={{ color: "gray.400" }}
                     />
-                    <img
-                        className="position-absolute end-0 top-50 input-change-image translate-middle-y me-3 cursor-pointer"
+                    <Image
+                        position="absolute"
+                        right="1rem"
+                        top="50%"
+                        transform="translateY(-50%)"
+                        width="1.5rem"
+                        cursor="pointer"
                         src={!showPassword ? "Text.svg" : "Password.svg"}
                         alt="Mostrar u ocultar contraseña"
                         onClick={handleTogglePassword}
                     />
-                </div>
+                </Box>
 
-                <div className="position-relative mb-4">
-                    <input
-                        className={`text-input w-100 ${isValidPassword === false ? "input-error" : ""}`}
+                <Box pos="relative" display="flex" alignItems="center" mb={4}>
+                    <Input
                         type={showConfirm ? "text" : "password"}
                         value={confirmPassword}
                         placeholder="Confirmar nueva contraseña"
                         onChange={e => setConfirmPassword(e.target.value)}
+                        bg="#454545"
+                        color="white"
+                        borderColor={isValidPassword === false ? "red.500" : "inherit"}
+                        borderRadius="1rem"
+                        _placeholder={{ color: "gray.400" }}
                     />
-                    <img
-                        className="position-absolute end-0 top-50 input-change-image translate-middle-y me-3 cursor-pointer"
+                    <Image
+                        position="absolute"
+                        right="1rem"
+                        top="50%"
+                        transform="translateY(-50%)"
+                        width="1.5rem"
+                        cursor="pointer"
                         src={!showConfirm ? "Text.svg" : "Password.svg"}
                         alt="Mostrar u ocultar contraseña"
                         onClick={handleToggleConfirm}
                     />
-                </div>
+                </Box>
 
-                <div className="px-2 pb-2 mb-4 rounded no-select-no-click bg-dark text-white">
-                    <p className="mb-2">La contraseña debe contener:</p>
+                <Box p={2} mb={4} borderRadius="md" className="no-select-no-click" bg="gray.800" color="white">
+                    <Text mb={2}>La contraseña debe contener:</Text>
 
-                    <div className="d-flex flex-column">
-                        <span>
-                            <input type="checkbox" className="form-check-input me-2" checked={require.length} readOnly /> Al menos 8 caracteres
-                        </span>
-                        <span>
-                            <input type="checkbox" className="form-check-input me-2" checked={require.mayuscula} readOnly /> Al menos una letra mayúscula
-                        </span>
-                        <span>
-                            <input type="checkbox" className="form-check-input me-2" checked={require.minuscula} readOnly /> Al menos una letra minúscula
-                        </span>
-                        <span>
-                            <input type="checkbox" className="form-check-input me-2" checked={require.numero} readOnly /> Al menos un número
-                        </span>
-                        <span>
-                            <input type="checkbox" className="form-check-input me-2" checked={require.especial} readOnly /> Al menos un carácter especial (@$!%*?&._-)
-                        </span>
-                    </div>
-                </div>
+                    <Flex direction="column" gap={1}>
+                        <Checkbox.Root disabled checked={require.length} colorPalette="green">
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control>
+                                <Checkbox.Indicator />
+                            </Checkbox.Control>
+                            <Checkbox.Label>Al menos 8 caracteres</Checkbox.Label>
+                        </Checkbox.Root>
+                        <Checkbox.Root disabled checked={require.mayuscula} colorPalette="green">
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control>
+                                <Checkbox.Indicator />
+                            </Checkbox.Control>
+                            <Checkbox.Label>Al menos una letra mayúscula</Checkbox.Label>
+                        </Checkbox.Root>
+                        <Checkbox.Root disabled checked={require.minuscula} colorPalette="green">
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control>
+                                <Checkbox.Indicator />
+                            </Checkbox.Control>
+                            <Checkbox.Label>Al menos una letra minúscula</Checkbox.Label>
+                        </Checkbox.Root>
+                        <Checkbox.Root disabled checked={require.numero} colorPalette="green">
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control>
+                                <Checkbox.Indicator />
+                            </Checkbox.Control>
+                            <Checkbox.Label>Al menos un número</Checkbox.Label>
+                        </Checkbox.Root>
+                        <Checkbox.Root disabled checked={require.especial} colorPalette="green">
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control>
+                                <Checkbox.Indicator />
+                            </Checkbox.Control>
+                            <Checkbox.Label>Al menos un carácter especial (@$!%*?&._-)</Checkbox.Label>
+                        </Checkbox.Root>
+                    </Flex>
+                </Box>
 
-                <button className="white-button w-100 my-4" onClick={handleResetPassword}>
+                <Button
+                    bg="white"
+                    color="black"
+                    w="100%"
+                    my={4}
+                    _hover={{ bg: "gray.200" }}
+                    onClick={handleResetPassword}
+                    borderRadius="1rem"
+                >
                     {!isSendingForm ? "Restablecer contraseña" : (
-                        <div className="d-flex justify-content-center">
-                            <span>Procesando...</span>
-                            <div className="loader ms-3"></div>
-                        </div>
+                        <Flex justify="center" align="center">
+                            <Text mr={3}>Procesando...</Text>
+                            <Spinner size="sm" color="black" />
+                        </Flex>
                     )}
-                </button>
+                </Button>
 
-                <div className="d-flex justify-content-between">
-                    <span
-                        className="text-white cursor-pointer text-decoration-underline"
+                <Flex justify="space-between">
+                    <Link
+                        color="white"
+                        textDecoration="underline"
+                        cursor="pointer"
                         onClick={() => navigate("/forgot-password")}
                     >
                         Volver
-                    </span>
+                    </Link>
 
-                    <span
-                        className="text-white cursor-pointer text-decoration-underline"
+                    <Link
+                        color="white"
+                        textDecoration="underline"
+                        cursor="pointer"
                         onClick={handleResendCode}
                     >
                         Reenviar código
-                    </span>
-                </div>
-            </div>
-        </div>
+                    </Link>
+                </Flex>
+            </Box>
+        </Box>
     );
 }
 

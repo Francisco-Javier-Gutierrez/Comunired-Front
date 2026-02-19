@@ -4,18 +4,28 @@ import { useNavigate } from "react-router-dom";
 import { apiRoutes, isUserAuthenticated, getToken } from "../utils/GlobalVariables";
 import PublicationCard from "./PublicationCard";
 import ImageModal from "./modals/ImageModal";
+import { Box, Flex, Heading, Input, Button, Spinner } from "@chakra-ui/react";
 
 function normalizePublications(data: any[]) {
     return data.map(p => ({
         ...p,
-        likes: p?.likes ?? { total: 0 },
-        comentarios: p?.comentarios ?? { total: 0 },
-        compartidos: p?.compartidos ?? { total: 0 },
-        Usuario: p?.Usuario ?? {
+        Id_publicacion: p.Id_publicacion ?? p.id_publicacion,
+        Contenido: p.Contenido ?? p.contenido,
+        Fecha_publicacion: p.Fecha_publicacion ?? p.fecha_publicacion,
+        Url_imagen: p.Url_imagen ?? p.url_imagen,
+        Url_video: p.Url_video ?? p.url_video,
+        Lat: p.Lat ?? p.lat,
+        Long: p.Long ?? p.long,
+        Is_mine: p.Is_mine ?? p.is_mine,
+        Usuario: p.Usuario ?? p.usuario ?? {
             nombre_usuario: "Usuario",
             Url_foto_perfil: null,
             Correo_electronico: null
-        }
+        },
+        is_Liked: p.is_Liked ?? p.is_liked,
+        likes: p?.likes ?? { total: 0 },
+        comentarios: p?.comentarios ?? { total: 0 },
+        compartidos: p?.compartidos ?? { total: 0 },
     }));
 }
 
@@ -62,34 +72,58 @@ function Search() {
     };
 
     return (
-        <div className="min-dvh-100">
-            <h3 className="text-white w-75 mx-auto my-4">Buscador</h3>
+        <Box minH="100vh">
+            <Heading as="h1" size="4xl" color="white" mb={4} textAlign="center">Buscador</Heading>
 
-            <form className="w-75 mx-auto d-flex justify-content-around align-items-center mb-5"
+            <form
+                style={{ width: "100%" }}
                 onSubmit={e => {
                     e.preventDefault();
                     handleSearch();
-                }}>
-                <div className="w-100 d-flex justify-content-between">
-                    <div className="w-75">
-                        <input
-                            type="text"
-                            className="text-input w-100"
-                            value={text}
-                            onChange={e => setText(e.target.value)}
-                        />
-                    </div>
-                    <div className="w-25 text-center">
-                        <button type="submit" className="white-button w-75">
-                            Buscar
-                        </button>
-                    </div>
-                </div>
+                }}
+            >
+                <Flex w={["90%", "75%"]} mx="auto" justify="space-around" align="center" mb={5}>
+                    <Flex w="100%" justify="space-between" align="center">
+                        <Box w="75%">
+                            <Input
+                                type="text"
+                                bg="#454545"
+                                color="white"
+                                _placeholder={{ color: "gray.400" }}
+                                borderRadius="1rem"
+                                borderColor="white"
+                                w="100%"
+                                value={text}
+                                onChange={e => setText(e.target.value)}
+                            />
+                        </Box>
+                        <Box w="25%" textAlign="center">
+                            <Button
+                                type="submit"
+                                bg="white"
+                                color="black"
+                                w="75%"
+                                _hover={{ bg: "gray.200" }}
+                                borderRadius="1rem"
+                            >
+                                Buscar
+                            </Button>
+                        </Box>
+                    </Flex>
+                </Flex>
             </form>
 
-            <div className="w-75 mx-auto mt-4">
+            <Box w={["90%", "75%"]} mx="auto" mt={4}>
                 {isLoading ? (
-                    <div className="big-loader"></div>
+                    <Flex justify="center" mt={10}>
+                        <Spinner
+                            color='white'
+                            size='xl'
+                            w="15rem"
+                            h="15rem"
+                            borderWidth="4px"
+                        />
+                    </Flex>
                 ) : (
                     <>
                         {resultados.map(post => (
@@ -104,19 +138,19 @@ function Search() {
                         ))}
 
                         {hasSearched && resultados.length === 0 && (
-                            <h1 className="text-white text-center mt-5">
+                            <Heading as="h1" color="white" textAlign="center" mt={5}>
                                 No se encontraron publicaciones.
-                            </h1>
+                            </Heading>
                         )}
                     </>
                 )}
-            </div>
+            </Box>
 
             <ImageModal
                 image={imagenSeleccionada}
                 onClose={() => setImagenSeleccionada(null)}
             />
-        </div>
+        </Box>
     );
 }
 

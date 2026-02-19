@@ -2,6 +2,7 @@ import { useState } from "react";
 import { confirmSignIn, fetchAuthSession } from "aws-amplify/auth";
 import { useUserData } from "../utils/UserStore";
 import { useNavigate } from "react-router-dom";
+import { Box, Heading, Text, Input, Button, Flex, Spinner, Link } from "@chakra-ui/react";
 
 function VerifyMFA() {
     const navigate = useNavigate();
@@ -14,7 +15,8 @@ function VerifyMFA() {
         setProfilePictureUrl,
     } = useUserData();
 
-    const handleVerifyCode = async () => {
+    const handleVerifyCode = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
         if (!totpCode.trim() || totpCode.length !== 6) {
             setError("Por favor, ingresa un código válido de 6 dígitos");
             return;
@@ -52,61 +54,77 @@ function VerifyMFA() {
     };
 
     return (
-        <div className={`${isVerifying ? "disabled-form no-select" : ""}`}>
-            <h1 className="text-white text-center mb-5">Verificación de Dos Factores</h1>
+        <form onSubmit={handleVerifyCode}>
+            <Box
+                className={`${isVerifying ? "disabled-form no-select" : ""}`}
+                display="flex"
+                flexDirection="column"
+                justifyContent="center"
+                alignItems="center"
+                mt={10}
+            >
+                <Heading as="h1" size="4xl" color="white" mb={4}>Verificación de Dos Factores</Heading>
 
-            <div className="login-container w-50 mx-auto">
-                <p className="text-white mb-4">
-                    Abre tu aplicación de autenticación (Google Authenticator, Microsoft Authenticator, o Authy)
-                    e ingresa el código de 6 dígitos que aparece.
-                </p>
+                <Box w={{ base: "90%", md: "50%" }} mx="auto" px={4}>
+                    <Text color="white" mb={4}>
+                        Abre tu aplicación de autenticación (Google Authenticator, Microsoft Authenticator, o Authy)
+                        e ingresa el código de 6 dígitos que aparece.
+                    </Text>
 
-                {error && <p className="text-error mb-3">{error}</p>}
+                    {error && <Text color="red.500" mb={3}>{error}</Text>}
 
-                <p className="text-white mb-2">Código de verificación</p>
+                    <Text color="white" mb={2}>Código de verificación</Text>
 
-                <input
-                    className="text-input w-100 mb-4"
-                    type="text"
-                    maxLength={6}
-                    placeholder="000000"
-                    value={totpCode}
-                    onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, "");
-                        setTotpCode(value);
-                        if (error) setError("");
-                    }}
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter" && totpCode.length === 6) {
-                            handleVerifyCode();
-                        }
-                    }}
-                    style={{ textAlign: "center", fontSize: "24px", letterSpacing: "8px" }}
-                />
+                    <Input
+                        w="100%"
+                        mb={4}
+                        type="text"
+                        maxLength={6}
+                        placeholder="000000"
+                        value={totpCode}
+                        onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, "");
+                            setTotpCode(value);
+                            if (error) setError("");
+                        }}
+                        textAlign="center"
+                        fontSize="24px"
+                        letterSpacing="8px"
+                        bg="#454545"
+                        color="white"
+                        borderRadius="1rem"
+                        borderColor="white"
+                        _placeholder={{ color: "gray.400" }}
+                    />
 
-                <button
-                    className="white-button w-100 mb-3"
-                    onClick={handleVerifyCode}
-                    disabled={isVerifying || totpCode.length !== 6}
-                >
-                    {!isVerifying ? (
-                        "Verificar"
-                    ) : (
-                        <div className="d-flex justify-content-center">
-                            <span>Verificando...</span>
-                            <div className="loader ms-3"></div>
-                        </div>
-                    )}
-                </button>
+                    <Button
+                        bg="white"
+                        color="black"
+                        w="100%"
+                        mb={3}
+                        type="submit"
+                        disabled={isVerifying || totpCode.length !== 6}
+                        _hover={{ bg: "gray.200" }}
+                        borderRadius="1rem"
+                    >
+                        {!isVerifying ? (
+                            "Verificar"
+                        ) : (
+                            <Flex justify="center" align="center">
+                                <Text mr={3}>Verificando...</Text>
+                                <Spinner size="sm" color="black" />
+                            </Flex>
+                        )}
+                    </Button>
 
-                <button
-                    className="white-button w-100"
-                    onClick={() => navigate("/login")}
-                >
-                    Volver al inicio de sesión
-                </button>
-            </div>
-        </div>
+                    <Text textAlign="center" mt={4} color="white">
+                        <Link as="span" cursor="pointer" color="white" textDecoration="underline" onClick={() => navigate("/login")}>
+                            Volver al inicio de sesión
+                        </Link>
+                    </Text>
+                </Box>
+            </Box>
+        </form>
     );
 }
 

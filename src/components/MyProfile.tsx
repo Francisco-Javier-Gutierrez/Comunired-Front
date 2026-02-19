@@ -8,6 +8,7 @@ import ImageModal from "./modals/ImageModal";
 import ConfirmModal from "./modals/ConfirmModal";
 import { signOut, fetchMFAPreference, updateMFAPreference } from "aws-amplify/auth";
 import type { AuthContext } from "./layouts/LoggedLayout";
+import { Box, Flex, Heading, Text, Image, Button, VStack, Spinner, Separator } from "@chakra-ui/react";
 
 export default function MyProfile() {
   const navigate = useNavigate();
@@ -74,11 +75,6 @@ export default function MyProfile() {
     })();
 
     (async () => {
-      if (authContext.isGoogleUser) {
-        setMfaEnabled(false);
-        return;
-      }
-
       try {
         const mfaPreference = await fetchMFAPreference();
         setMfaEnabled(mfaPreference.preferred === "TOTP");
@@ -92,31 +88,10 @@ export default function MyProfile() {
     };
   }, []);
 
-  const federatedLogout = async () => {
-    try {
-      await signOut({ global: true });
-    } catch (err) {
-    }
-    setName(null);
-    setEmail(null);
-    setProfilePictureUrl(null);
-
-    const domain = "us-east-1onmk5lddc.auth.us-east-1.amazoncognito.com";
-    const clientId = "3g9u29c5kol8tgdmcj1jccv9do";
-    const logoutUri = encodeURIComponent("https://comuni-red.com/");
-
-    window.location.href = `https://${domain}/logout?client_id=${clientId}&logout_uri=${logoutUri}`;
-    navigate("/");
-  };
-
   const handleConfirm = async () => {
     setIsLoadingAction(true);
     try {
       if (accion === "cerrar") {
-        if (authContext.isGoogleUser) {
-          await federatedLogout();
-          return;
-        }
         await signOut();
         navigate("/");
       } else if (accion === "desactivarMFA") {
@@ -137,60 +112,104 @@ export default function MyProfile() {
     }
   };
 
-  if (isBannedUser) return <h3 className="text-center text-danger fw-bold display-1 mt-5">USUARIO BLOQUEADO</h3>;
+  if (isBannedUser) return (
+    <Heading textAlign="center" color="red.500" fontWeight="bold" fontSize="6xl" mt={5}>USUARIO BLOQUEADO</Heading>
+  );
 
-  return isLoading ? <div className="min-dvh-100"><div className="big-loader"></div></div> : (
-    <div className="d-flex justify-content-center min-dvh-100">
-      <div className="profile-container">
-        <div className="text-center">
-          <h1 className="text-white mb-4">Tu perfil</h1>
-          <img className="mb-4 text-center rounded-circle profile-image cursor-pointer" src={profilePictureUrl ? profilePictureUrl : "/Profile.svg"} alt="Profile Image" onClick={() => setImagenSeleccionada(profilePictureUrl ? profilePictureUrl : "/Profile.svg")} />
-        </div>
+  if (isLoading) return (
+    <Flex minH="100vh" justify="center" align="center">
+      <Spinner size="xl" color="white" boxSize="15rem" borderWidth="8px" />
+    </Flex>
+  );
 
-        <span className="text-white">Nombre de usuario:</span>
-        <p className="text-white mb-5">{name}</p>
-        <span className="text-white">Correo Electrónico:</span>
-        <p className="text-white mb-5">{email}</p>
+  return (
+    <Flex justify="center" minH="100vh">
+      <VStack w={["90%", "75%"]} maxW="container.md" gap={4} align="stretch">
+        <Box textAlign="center">
+          <Heading as="h1" size="4xl" color="white" mb={4}>Tu perfil</Heading>
+          <Image
+            mb={4}
+            mx="auto"
+            borderRadius="full"
+            cursor="pointer"
+            src={profilePictureUrl ? profilePictureUrl : "/Profile.svg"}
+            alt="Profile Image"
+            onClick={() => setImagenSeleccionada(profilePictureUrl ? profilePictureUrl : "/Profile.svg")}
+            boxSize={["8rem", "9rem", "10rem", "11rem"]}
+            objectFit="cover"
+          />
+        </Box>
 
-        <span className="text-white">Autenticación de Dos Factores (MFA):</span>
-        <p className="text-white mb-3">
-          {mfaEnabled ? "✅ Activada" : authContext.isGoogleUser ? "🔒 MFA gestionada por Google" : "❌ Desactivada"}
-        </p>
+        <Text color="white" fontWeight="bold">Nombre de usuario:</Text>
+        <Text color="white" mb={5}>{name}</Text>
+        <Text color="white" fontWeight="bold">Correo Electrónico:</Text>
+        <Text color="white" mb={5}>{email}</Text>
 
-        {!authContext.isGoogleUser && (
-          mfaEnabled ? (
-            <button className="white-button mb-5" onClick={() => setAccion("desactivarMFA")}>
-              Desactivar MFA
-            </button>
-          ) : (
-            <button className="white-button mb-5" onClick={() => navigate("/setup-mfa")}>
-              Configurar MFA
-            </button>
-          )
+        <Text color="white" fontWeight="bold">Autenticación de Dos Factores (MFA):</Text>
+        <Text color="white" mb={3}>
+          {mfaEnabled ? "✅ Activada" : "❌ Desactivada"}
+        </Text>
+
+        {mfaEnabled ? (
+          <Button
+            bg="white"
+            color="black"
+            _hover={{ bg: "gray.200" }}
+            mb={5}
+            borderRadius="1rem"
+            onClick={() => setAccion("desactivarMFA")}
+            w="fit-content"
+          >
+            Desactivar MFA
+          </Button>
+        ) : (
+          <Button
+            bg="white"
+            color="black"
+            _hover={{ bg: "gray.200" }}
+            mb={5}
+            borderRadius="1rem"
+            onClick={() => navigate("/setup-mfa")}
+            w="fit-content"
+          >
+            Configurar MFA
+          </Button>
         )}
 
-        <div className="py-4 d-flex align-items-center justify-content-around">
-          {!authContext.isGoogleUser && (
-            <>
-              <button className="white-button w-30" onClick={() => navigate("/edit-profile")}>Editar mi perfil</button>
-            </>
-          )}
-          <button className="white-button w-30" onClick={() => setAccion("cerrar")}>Cerrar sesión</button>
-        </div>
+        <Flex py={4} align="center" justify="space-around" wrap="wrap" gap={4}>
+          <Button
+            bg="white"
+            color="black"
+            _hover={{ bg: "gray.200" }}
+            w={["100%", "30%"]}
+            borderRadius="1rem"
+            onClick={() => navigate("/edit-profile")}
+          >
+            Editar mi perfil
+          </Button>
+          <Button
+            bg="white"
+            color="black"
+            _hover={{ bg: "gray.200" }}
+            w={["100%", "30%"]}
+            borderRadius="1rem"
+            onClick={() => setAccion("cerrar")}
+          >
+            Cerrar sesión
+          </Button>
+        </Flex>
 
-        <hr className="text-white" />
+        <Separator borderColor="white" />
 
-        <div className="mt-3 w-75 mx-auto profile-publications">
-          <h3 className="text-white mb-5 text-center">Tus publicaciones</h3>
-          {posts.length === 0 ? <p className="text-white text-center">No tienes publicaciones aún 😔</p> : (
-            <>
-              {posts.map((post: any) => <PublicationCard key={post.Id_publicacion} post={post} onImageClick={setImagenSeleccionada} />)}
+        <Heading as="h3" size="lg" color="white" mb={5} textAlign="center">Tus publicaciones</Heading>
+        {posts.length === 0 ? <Text color="white" textAlign="center">No tienes publicaciones aún 😔</Text> : (
+          <>
+            {posts.map((post: any) => <PublicationCard key={post.Id_publicacion} post={post} onImageClick={setImagenSeleccionada} />)}
+          </>
+        )}
 
-              <ImageModal image={imagenSeleccionada} onClose={() => setImagenSeleccionada(null)} />
-            </>
-          )}
-        </div>
-      </div>
+        <ImageModal image={imagenSeleccionada} onClose={() => setImagenSeleccionada(null)} />
+      </VStack>
 
       <ConfirmModal
         isOpen={accion !== null}
@@ -202,6 +221,6 @@ export default function MyProfile() {
         onConfirm={handleConfirm}
         onCancel={() => setAccion(null)}
       />
-    </div>
+    </Flex>
   );
 }

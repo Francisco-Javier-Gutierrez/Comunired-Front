@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { signIn, fetchAuthSession, signInWithRedirect } from "aws-amplify/auth";
+import { signIn, fetchAuthSession } from "aws-amplify/auth";
 import { useUserData } from "../utils/UserStore";
 import { useNavigate } from "react-router-dom";
+import { Box, Button, Flex, Heading, Image, Input, Spinner, Text, Link } from "@chakra-ui/react";
 
 function Login() {
     const navigate = useNavigate();
@@ -112,33 +113,40 @@ function Login() {
         }
     };
 
-    const loginWithGoogle = async () => {
-        try {
-            await signInWithRedirect({ provider: "Google" });
-        } catch (error) {
-            console.error("Error al iniciar sesión con Google:", error);
-            setLoginFailedMessage("Error al iniciar sesión con Google");
-        }
-    };
-
-    const handleValidateForm = () => {
+    const handleValidateForm = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
         const emailIsValid = validateEmail();
         const passwordIsValid = validatePassword();
         if (emailIsValid && passwordIsValid) login();
     };
 
     return (
-        <div className={`${isSendingForm ? "disabled-form no-select" : ""}`}>
-            <h1 className="text-white text-center mb-5">Iniciar sesión</h1>
-            <h3 className="text-error text-center mb-5">{loginFailedMessage}</h3>
+        <form onSubmit={handleValidateForm}>
+        <Box
+            className={`${isSendingForm ? "disabled-form no-select" : ""}`}
+            display="flex"
+            flexDirection="column"
+            justifyContent="center"
+            alignItems="center"
+            color="white"
+            mt={10}
+        >
+            <Heading as="h1" size="4xl" color="white" mb={4}>Iniciar sesión</Heading>
+            <Heading as="h3" color="red.500" textAlign="center" mb={5} fontSize="lg">{loginFailedMessage}</Heading>
 
-            <div className="login-container w-50 mx-auto">
-                <p className={`text-white ${isValidEmail === false ? "text-error" : ""}`}>
+            <Box w={{ base: "90%", md: "50%" }} mx="auto" px={4}>
+                <Text mb={2} color={isValidEmail === false ? "red.500" : "white"}>
                     {emailMessage}
-                </p>
+                </Text>
 
-                <input
-                    className={`text-input w-100 mb-4 ${isValidEmail === false ? "input-error" : ""}`}
+                <Input
+                    mb={4}
+                    bg="#454545"
+                    border="solid 0.05rem #ffffff"
+                    borderRadius="1rem"
+                    color="white"
+                    _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
+                    borderColor={isValidEmail === false ? "red.500" : "white"}
                     type="email"
                     value={email}
                     onChange={(e) => {
@@ -150,13 +158,18 @@ function Login() {
                     }}
                 />
 
-                <p className={`text-white ${isValidPassword === false ? "text-error" : ""}`}>
+                <Text mb={2} color={isValidPassword === false ? "red.500" : "white"}>
                     {passwordMessage}
-                </p>
+                </Text>
 
-                <div className="position-relative mb-4">
-                    <input
-                        className={`text-input w-100 ${isValidPassword === false ? "input-error" : ""}`}
+                <Box position="relative" mb={4}>
+                    <Input
+                        bg="#454545"
+                        border="solid 0.05rem #ffffff"
+                        borderRadius="1rem"
+                        color="white"
+                        _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
+                        borderColor={isValidPassword === false ? "red.500" : "white"}
                         type={showPassword ? "text" : "password"}
                         value={password}
                         onChange={(e) => {
@@ -168,45 +181,54 @@ function Login() {
                         }}
                     />
 
-                    <img
-                        className="position-absolute end-0 top-50 input-change-image translate-middle-y me-3 cursor-pointer"
+                    <Image
+                        position="absolute"
+                        right="1rem"
+                        top="50%"
+                        transform="translateY(-50%)"
+                        width="1.5rem"
+                        cursor="pointer"
                         src={!showPassword ? "Text.svg" : "Password.svg"}
                         alt="Mostrar u ocultar contraseña"
                         onClick={handleTogglePassword}
                     />
-                </div>
+                </Box>
 
-                <span className="text-white d-block mb-3">
+                <Text mb={3}>
                     ¿Olvidaste tu contraseña?{" "}
-                    <a className="text-white cursor-pointer" onClick={() => navigate("/forgot-password")}>
+                    <Link as="span" cursor="pointer" color="white" textDecoration="underline" onClick={() => navigate("/forgot-password")}>
                         ¡Recupérala!
-                    </a>
-                </span>
+                    </Link>
+                </Text>
 
-                <span className="text-white">
+                <Text>
                     ¿Todavía no tienes una cuenta?{" "}
-                    <a className="text-white cursor-pointer" onClick={() => navigate("/signUp")}>
+                    <Link as="span" cursor="pointer" color="white" textDecoration="underline" onClick={() => navigate("/signUp")}>
                         Regístrate aquí
-                    </a>
-                </span>
+                    </Link>
+                </Text>
 
-                <button className="white-button w-100 my-4" onClick={handleValidateForm}>
+                <Button
+                    w="100%"
+                    my={4}
+                    bg="white"
+                    color="black"
+                    type="submit"
+                    borderRadius="1rem"
+                    _hover={{ bg: "gray.200" }}
+                >
                     {!isSendingForm ? (
                         "Iniciar sesión"
                     ) : (
-                        <div className="d-flex justify-content-center">
-                            <span>Autenticándote...</span>
-                            <div className="loader ms-3"></div>
-                        </div>
+                        <Flex justify="center" align="center">
+                            <Text mr={3}>Autenticándote...</Text>
+                            <Spinner size="sm" />
+                        </Flex>
                     )}
-                </button>
-
-                <button className="white-button w-100 d-flex align-items-center justify-content-center" onClick={loginWithGoogle}>
-                    <img src="Google.svg" alt="Google" className="me-2" style={{ width: "20px" }} />
-                    Iniciar sesión con Google
-                </button>
-            </div>
-        </div>
+                </Button>
+            </Box>
+        </Box>
+        </form>
     );
 }
 

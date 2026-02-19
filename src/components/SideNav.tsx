@@ -12,7 +12,7 @@ const NavTooltip = ({ label, children }: { label: string, children: React.ReactN
                 <Tooltip.Arrow>
                     <Tooltip.ArrowTip />
                 </Tooltip.Arrow>
-                <Tooltip.Content bg="black" color="white" px={2} py={1} borderRadius="md" fontSize="sm">
+                <Tooltip.Content color="white" px={2} py={1} borderRadius="md" fontSize="sm">
                     {label}
                 </Tooltip.Content>
             </Tooltip.Positioner>

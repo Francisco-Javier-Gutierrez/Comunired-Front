@@ -93,7 +93,7 @@ function ViewPublication() {
     );
 
     if (error) return <Flex minH="100vh" justify="center" align="center"><Heading color="red.500">{error}</Heading></Flex>;
-    if (!publication) return <Flex minH="100vh" justify="center" align="center"><Heading color="white">No hay publicación para mostrar</Heading></Flex>;
+    if (!publication) return <Flex minH="100vh" justify="center" align="center"><Heading textAlign="center" size="4xl" color="white">No hay publicación para mostrar</Heading></Flex>;
 
     return (
         <Flex direction="column" w={["90%", "75%"]} mx="auto" minH="100vh" py={4}>

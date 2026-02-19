@@ -131,7 +131,7 @@ function Login() {
             color="white"
             mt={10}
         >
-            <Heading as="h1" size="4xl" color="white" mb={4}>Iniciar sesión</Heading>
+            <Heading as="h1" textAlign="center" size="4xl" color="white" mb={4}>Iniciar sesión</Heading>
             <Heading as="h3" color="red.500" textAlign="center" mb={5} fontSize="lg">{loginFailedMessage}</Heading>
 
             <Box w={{ base: "90%", md: "50%" }} mx="auto" px={4}>

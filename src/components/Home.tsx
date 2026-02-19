@@ -48,7 +48,7 @@ function Home() {
         </Flex>
     );
 
-    if (!publicaciones) return <Flex minH="100vh" justify="center" align="center"><Heading size="4xl" color="white">No hay publicación para mostrar</Heading></Flex>;
+    if (!publicaciones) return <Flex minH="100vh" justify="center" align="center"><Heading size="4xl" color="white">No hay publicaciones para mostrar</Heading></Flex>;
 
     return (
         <Box display="flex" justifyContent="center" py={4}>

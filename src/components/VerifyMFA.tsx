@@ -63,7 +63,7 @@ function VerifyMFA() {
                 alignItems="center"
                 mt={10}
             >
-                <Heading as="h1" size="4xl" color="white" mb={4}>Verificación de Dos Factores</Heading>
+                <Heading as="h1" size="4xl" textAlign="center" color="white" mb={4}>Verificación de Dos Factores</Heading>
 
                 <Box w={{ base: "90%", md: "50%" }} mx="auto" px={4}>
                     <Text color="white" mb={4}>

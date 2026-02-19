@@ -138,7 +138,7 @@ function Search() {
                         ))}
 
                         {hasSearched && resultados.length === 0 && (
-                            <Heading as="h1" color="white" textAlign="center" mt={5}>
+                            <Heading as="h1" size="4xl" color="white" mb={4} textAlign="center">
                                 No se encontraron publicaciones.
                             </Heading>
                         )}

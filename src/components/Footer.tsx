@@ -12,7 +12,6 @@ function Footer() {
             <Box
                 position="sticky"
                 bottom={0}
-                bg="black"
                 borderTop="0.1rem solid #787878"
                 py={2}
                 textAlign="center"

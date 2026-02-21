@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Capacitor, registerPlugin } from "@capacitor/core";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import axios from "axios";
 import { apiRoutes, getToken } from "../utils/GlobalVariables";
@@ -9,6 +10,8 @@ import ConfirmModal from "./modals/ConfirmModal";
 import { signOut, fetchMFAPreference, updateMFAPreference } from "aws-amplify/auth";
 import type { AuthContext } from "./layouts/LoggedLayout";
 import { Box, Flex, Heading, Text, Image, Button, VStack, Spinner, Separator } from "@chakra-ui/react";
+
+const OpenDefaultSettings = registerPlugin("OpenDefaultSettings");
 
 export default function MyProfile() {
   const navigate = useNavigate();
@@ -21,6 +24,8 @@ export default function MyProfile() {
   const [isLoadingAction, setIsLoadingAction] = useState<boolean>(false);
   const [isBannedUser, setIsBannedUser] = useState<boolean | null>(null);
   const [mfaEnabled, setMfaEnabled] = useState<boolean>(false);
+  const [appLinksEnabled, setAppLinksEnabled] = useState<boolean>(true);
+  const [isNative, setIsNative] = useState<boolean>(false);
 
   useEffect(() => {
     let mounted = true;
@@ -68,6 +73,18 @@ export default function MyProfile() {
         setMfaEnabled(mfaPreference.preferred === "TOTP");
       } catch {
         setMfaEnabled(false);
+      }
+    })();
+
+    (async () => {
+      if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+        setIsNative(true);
+        try {
+          const status = await (OpenDefaultSettings as any).checkAppLinksStatus();
+          setAppLinksEnabled(status?.enabled ?? true);
+        } catch {
+          setAppLinksEnabled(true);
+        }
       }
     })();
 
@@ -164,7 +181,39 @@ export default function MyProfile() {
           </Button>
         )}
 
-        <Flex py={4} align="center" justify="space-around" wrap="wrap" gap={4}>
+        {isNative && (
+          <>
+            <Separator borderColor="#333" my={2} />
+            <Text color="white" fontWeight="bold">Abrir enlaces en la app:</Text>
+            <Text color="white" mb={3}>
+              {appLinksEnabled ? "✅ Activado" : "❌ Desactivado"}
+            </Text>
+
+            {!appLinksEnabled && (
+              <Button
+                bg="white"
+                color="black"
+                _hover={{ bg: "gray.200" }}
+                mb={2}
+                borderRadius="1rem"
+                onClick={async () => {
+                  try {
+                    await (OpenDefaultSettings as any).openAppLinkSettings();
+                  } catch (e) {
+                    console.error("Error abriendo ajustes", e);
+                  }
+                }}
+                w="fit-content"
+              >
+                Configurar App Links
+              </Button>
+            )}
+          </>
+        )}
+
+        <Separator borderColor="#333" my={2} />
+
+        <Flex py={2} align="center" justify="space-around" wrap="wrap" gap={4}>
           <Button
             bg="white"
             color="black"
@@ -187,7 +236,7 @@ export default function MyProfile() {
           </Button>
         </Flex>
 
-        <Separator borderColor="white" />
+        <Separator borderColor="white" mt={2} mb={4} />
 
         <Heading as="h3" size="lg" color="white" mb={5} textAlign="center">Tus publicaciones</Heading>
         {posts.length === 0 ? <Text color="white" textAlign="center">No tienes publicaciones aún 😔</Text> : (

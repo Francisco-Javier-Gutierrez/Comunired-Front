@@ -10,10 +10,23 @@ export default function AppLinkPrompt() {
     useEffect(() => {
         if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
             const seen = localStorage.getItem('applink_prompt_seen');
-            if (!seen) {
-                const timer = setTimeout(() => setShow(true), 2000);
-                return () => clearTimeout(timer);
-            }
+            if (seen) return;
+
+            const checkAndShow = async () => {
+                try {
+                    const status = await (OpenDefaultSettings as any).checkAppLinksStatus();
+                    if (status && status.enabled) {
+                        localStorage.setItem('applink_prompt_seen', 'true');
+                        return;
+                    }
+                } catch (e) {
+                    console.error("Error checking app links:", e);
+                }
+                setShow(true);
+            };
+
+            const timer = setTimeout(checkAndShow, 4000);
+            return () => clearTimeout(timer);
         }
     }, []);
 

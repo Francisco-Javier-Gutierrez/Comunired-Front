@@ -1,10 +1,9 @@
 import React from "react";
 import {
     Dialog,
-    Image,
+    Button,
     Text,
-    Flex,
-    Spinner
+    Flex
 } from "@chakra-ui/react";
 
 interface ConfirmModalProps {
@@ -12,8 +11,6 @@ interface ConfirmModalProps {
     title: string;
     description?: string;
     isLoading?: boolean;
-    confirmImage?: string;
-    cancelImage?: string;
     onConfirm: () => void;
     onCancel: () => void;
 }
@@ -23,46 +20,56 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
     title,
     description,
     isLoading = false,
-    confirmImage = "Confirm.svg",
-    cancelImage = "Cancel.svg",
     onConfirm,
     onCancel,
 }) => {
     return (
         <Dialog.Root open={isOpen} onOpenChange={(e) => !e.open && onCancel()} size="sm" placement="center">
-            <Dialog.Backdrop />
+            <Dialog.Backdrop bg="rgba(0,0,0,0.8)" />
             <Dialog.Positioner>
-                <Dialog.Content borderRadius="xl" p={4} textAlign="center">
-                    <Dialog.Header color="black" fontWeight="bold" textAlign="center" fontSize="2xl" p={0} mb={2}>
+                <Dialog.Content
+                    bg="linear-gradient(145deg, #1a1a1a, #111)"
+                    border="1px solid #333"
+                    boxShadow="0 20px 60px rgba(0,0,0,0.6)"
+                    borderRadius="20px"
+                    p={6}
+                    color="white"
+                    textAlign="center"
+                >
+                    <Dialog.Header color="white" fontWeight="700" textAlign="center" fontSize="2xl" p={0} mb={3}>
                         <Dialog.Title>{title}</Dialog.Title>
                     </Dialog.Header>
                     <Dialog.Body p={0}>
-                        <Text fontSize="md" color="gray.600" mb={4}>{description}</Text>
-                        <Flex justify="space-around" align="center" mt={4} w="75%" mx="auto">
-                            {isLoading ? (
-                                <Flex justify="center" align="center" boxSize="50px">
-                                    <Spinner size="xl" color="black" />
-                                </Flex>
-                            ) : (
-                                <Image
-                                    src={confirmImage}
-                                    alt="Confirmar"
-                                    cursor="pointer"
-                                    w="4rem"
-                                    onPointerDown={(e) => { e.preventDefault(); onConfirm(); }}
-                                    _hover={{ transform: "scale(1.1)" }}
-                                    transition="transform 0.2s"
-                                />
-                            )}
-                            <Image
-                                src={cancelImage}
-                                alt="Cancelar"
-                                cursor="pointer"
-                                w="3rem"
-                                onPointerDown={(e) => { e.preventDefault(); onCancel(); }}
-                                _hover={{ transform: "scale(1.1)" }}
-                                transition="transform 0.2s"
-                            />
+                        <Text fontSize="15px" lineHeight="1.5" color="#aaa" mb={6}>{description}</Text>
+                        <Flex direction="column" gap={3}>
+                            <Button
+                                w="100%"
+                                py={3}
+                                bg="white"
+                                color="black"
+                                borderRadius="12px"
+                                fontSize="15px"
+                                fontWeight="700"
+                                onClick={onConfirm}
+                                loading={isLoading}
+                                _hover={{ opacity: 0.9 }}
+                            >
+                                Confirmar
+                            </Button>
+
+                            <Button
+                                w="100%"
+                                py={3}
+                                bg="transparent"
+                                color="#666"
+                                borderRadius="12px"
+                                fontSize="14px"
+                                onClick={onCancel}
+                                disabled={isLoading}
+                                _hover={{ color: '#999' }}
+                            >
+                                Cancelar
+                            </Button>
                         </Flex>
                     </Dialog.Body>
                 </Dialog.Content>

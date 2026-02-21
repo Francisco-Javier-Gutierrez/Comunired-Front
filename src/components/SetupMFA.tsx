@@ -89,6 +89,19 @@ function SetupMFA() {
             alignItems="center"
             mt={10}
         >
+            <Flex w={{ base: "90%", md: "50%" }} mb={2}>
+                <Text
+                    color="#aaa"
+                    cursor="pointer"
+                    fontWeight="600"
+                    onClick={() => navigate("/my-profile")}
+                    _hover={{ color: "white" }}
+                    transition="color 0.2s"
+                >
+                    ← Volver a mi perfil
+                </Text>
+            </Flex>
+
             <Heading as="h1" size="4xl" textAlign="center" color="white" mb={4}>Configurar Autenticación de Dos Factores (MFA)</Heading>
 
             <Box w={{ base: "90%", md: "50%" }} mx="auto" px={4}>

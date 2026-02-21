@@ -148,6 +148,18 @@ function EditProfile() {
     return (
         <Box className={`${isFormDisabled ? "disabled-form" : ""}`} userSelect="none">
             <Flex direction="column" minH="100vh" w={["90%", "75%"]} mx="auto">
+                <Flex w="100%" mt={4} mb={2}>
+                    <Text
+                        color="#aaa"
+                        cursor="pointer"
+                        fontWeight="600"
+                        onClick={() => navigate("/my-profile")}
+                        _hover={{ color: "white" }}
+                        transition="color 0.2s"
+                    >
+                        ← Volver a mi perfil
+                    </Text>
+                </Flex>
 
                 <Heading as="h1" textAlign="center" size="4xl" color="white" mb={4}>Actualizar mis datos</Heading>
 

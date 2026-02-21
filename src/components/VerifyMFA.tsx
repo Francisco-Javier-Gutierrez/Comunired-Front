@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { confirmSignIn, fetchAuthSession } from "aws-amplify/auth";
+import { confirmSignIn, fetchAuthSession, signOut } from "aws-amplify/auth";
 import { useUserData } from "../utils/UserStore";
 import { useNavigate } from "react-router-dom";
-import { Box, Heading, Text, Input, Button, Flex, Spinner, Link } from "@chakra-ui/react";
+import { Box, Heading, Text, Input, Button, Flex, Spinner } from "@chakra-ui/react";
 
 function VerifyMFA() {
     const navigate = useNavigate();
@@ -53,6 +53,15 @@ function VerifyMFA() {
         }
     };
 
+    const handleCancelLogin = async () => {
+        try {
+            await signOut();
+        } catch (e) {
+            console.error("Error al cancelar inicio de sesión", e);
+        }
+        navigate("/login");
+    };
+
     return (
         <form onSubmit={handleVerifyCode}>
             <Box
@@ -63,6 +72,19 @@ function VerifyMFA() {
                 alignItems="center"
                 mt={10}
             >
+                <Flex w={{ base: "90%", md: "50%" }} mb={2}>
+                    <Text
+                        color="#aaa"
+                        cursor="pointer"
+                        fontWeight="600"
+                        onClick={handleCancelLogin}
+                        _hover={{ color: "white" }}
+                        transition="color 0.2s"
+                    >
+                        ← Cancelar inicio de sesión
+                    </Text>
+                </Flex>
+
                 <Heading as="h1" size="4xl" color="white" mb={4}>Verificación de Dos Factores</Heading>
 
                 <Box w={{ base: "90%", md: "50%" }} mx="auto" px={4}>
@@ -116,12 +138,6 @@ function VerifyMFA() {
                             </Flex>
                         )}
                     </Button>
-
-                    <Text textAlign="center" mt={4} color="white">
-                        <Link as="span" cursor="pointer" color="white" textDecoration="underline" onClick={() => navigate("/login")}>
-                            Volver al inicio de sesión
-                        </Link>
-                    </Text>
                 </Box>
             </Box>
         </form>

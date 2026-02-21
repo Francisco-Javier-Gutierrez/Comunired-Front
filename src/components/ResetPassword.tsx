@@ -122,6 +122,19 @@ function ResetPassword() {
             alignItems="center"
             mt={10}
         >
+            <Flex w={{ base: "90%", md: "50%" }} mb={2}>
+                <Text
+                    color="#aaa"
+                    cursor="pointer"
+                    fontWeight="600"
+                    onClick={() => navigate("/forgot-password")}
+                    _hover={{ color: "white" }}
+                    transition="color 0.2s"
+                >
+                    ← Volver a recuperar contraseña
+                </Text>
+            </Flex>
+
             <Heading as="h1" size="4xl" color="white" mb={4}>Restablecer contraseña</Heading>
             <Heading as="h3" size="md" color="yellow.400" textAlign="center" mb={4}>{requestMessage}</Heading>
 
@@ -248,16 +261,7 @@ function ResetPassword() {
                     )}
                 </Button>
 
-                <Flex justify="space-between">
-                    <Link
-                        color="white"
-                        textDecoration="underline"
-                        cursor="pointer"
-                        onClick={() => navigate("/forgot-password")}
-                    >
-                        Volver
-                    </Link>
-
+                <Flex justify="end">
                     <Link
                         color="white"
                         textDecoration="underline"

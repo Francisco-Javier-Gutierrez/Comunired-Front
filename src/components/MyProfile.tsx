@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Capacitor, registerPlugin } from "@capacitor/core";
+import { App } from "@capacitor/app";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import axios from "axios";
 import { apiRoutes, getToken } from "../utils/GlobalVariables";
@@ -76,20 +77,32 @@ export default function MyProfile() {
       }
     })();
 
+    let appStateListener: any = null;
+
     (async () => {
       if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
         setIsNative(true);
-        try {
-          const status = await (OpenDefaultSettings as any).checkAppLinksStatus();
-          setAppLinksEnabled(status?.enabled ?? true);
-        } catch {
-          setAppLinksEnabled(true);
-        }
+
+        const checkAppLinks = async () => {
+          try {
+            const status = await (OpenDefaultSettings as any).checkAppLinksStatus();
+            if (mounted) setAppLinksEnabled(status?.enabled ?? true);
+          } catch {
+            if (mounted) setAppLinksEnabled(true);
+          }
+        };
+
+        checkAppLinks();
+
+        appStateListener = await App.addListener('appStateChange', ({ isActive }) => {
+          if (isActive) checkAppLinks();
+        });
       }
     })();
 
     return () => {
       mounted = false;
+      if (appStateListener) appStateListener.remove();
     };
   }, []);
 
@@ -183,12 +196,10 @@ export default function MyProfile() {
 
         {isNative && (
           <>
-            <Separator borderColor="#333" my={2} />
             <Text color="white" fontWeight="bold">Abrir enlaces en la app:</Text>
             <Text color="white" mb={3}>
               {appLinksEnabled ? "✅ Activado" : "❌ Desactivado"}
             </Text>
-
             {!appLinksEnabled && (
               <Button
                 bg="white"
@@ -196,12 +207,8 @@ export default function MyProfile() {
                 _hover={{ bg: "gray.200" }}
                 mb={2}
                 borderRadius="1rem"
-                onClick={async () => {
-                  try {
-                    await (OpenDefaultSettings as any).openAppLinkSettings();
-                  } catch (e) {
-                    console.error("Error abriendo ajustes", e);
-                  }
+                onClick={() => {
+                  window.dispatchEvent(new Event('show-app-link-prompt'));
                 }}
                 w="fit-content"
               >

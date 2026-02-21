@@ -30,6 +30,12 @@ export default function AppLinkPrompt() {
         }
     }, []);
 
+    useEffect(() => {
+        const handleShowPrompt = () => setShow(true);
+        window.addEventListener('show-app-link-prompt', handleShowPrompt);
+        return () => window.removeEventListener('show-app-link-prompt', handleShowPrompt);
+    }, []);
+
     const handleOpen = async () => {
         try {
             await (OpenDefaultSettings as any).openAppLinkSettings();

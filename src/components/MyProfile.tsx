@@ -200,7 +200,25 @@ export default function MyProfile() {
             <Text color="white" mb={3}>
               {appLinksEnabled ? "✅ Activado" : "❌ Desactivado"}
             </Text>
-            {!appLinksEnabled && (
+            {appLinksEnabled ? (
+              <Button
+                bg="white"
+                color="black"
+                _hover={{ bg: "gray.200" }}
+                mb={2}
+                borderRadius="1rem"
+                onClick={async () => {
+                  try {
+                    await (OpenDefaultSettings as any).openAppLinkSettings();
+                  } catch (e) {
+                    console.error("Error abriendo ajustes", e);
+                  }
+                }}
+                w="fit-content"
+              >
+                Desactivar App Links
+              </Button>
+            ) : (
               <Button
                 bg="white"
                 color="black"

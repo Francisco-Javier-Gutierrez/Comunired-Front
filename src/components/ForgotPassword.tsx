@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { resetPassword } from "aws-amplify/auth";
-import { Flex, Heading, Text, Input, Button, Spinner, Link, Box } from "@chakra-ui/react";
+import { Flex, Heading, Text, Input, Button, Spinner, Box } from "@chakra-ui/react";
 
 function ForgotPassword() {
     const [email, setEmail] = useState("");
@@ -68,6 +68,19 @@ function ForgotPassword() {
                 alignItems="center"
                 mt={10}
             >
+                <Flex w={{ base: "90%", md: "50%" }} mb={2}>
+                    <Text
+                        color="#aaa"
+                        cursor="pointer"
+                        fontWeight="600"
+                        onClick={() => navigate("/login")}
+                        _hover={{ color: "white" }}
+                        transition="color 0.2s"
+                    >
+                        ← Volver al inicio de sesión
+                    </Text>
+                </Flex>
+
                 <Heading as="h1" size="4xl" color="white" mb={4}>Recuperar contraseña</Heading>
 
                 {requestMessage && (
@@ -117,13 +130,6 @@ function ForgotPassword() {
                             </Flex>
                         )}
                     </Button>
-
-                    <Text color="white" display="block" mb={3} cursor="pointer">
-                        ¿Recordaste tu contraseña?{" "}
-                        <Link color="white" textDecoration="underline" onClick={() => navigate("/login")}>
-                            Volver al inicio de sesión
-                        </Link>
-                    </Text>
                 </Box>
             </Box>
         </form>

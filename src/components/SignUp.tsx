@@ -4,7 +4,7 @@ import { useUserData } from "../utils/UserStore";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { apiRoutes } from "../utils/GlobalVariables";
-import { Box, Flex, Heading, Text, Input, Button, Spinner, Link, Checkbox, Image } from "@chakra-ui/react";
+import { Box, Flex, Heading, Text, Input, Button, Spinner, Checkbox, Image } from "@chakra-ui/react";
 
 function SignUp() {
     const [email, setEmail] = useState("");
@@ -14,7 +14,6 @@ function SignUp() {
     const setGlobalEmail = useUserData((state) => state.setEmail);
     const setGlobalName = useUserData((state) => state.setName);
 
-    const [focusLogin, setFocusLogin] = useState<boolean | null>(null);
     const [isValidName, setIsValidName] = useState<boolean | null>(null);
     const [isValidEmail, setIsValidEmail] = useState<boolean | null>(null);
     const [showPassword, setShowPassword] = useState<boolean | null>(null);
@@ -102,7 +101,6 @@ function SignUp() {
             setIsValidName(null);
             setIsValidEmail(null);
             setIsValidPassword(null);
-            setFocusLogin(false);
 
             setPasswordMessage("Ingrese una contraseña");
             setNameMessage("Ingrese un nombre de usuario");
@@ -122,7 +120,6 @@ function SignUp() {
                 case "UsernameExistsException":
                     setEmailMessage("Este usuario ya existe, prueba iniciar sesión");
                     setIsValidEmail(false);
-                    setFocusLogin(true);
                     break;
                 case "InvalidPasswordException":
                     setPasswordMessage("La contraseña no cumple la política de seguridad");
@@ -156,6 +153,19 @@ function SignUp() {
             color="white"
             mt={10}
         >
+            <Flex w={{ base: "90%", md: "50%" }} mb={2}>
+                <Text
+                    color="#aaa"
+                    cursor="pointer"
+                    fontWeight="600"
+                    onClick={() => navigate("/login")}
+                    _hover={{ color: "white" }}
+                    transition="color 0.2s"
+                >
+                    ← Volver al inicio de sesión
+                </Text>
+            </Flex>
+
             <Heading as="h1" size="4xl" color="white" mb={4}>Registrarse</Heading>
 
             <Box w={{ base: "90%", md: "50%" }} mx="auto" px={4}>
@@ -186,7 +196,6 @@ function SignUp() {
                         setEmail(e.target.value);
                         if (isValidEmail === false) {
                             setIsValidEmail(null);
-                            setFocusLogin(false);
                             setEmailMessage("Ingrese su correo electrónico");
                         }
                     }}
@@ -270,17 +279,6 @@ function SignUp() {
                         </Checkbox.Root>
                     </Flex>
                 </Box>
-
-                <Text>
-                    <Link
-                        color={focusLogin === true ? "red.500" : "white"}
-                        cursor="pointer"
-                        textDecoration="underline"
-                        onClick={() => navigate("/login")}
-                    >
-                        ¿Ya tienes una cuenta?
-                    </Link>
-                </Text>
 
                 <Button
                     bg="white"

@@ -3,11 +3,12 @@ import { formatFecha } from "../utils/GlobalVariables";
 import { useUserData } from "../utils/UserStore";
 import { useCommentActions } from "./hooks/CommentActions";
 import ConfirmModal from "./modals/ConfirmModal";
+import RequireAuthModal from "./modals/RequireAuthModal";
 import { Box, Flex, Text, Textarea, Button, Spinner, Image, Link } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 
 export default function PublicationComments({ publication, showInput, setShowInput, onImageClick, onCommentAdded, onCommentDeleted }: any) {
-    const { comments, isCreatingComment, handleAddComment, handleDeleteComment } = useCommentActions(publication.comentarios, publication.Id_publicacion, onCommentAdded, onCommentDeleted);
+    const { comments, isCreatingComment, showAuthModal, setShowAuthModal, authMessage, handleAddComment, handleDeleteComment } = useCommentActions(publication.comentarios, publication.Id_publicacion, onCommentAdded, onCommentDeleted);
     const { name, profilePictureUrl } = useUserData();
     const [newComment, setNewComment] = useState("");
     const [commentToDeleteId, setCommentToDeleteId] = useState<string | null>(null);
@@ -27,8 +28,8 @@ export default function PublicationComments({ publication, showInput, setShowInp
         const success = await handleAddComment(newComment);
         if (success) {
             setNewComment("");
-            setShowInput(false);
         }
+        setShowInput(false);
     };
 
     const openDeleteModal = (id: string) => {
@@ -186,6 +187,11 @@ export default function PublicationComments({ publication, showInput, setShowInp
                 isLoading={isDeletingComment}
                 onConfirm={handleConfirmDelete}
                 onCancel={() => { commentToDeleteIdRef.current = null; setCommentToDeleteId(null); }}
+            />
+            <RequireAuthModal
+                isOpen={showAuthModal}
+                onClose={() => setShowAuthModal(false)}
+                message={authMessage}
             />
         </Box >
     );

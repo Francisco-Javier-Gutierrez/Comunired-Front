@@ -22,3 +22,23 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Sensitive Info & Environment Variables
+.env
+.env.*
+.env.local
+.env.*.local
+aws-exports.js
+awsconfiguration.json
+amplify/
+
+# Android / iOS Native Projects (Capacitor)
+# Ignorando las librerías/carpetas nativas autogeneradas por Capacitor
+android/
+ios/
+
+# Misceláneos
+coverage/
+build/
+*.DS_Store
+.aws/

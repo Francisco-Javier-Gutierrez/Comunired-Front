@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Comunired</string>
+    <string name="title_activity_main">Comunired</string>
+    <string name="package_name">com.comunired.app</string>
+    <string name="custom_url_scheme">com.comunired.app</string>
+</resources>

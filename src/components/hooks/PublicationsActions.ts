@@ -1,10 +1,8 @@
 import { useRef, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { apiRoutes, getToken } from "../../utils/GlobalVariables";
 
 export function usePublicationActions(post: any) {
-    const navigate = useNavigate();
     const [isLiked, setIsLiked] = useState(
         post?.is_Liked ?? post?.Is_Liked ?? post?.is_liked ?? false
     );
@@ -13,6 +11,15 @@ export function usePublicationActions(post: any) {
 
     const shareLock = useRef(false);
     const processingLikes = useRef(false);
+    const [showCopied, setShowCopied] = useState(false);
+
+    const [showAuthModal, setShowAuthModal] = useState(false);
+    const [authMessage, setAuthMessage] = useState("");
+
+    const triggerAuth = (message: string) => {
+        setAuthMessage(message);
+        setShowAuthModal(true);
+    };
 
     const handleLike = async () => {
         if (processingLikes.current) return;
@@ -38,8 +45,8 @@ export function usePublicationActions(post: any) {
                 setIsLiked((prev: any) => !prev);
                 setLikes((prev: any) => Number(prev) - change);
 
-                if (err?.response?.status === 401) navigate("/login");
-                if (err?.response?.status === 403) alert("Usted está baneado");
+                if (err?.response?.status === 401) triggerAuth("Para dar me gusta a una publicación necesitas iniciar sesión.");
+                if (err?.response?.status === 403) triggerAuth("Parece que no tienes permisos o estás baneado.");
             })
             .finally(() => {
                 processingLikes.current = false;
@@ -54,9 +61,10 @@ export function usePublicationActions(post: any) {
 
         setSharedCount((prev: number) => prev + 1);
         navigator.clipboard.writeText(
-            window.location.origin + "/publication?post=" + post.Id_publicacion
+            "https://comuni-red.com/publication?post=" + post.Id_publicacion
         );
-        alert("Url copiada exitosamente");
+        setShowCopied(true);
+        setTimeout(() => setShowCopied(false), 2000);
 
         const token = await getToken();
 
@@ -69,8 +77,11 @@ export function usePublicationActions(post: any) {
                 },
             }
         )
-            .catch(() => {
+            .catch((err) => {
                 setSharedCount(previousValue);
+                if (err?.response?.status === 401 || err?.response?.status === 403) {
+                    triggerAuth("Tu compartido no se ha registrado porque no tienes sesión iniciada, pero aún puedes compartir el enlace.");
+                }
             })
             .finally(() => {
                 setTimeout(() => {
@@ -93,7 +104,8 @@ export function usePublicationActions(post: any) {
             );
             window.location.reload();
         } catch (err: any) {
-            if (err?.response?.status === 401) navigate("/login");
+            if (err?.response?.status === 401) triggerAuth("Para eliminar una publicación necesitas iniciar sesión.");
+            if (err?.response?.status === 403) triggerAuth("No tienes permisos para eliminar esta publicación.");
         }
     };
 
@@ -101,6 +113,10 @@ export function usePublicationActions(post: any) {
         isLiked,
         likes,
         sharedCount,
+        showCopied,
+        showAuthModal,
+        setShowAuthModal,
+        authMessage,
         handleLike,
         handleShare,
         handleDelete

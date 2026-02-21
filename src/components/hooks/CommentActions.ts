@@ -1,15 +1,21 @@
 import { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import { apiRoutes, getToken } from "../../utils/GlobalVariables";
 import { useUserData } from "../../utils/UserStore";
 
 export function useCommentActions(initialComments: any, publicationId: string, onSuccess?: () => void, onDeleteSuccess?: () => void) {
-    const navigate = useNavigate();
     const [comments, setComments] = useState(initialComments?.lista || []);
     const [totalComments, setTotalComments] = useState(initialComments?.total || 0);
     const [isCreatingComment, setIsCreatingComment] = useState(false);
     const { name, profilePictureUrl } = useUserData();
+
+    const [showAuthModal, setShowAuthModal] = useState(false);
+    const [authMessage, setAuthMessage] = useState("");
+
+    const triggerAuth = (message: string) => {
+        setAuthMessage(message);
+        setShowAuthModal(true);
+    };
 
     const handleAddComment = async (content: string) => {
         if (!content.trim()) return false;
@@ -42,8 +48,8 @@ export function useCommentActions(initialComments: any, publicationId: string, o
             }
         } catch (err: any) {
             const status = err?.response?.status;
-            if (status === 401) navigate("/login");
-            if (status === 403) alert("Usted está baneado, no puede comentar");
+            if (status === 401) triggerAuth("Para comentar necesitas iniciar sesión en Comunired.");
+            if (status === 403) triggerAuth("Usted está baneado, no puede comentar.");
             console.error(err);
             return false;
         } finally {
@@ -67,12 +73,21 @@ export function useCommentActions(initialComments: any, publicationId: string, o
             return true;
         } catch (err: any) {
             const status = err?.response?.status;
-            if (status === 401) navigate("/login");
-            if (status === 403) alert("No tienes permiso para eliminar este comentario");
+            if (status === 401) triggerAuth("Para eliminar un comentario necesitas iniciar sesión.");
+            if (status === 403) triggerAuth("No tienes permiso para eliminar este comentario.");
             console.error(err);
             return false;
         }
     };
 
-    return { comments, totalComments, isCreatingComment, handleAddComment, handleDeleteComment };
+    return {
+        comments,
+        totalComments,
+        isCreatingComment,
+        showAuthModal,
+        setShowAuthModal,
+        authMessage,
+        handleAddComment,
+        handleDeleteComment
+    };
 }

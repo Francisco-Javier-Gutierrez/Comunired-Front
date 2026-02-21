@@ -1,7 +1,8 @@
-import { Outlet, Navigate } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { fetchAuthSession } from "aws-amplify/auth";
 import { useUserData } from "../../utils/UserStore";
+import RequireAuthModal from "../modals/RequireAuthModal";
 
 export type AuthContext = {
     isAuthenticated: boolean;
@@ -11,9 +12,11 @@ export type AuthContext = {
 };
 
 export default function LoggedLayout() {
+    const navigate = useNavigate();
     const { name, email, profilePictureUrl, setName, setEmail, setProfilePictureUrl } = useUserData();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -23,6 +26,7 @@ export default function LoggedLayout() {
 
                 if (!idToken) {
                     setIsAuthenticated(false);
+                    setShowModal(true);
                     return;
                 }
 
@@ -34,6 +38,7 @@ export default function LoggedLayout() {
                 setIsAuthenticated(true);
             } catch {
                 setIsAuthenticated(false);
+                setShowModal(true);
             } finally {
                 setIsLoading(false);
             }
@@ -51,5 +56,18 @@ export default function LoggedLayout() {
         picture: profilePictureUrl,
     };
 
-    return isAuthenticated ? <Outlet context={authContext} /> : <Navigate to="/login" replace />;
+    if (!isAuthenticated) {
+        return (
+            <RequireAuthModal
+                isOpen={showModal}
+                onClose={() => {
+                    setShowModal(false);
+                    navigate("/");
+                }}
+                message="Esta página es exclusiva para usuarios registrados. Por favor inicia sesión para continuar."
+            />
+        );
+    }
+
+    return <Outlet context={authContext} />;
 }

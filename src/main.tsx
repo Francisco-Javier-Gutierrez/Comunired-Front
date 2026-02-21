@@ -3,12 +3,13 @@ import './index.css';
 import './awsConfig.ts';
 import { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter as Router, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, useLocation, useNavigate } from "react-router-dom";
 import { PathsInitializer, paths } from "./utils/GlobalVariables.tsx";
 import { useMediaQuery } from "./components/hooks/UseMediaQuery.ts";
 
 import DesktopLayout from './components/layouts/DesktopLayout.tsx';
 import MobileLayout from './components/layouts/MobileLayout.tsx';
+import AppLinkPrompt from './components/AppLinkPrompt.tsx';
 import { StrictMode } from 'react';
 
 const system = createSystem(defaultConfig, {
@@ -30,12 +31,30 @@ const system = createSystem(defaultConfig, {
     },
 });
 
+import { App as CapacitorApp } from '@capacitor/app';
+
 function NavigatorAndPaths({ setPathsState }: { setPathsState: any }) {
     const location = useLocation();
+    const navigate = useNavigate();
 
     useEffect(() => {
         setPathsState({ ...paths });
-    }, [location]);
+        const urlListener = CapacitorApp.addListener('appUrlOpen', data => {
+            if (data.url) {
+                try {
+                    const url = new URL(data.url);
+                    const path = url.pathname + url.search;
+                    navigate(path);
+                } catch (e) {
+                    console.error("Error al parsear el deep link:", e);
+                }
+            }
+        });
+
+        return () => {
+            urlListener.then(listener => listener.remove());
+        };
+    }, [location, navigate, setPathsState]);
 
     return <PathsInitializer />;
 }
@@ -58,6 +77,7 @@ function App() {
         <Router>
             <ScrollToTop />
             <NavigatorAndPaths setPathsState={setPathsState} />
+            <AppLinkPrompt />
 
             {isDesktop ? (
                 <DesktopLayout pathsState={pathsState} />

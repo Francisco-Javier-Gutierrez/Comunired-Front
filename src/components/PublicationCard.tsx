@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { formatFecha } from "../utils/GlobalVariables";
 import { usePublicationActions } from "./hooks/PublicationsActions";
 import ConfirmModal from "./modals/ConfirmModal";
+import RequireAuthModal from "./modals/RequireAuthModal";
 import LocationPicker from "./LocationPicker";
 import { Box, Flex, Image, Text, chakra } from "@chakra-ui/react";
 
@@ -10,11 +11,30 @@ export default function PublicationCard({ post, onImageClick, onClickComent, isP
     const navigate = useNavigate();
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
-    const { isLiked, likes, sharedCount, handleLike, handleShare, handleDelete } =
+    const { isLiked, likes, sharedCount, showCopied, showAuthModal, setShowAuthModal, authMessage, handleLike, handleShare, handleDelete } =
         usePublicationActions(post);
 
     return (
         <Box>
+            {showCopied && (
+                <Box
+                    position="fixed"
+                    bottom="90px"
+                    left="50%"
+                    transform="translateX(-50%)"
+                    bg="white"
+                    color="black"
+                    px={5}
+                    py={3}
+                    borderRadius="xl"
+                    fontWeight="bold"
+                    fontSize="sm"
+                    zIndex={9999}
+                    boxShadow="0 4px 20px rgba(0,0,0,0.4)"
+                >
+                    ✅ URL copiada al portapapeles
+                </Box>
+            )}
             <Flex
                 my={3}
                 userSelect="none"
@@ -126,6 +146,11 @@ export default function PublicationCard({ post, onImageClick, onClickComent, isP
                     setShowDeleteModal(false);
                 }}
                 onCancel={() => setShowDeleteModal(false)}
+            />
+            <RequireAuthModal
+                isOpen={showAuthModal}
+                onClose={() => setShowAuthModal(false)}
+                message={authMessage}
             />
         </Box>
     );

@@ -73,14 +73,7 @@ function SetupMFA() {
     if (isLoading) {
         return (
             <Flex direction="column" align="center" justify="center" minH="100vh">
-                <Spinner
-                    color='blue.500'
-                    size='xl'
-                    w="15rem"
-                    h="15rem"
-                    borderWidth="4px"
-                    mb={4}
-                />
+                <Spinner size="xl" color="white" boxSize="15rem" borderWidth="8px" mb={4} />
                 <Heading as="h3" color="white" mt={4}>Configurando MFA...</Heading>
             </Flex>
         );
@@ -96,7 +89,7 @@ function SetupMFA() {
             alignItems="center"
             mt={10}
         >
-            <Heading as="h1" size="4xl" color="white" mb={4}>Configurar Autenticación de Dos Factores (MFA)</Heading>
+            <Heading as="h1" size="4xl" textAlign="center" color="white" mb={4}>Configurar Autenticación de Dos Factores (MFA)</Heading>
 
             <Box w={{ base: "90%", md: "50%" }} mx="auto" px={4}>
                 <Box mb={4}>
@@ -133,7 +126,7 @@ function SetupMFA() {
                         Si no puedes escanear el código QR, ingresa esta clave manualmente en tu aplicación:
                     </Text>
                     <Box bg="gray.800" color="white" p={3} borderRadius="md" textAlign="center">
-                        <Code fontSize="16px" wordBreak="break-word" letterSpacing="2px" bg="transparent" color="white">{secretKey}</Code>
+                        <Code fontSize="16px" wordBreak="break-word" letterSpacing="2px" bg="transparent" color="white" userSelect="text">{secretKey}</Code>
                     </Box>
                 </Box>
 

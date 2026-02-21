@@ -15,7 +15,7 @@ function NavBar() {
             justify="space-around"
             align="center"
             py={3}
-            bg="black"
+            bg="#000000"
             zIndex={10}
             position="sticky"
             top={0}

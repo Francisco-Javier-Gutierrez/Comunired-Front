@@ -8,7 +8,7 @@ interface Props {
 export default function ImageModal({ image, onClose }: Props) {
   return (
     <Dialog.Root open={!!image} onOpenChange={(e) => !e.open && onClose()} size="xl" placement="center">
-      <Dialog.Backdrop />
+      <Dialog.Backdrop bg="rgba(0,0,0,0.9)" />
       <Dialog.Positioner>
         <Dialog.Content bg="transparent" boxShadow="none" p={0}>
           <Dialog.Body p={0} position="relative" textAlign="center">

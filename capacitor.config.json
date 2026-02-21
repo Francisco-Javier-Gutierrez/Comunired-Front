@@ -1,0 +1,21 @@
+{
+    "appId": "com.comunired.app",
+    "appName": "Comunired",
+    "webDir": "dist",
+    "server": {
+        "url": "https://comuni-red.com",
+        "cleartext": true
+    },
+    "plugins": {
+        "SplashScreen": {
+            "launchShowDuration": 3000,
+            "launchAutoHide": true,
+            "backgroundColor": "#000000"
+        },
+        "StatusBar": {
+            "overlaysWebView": false,
+            "style": "DARK",
+            "backgroundColor": "#000000"
+        }
+    }
+}

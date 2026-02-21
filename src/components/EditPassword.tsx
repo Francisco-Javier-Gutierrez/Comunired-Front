@@ -90,17 +90,7 @@ function EditPassword() {
     return (
         <Box className={`${isSendingForm ? "disabled-form" : ""}`} userSelect="none">
             <Flex direction="column" minH="100vh" w={["90%", "75%"]} mx="auto">
-                <Image
-                    display={["block", "none"]}
-                    src="Back.svg"
-                    alt="Regresar"
-                    cursor="pointer"
-                    my={4}
-                    boxSize="1.5rem"
-                    onClick={() => navigate("/my-profile")}
-                />
-
-                <Heading as="h1" size="4xl" color="white" mb={4}>Cambiar mi contraseña</Heading>
+                <Heading as="h1" textAlign="center" size="4xl" color="white" mb={4}>Cambiar mi contraseña</Heading>
 
                 {errorMessage && (
                     <Alert.Root status="error" mb={4} borderRadius="md">

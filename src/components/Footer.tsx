@@ -12,9 +12,9 @@ function Footer() {
             <Box
                 position="sticky"
                 bottom={0}
-                bg="black"
                 borderTop="0.1rem solid #787878"
                 py={2}
+                bg="#000000"
                 textAlign="center"
                 zIndex={10}
                 userSelect="none"

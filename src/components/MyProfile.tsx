@@ -33,7 +33,7 @@ export default function MyProfile() {
       try {
         const token = await getToken();
 
-        const listRes = await axios.post(
+        const res = await axios.post(
           apiRoutes.list_user_publications_user_auth_url,
           { Correo_electronico: email },
           {
@@ -45,19 +45,7 @@ export default function MyProfile() {
 
         if (!mounted) return;
 
-        const raw =
-          listRes.data.publicaciones ??
-          listRes.data.mezclados ??
-          listRes.data ??
-          [];
-
-        const normalized = Array.isArray(raw)
-          ? raw
-            .map((item: any) => item?.data ?? item)
-            .filter((p: any) => p?.Id_publicacion)
-          : [];
-
-        setPosts(normalized);
+        setPosts(Array.isArray(res.data.publicaciones) ? res.data.publicaciones : []);
 
       } catch (err: any) {
         const status = err?.response?.status;

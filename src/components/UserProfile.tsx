@@ -9,12 +9,7 @@ import { Box, Flex, Heading, Text, Image, VStack, Spinner } from "@chakra-ui/rea
 
 function UserProfile() {
   const navigate = useNavigate();
-  const [posts, setPosts] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [imagenSeleccionada, setImagenSeleccionada] = useState<string | null>(null);
-  const [userNotFound, setUserNotFound] = useState(false);
-  const [profilePictureUrl, setProfilePictureUrl] = useState<string>("");
-  const [userName, setUserName] = useState<string>("");
 
   const searchParams = useSearchParamsGlobal();
   const { email: globalEmail } = useUserData();
@@ -27,11 +22,18 @@ function UserProfile() {
     }
   }, [userEmail, globalEmail, navigate]);
 
+  const [posts, setPosts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [userNotFound, setUserNotFound] = useState(false);
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string>("");
+  const [userName, setUserName] = useState<string>("");
+
   useEffect(() => {
     if (!userEmail) return;
 
     const loadUserFeed = async () => {
       setIsLoading(true);
+      setUserNotFound(false); 
       try {
         const isAuth = await isUserAuthenticated();
         const token = isAuth ? await getToken() : null;
@@ -70,7 +72,7 @@ function UserProfile() {
   if (isLoading) {
     return (
       <Flex minH="100vh" justify="center" align="center">
-        <Spinner size="xl" />
+        <Spinner size="xl" color="white" boxSize="15rem" borderWidth="8px" />
       </Flex>
     );
   }

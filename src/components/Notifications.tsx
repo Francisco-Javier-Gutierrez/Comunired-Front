@@ -81,7 +81,7 @@ function Notifications() {
                                 cursor="pointer"
                                 onClick={() => {
                                     leerNotificacion(noti.id_notificacion);
-                                    navigate("/publication?post=" + noti.id_objetivo);
+                                    navigate("/publication?post=" + noti.id_publicacion);
                                 }}
                             >
                                 <Flex mb={2} align="center">

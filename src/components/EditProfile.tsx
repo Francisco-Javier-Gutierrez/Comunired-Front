@@ -66,8 +66,7 @@ function EditProfile() {
                 setPreviewImage(fileUrl);
                 setProfileImage(fileUrl);
             }
-        } catch (err) {
-            console.error("Error subiendo imagen:", err);
+        } catch {
             setImageError("Error subiendo imagen, intenta de nuevo");
             setIsValidImage(false);
             setPreviewImage(null);
@@ -136,7 +135,6 @@ function EditProfile() {
 
             navigate("/my-profile");
         } catch (err: any) {
-            console.error("Error actualizando perfil:", err);
             setErrorMessage(err.message || "Error al actualizar el perfil");
         } finally {
             setIsSendingForm(false);

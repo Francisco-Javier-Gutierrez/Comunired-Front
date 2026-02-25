@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { apiRoutes, isUserAuthenticated, getToken } from "../utils/GlobalVariables";
 import PublicationCard from "./PublicationCard";
 import ImageModal from "./modals/ImageModal";
-import { Box, Flex, Heading, Input, Button, Spinner } from "@chakra-ui/react";
+import { Box, Flex, Heading, Input, Button } from "@chakra-ui/react";
+import { SkeletonFeed } from "./Skeletons";
 
 function normalizePublications(data: any[]) {
     return data.map(p => ({
@@ -37,38 +38,46 @@ function Search() {
     const [hasSearched, setHasSearched] = useState(false);
     const [imagenSeleccionada, setImagenSeleccionada] = useState<string | null>(null);
 
-    const handleSearch = async () => {
+    const loadSearch = async () => {
         const lowered = text.toLowerCase().trim();
         if (!lowered) return;
 
         setHasSearched(true);
-
         setIsLoading(true);
 
-        const isAuth = await isUserAuthenticated();
+        try {
+            const isAuth = await isUserAuthenticated();
+            const token = isAuth ? await getToken() : null;
 
-        const token = isAuth ? await getToken() : null;
+            const res = await axios.post(
+                (isAuth ? apiRoutes.search_resources_user_auth_url : apiRoutes.search_resources_url),
+                { texto: lowered },
+                {
+                    ...(isAuth && {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }),
+                }
+            );
 
-        await axios.post(
-            (isAuth ? apiRoutes.search_resources_user_auth_url : apiRoutes.search_resources_url),
-            { texto: lowered },
-            {
-                ...(isAuth && {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }),
+            let newPosts = [];
+            if (Array.isArray(res.data)) {
+                newPosts = res.data;
+            } else {
+                newPosts = res.data?.publicaciones || [];
             }
-        )
-            .then(res => {
-                const pubs = normalizePublications(res.data ?? []);
-                setResultados(pubs);
-            })
-            .catch(err => {
-                console.error("Error en búsqueda:", err);
-                setResultados([]);
-            })
-            .finally(() => setIsLoading(false));
+
+            setResultados(normalizePublications(newPosts));
+        } catch {
+            setResultados([]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleSearch = () => {
+        loadSearch();
     };
 
     return (
@@ -115,15 +124,7 @@ function Search() {
 
             <Box w={["90%", "75%"]} mx="auto" mt={4}>
                 {isLoading ? (
-                    <Flex justify="center" mt={10}>
-                        <Spinner
-                            color='white'
-                            size='xl'
-                            w="15rem"
-                            h="15rem"
-                            borderWidth="4px"
-                        />
-                    </Flex>
+                    <SkeletonFeed count={3} />
                 ) : (
                     <>
                         {resultados.map(post => (

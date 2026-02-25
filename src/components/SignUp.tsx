@@ -126,7 +126,6 @@ function SignUp() {
                     setIsValidPassword(false);
                     break;
                 default:
-                    console.error(error);
                     setEmailMessage("Error al registrar el usuario");
             }
         }

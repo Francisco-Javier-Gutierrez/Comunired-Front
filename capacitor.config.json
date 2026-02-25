@@ -4,7 +4,12 @@
     "webDir": "dist",
     "server": {
         "url": "https://comuni-red.com",
-        "cleartext": true
+        "cleartext": true,
+        "errorPath": "error.html",
+        "allowNavigation": [
+            "comuni-red.com",
+            "*.comuni-red.com"
+        ]
     },
     "plugins": {
         "SplashScreen": {

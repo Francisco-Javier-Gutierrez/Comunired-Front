@@ -37,7 +37,6 @@ function ForgotPassword() {
             setEmail("");
             navigate("/reset-password", { state: { Correo_electronico: savedEmail } });
         } catch (error: any) {
-            console.error(error);
             if (error.name === "UserNotFoundException") {
                 setRequestMessage("No existe una cuenta con este correo.");
                 setIsValidEmail(false);

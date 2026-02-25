@@ -7,10 +7,12 @@ export const apiRoutes = {
   create_user_url: `${base_url}/user/create`,
   delete_account_url: `${base_url}/user/delete`,
   update_user_url: `${base_url}/user/update`,
+  update_fcm_token_url: `${base_url}/user/fcm-token/update`,
 
   push_resouce_url: `${base_url}/presigned/push-resource`,
 
   read_notification_url: `${base_url}/notification/read`,
+  delete_all_notifications_url: `${base_url}/notification/delete-all`,
 
   search_resources_url: `${base_url}/search/search-resources`,
   search_resources_user_auth_url: `${base_url}/search/search-resources-user-auth`,
@@ -22,12 +24,14 @@ export const apiRoutes = {
 
   comment_publication_url: `${base_url}/comment/create`,
   delete_comment_url: `${base_url}/comment/delete`,
+  edit_comment_url: `${base_url}/comment/edit`,
 
   like_publications_url: `${base_url}/like/create`,
   unlike_publications_url: `${base_url}/like/delete`,
 
   create_publication_url: `${base_url}/publications/create`,
   delete_publication_url: `${base_url}/publications/delete`,
+  edit_publication_url: `${base_url}/publications/edit`,
 
   list_publication_url: `${base_url}/publications/list-publication`,
   list_publications_url: `${base_url}/publications/list-publications`,

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { formatFecha } from "../utils/GlobalVariables";
 import { useUserData } from "../utils/UserStore";
 import { useCommentActions } from "./hooks/CommentActions";
@@ -8,14 +8,34 @@ import { Box, Flex, Text, Textarea, Button, Spinner, Image, Link } from "@chakra
 import { useNavigate } from "react-router-dom";
 
 export default function PublicationComments({ publication, showInput, setShowInput, onImageClick, onCommentAdded, onCommentDeleted }: any) {
-    const { comments, isCreatingComment, showAuthModal, setShowAuthModal, authMessage, handleAddComment, handleDeleteComment } = useCommentActions(publication.comentarios, publication.Id_publicacion, onCommentAdded, onCommentDeleted);
+    const { comments, isCreatingComment, showAuthModal, setShowAuthModal, authMessage, handleAddComment, handleEditComment, handleDeleteComment } = useCommentActions(publication.comentarios, publication.Id_publicacion, onCommentAdded, onCommentDeleted);
     const { name, profilePictureUrl } = useUserData();
     const [newComment, setNewComment] = useState("");
     const [commentToDeleteId, setCommentToDeleteId] = useState<string | null>(null);
     const [isDeletingComment, setIsDeletingComment] = useState(false);
+
+    const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+    const [editingContent, setEditingContent] = useState("");
+    const [isEditingComment, setIsEditingComment] = useState(false);
+
+    const [showOptionsId, setShowOptionsId] = useState<string | null>(null);
+
     const commentToDeleteIdRef = useRef<string | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const optionsRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (optionsRef.current && !optionsRef.current.contains(e.target as Node)) {
+                setShowOptionsId(null);
+            }
+        };
+        if (showOptionsId !== null) {
+            document.addEventListener("mousedown", handleClickOutside);
+        }
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [showOptionsId]);
 
     const autoResize = () => {
         if (textareaRef.current) {
@@ -45,6 +65,20 @@ export default function PublicationComments({ publication, showInput, setShowInp
         setIsDeletingComment(false);
         commentToDeleteIdRef.current = null;
         setCommentToDeleteId(null);
+    };
+
+    const submitEditComment = async (id: string) => {
+        if (!editingContent.trim() || editingContent === comments.find((c: any) => c.id_comentario === id)?.contenido) {
+            setEditingCommentId(null);
+            return;
+        }
+        setIsEditingComment(true);
+        const success = await handleEditComment(id, editingContent);
+        setIsEditingComment(false);
+        if (success) {
+            setEditingCommentId(null);
+            setEditingContent("");
+        }
     };
 
     return (
@@ -160,21 +194,98 @@ export default function PublicationComments({ publication, showInput, setShowInp
                                         {c.Usuario?.Nombre_usuario ?? c.Usuario?.nombre_usuario ?? "Usuario"}
                                     </Link>
                                 </Text>
-                                <Flex align="center" gap={2}>
+                                <Flex align="center" gap={3} position="relative" ref={showOptionsId === c.id_comentario ? optionsRef : null}>
                                     <Text>{formatFecha(c.fecha_comentario)}</Text>
                                     {c.Is_mine && (
-                                        <Image
-                                            src="/Delete.svg"
-                                            alt="Eliminar comentario"
-                                            cursor="pointer"
-                                            onClick={() => openDeleteModal(c.id_comentario)}
-                                            boxSize="20px"
-                                        />
+                                        <>
+                                            <Image
+                                                src="/Show_Options.svg"
+                                                alt="Opciones"
+                                                cursor="pointer"
+                                                height="1.2rem"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setShowOptionsId(showOptionsId === c.id_comentario ? null : c.id_comentario);
+                                                }}
+                                            />
+                                            {showOptionsId === c.id_comentario && (
+                                                <Flex
+                                                    direction="column"
+                                                    position="absolute"
+                                                    right="0"
+                                                    top="100%"
+                                                    bg="#2d2d2d"
+                                                    borderRadius="md"
+                                                    boxShadow="0 4px 12px rgba(0,0,0,0.5)"
+                                                    zIndex={10}
+                                                    py={2}
+                                                    w="150px"
+                                                >
+                                                    <Flex
+                                                        align="center"
+                                                        px={4}
+                                                        py={2}
+                                                        cursor="pointer"
+                                                        _hover={{ bg: "#3d3d3d" }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setShowOptionsId(null);
+                                                            setEditingCommentId(c.id_comentario);
+                                                            setEditingContent(c.contenido);
+                                                        }}
+                                                    >
+                                                        <Image src="/Edit.svg" width="20px" mr={3} alt="Editar" />
+                                                        <Text fontSize="sm" color="white" fontWeight="bold">Editar</Text>
+                                                    </Flex>
+                                                    <Flex
+                                                        align="center"
+                                                        px={4}
+                                                        py={2}
+                                                        cursor="pointer"
+                                                        _hover={{ bg: "#3d3d3d" }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setShowOptionsId(null);
+                                                            openDeleteModal(c.id_comentario);
+                                                        }}
+                                                    >
+                                                        <Image src="/Delete.svg" width="20px" mr={3} alt="Eliminar" />
+                                                        <Text fontSize="sm" color="red.400" fontWeight="bold">Eliminar</Text>
+                                                    </Flex>
+                                                </Flex>
+                                            )}
+                                        </>
                                     )}
                                 </Flex>
                             </Flex>
 
-                            <Text mb={3}>{c.contenido}</Text>
+                            {editingCommentId === c.id_comentario ? (
+                                <Box mb={3} mt={1}>
+                                    <Textarea
+                                        value={editingContent}
+                                        onChange={e => setEditingContent(e.target.value)}
+                                        bg="#2d2d2d"
+                                        color="white"
+                                        borderRadius="0.5rem"
+                                        borderColor="transparent"
+                                        _focus={{ borderColor: "gray.400" }}
+                                        autoFocus
+                                        minH="60px"
+                                        resize="none"
+                                        mb={2}
+                                    />
+                                    <Flex justify="flex-end" gap={2}>
+                                        <Button size="sm" bg="transparent" color="gray.400" _hover={{ color: "white" }} onClick={() => setEditingCommentId(null)} disabled={isEditingComment}>
+                                            Cancelar
+                                        </Button>
+                                        <Button size="sm" bg="white" color="black" _hover={{ opacity: 0.8 }} onClick={() => submitEditComment(c.id_comentario)} disabled={isEditingComment}>
+                                            {isEditingComment ? <Spinner size="xs" color="black" /> : "Guardar"}
+                                        </Button>
+                                    </Flex>
+                                </Box>
+                            ) : (
+                                <Text mb={3} whiteSpace="pre-wrap">{c.contenido}</Text>
+                            )}
                         </Box>
                     </Flex>
                     <Box as="hr" borderColor="white" mb={3} m={0} />

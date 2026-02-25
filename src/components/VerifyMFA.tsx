@@ -56,8 +56,7 @@ function VerifyMFA() {
     const handleCancelLogin = async () => {
         try {
             await signOut();
-        } catch (e) {
-            console.error("Error al cancelar inicio de sesión", e);
+        } catch {
         }
         navigate("/login");
     };

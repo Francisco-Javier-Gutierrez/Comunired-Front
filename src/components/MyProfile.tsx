@@ -10,7 +10,14 @@ import ImageModal from "./modals/ImageModal";
 import ConfirmModal from "./modals/ConfirmModal";
 import { signOut, fetchMFAPreference, updateMFAPreference } from "aws-amplify/auth";
 import type { AuthContext } from "./layouts/LoggedLayout";
-import { Box, Flex, Heading, Text, Image, Button, VStack, Spinner, Separator } from "@chakra-ui/react";
+import { Box, Flex, Heading, Text, Image, Button, VStack, Separator } from "@chakra-ui/react";
+import AppLinkPrompt from "./AppLinkPrompt";
+import PushNotificationPrompt from "./PushNotificationPrompt";
+import PushErrorPrompt from "./PushErrorPrompt";
+import { useNotificationStore } from "../utils/NotificationStore";
+import { SkeletonProfileHeader, SkeletonFeed } from "./Skeletons";
+import { PushNotifications } from '@capacitor/push-notifications';
+import InfiniteScroll from "react-infinite-scroll-component";
 
 const OpenDefaultSettings = registerPlugin("OpenDefaultSettings");
 
@@ -26,7 +33,66 @@ export default function MyProfile() {
   const [isBannedUser, setIsBannedUser] = useState<boolean | null>(null);
   const [mfaEnabled, setMfaEnabled] = useState<boolean>(false);
   const [appLinksEnabled, setAppLinksEnabled] = useState<boolean>(true);
+  const { pushEnabled, setPushEnabled, pushRegistrationError, setPushRegistrationError } = useNotificationStore();
+
   const [isNative, setIsNative] = useState<boolean>(false);
+  const [showTurnOffLinks, setShowTurnOffLinks] = useState<boolean>(false);
+  const [showTurnOffPush, setShowTurnOffPush] = useState<boolean>(false);
+
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+
+  const loadPublications = async (pageNumber: number, mounted: boolean = true) => {
+    try {
+      const token = await getToken();
+
+      const res = await axios.post(
+        apiRoutes.list_user_publications_user_auth_url,
+        { Correo_electronico: authContext.email },
+        {
+          params: { page: pageNumber, limit: 10 },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        }
+      );
+
+      if (!mounted) return;
+
+      let newPosts = [];
+      let more = false;
+
+      if (Array.isArray(res.data.publicaciones)) {
+        newPosts = res.data.publicaciones;
+        more = false;
+      } else if (res.data.publicaciones) {
+        newPosts = res.data.publicaciones;
+        more = res.data.hasMore ?? false;
+      } else if (Array.isArray(res.data)) {
+        newPosts = res.data;
+        more = false;
+      }
+
+      setPosts(prev => pageNumber === 1 ? newPosts : [...prev, ...newPosts]);
+      setHasMore(more);
+    } catch (err: any) {
+      const status = err?.response?.status;
+      if (status === 403) {
+        if (mounted) setIsBannedUser(true);
+      } else if (status === 401) {
+        navigate("/login");
+      }
+      setHasMore(false);
+    } finally {
+      if (mounted && pageNumber === 1) setIsLoading(false);
+    }
+  };
+
+  const fetchMoreData = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    loadPublications(nextPage, true);
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -35,38 +101,9 @@ export default function MyProfile() {
     setEmail(authContext.email);
     setProfilePictureUrl(authContext.picture);
 
-    (async () => {
-      try {
-        const token = await getToken();
-
-        const res = await axios.post(
-          apiRoutes.list_user_publications_user_auth_url,
-          { Correo_electronico: email },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            }
-          }
-        );
-
-        if (!mounted) return;
-
-        setPosts(Array.isArray(res.data.publicaciones) ? res.data.publicaciones : []);
-
-      } catch (err: any) {
-        const status = err?.response?.status;
-
-        if (status === 403) {
-          if (mounted) setIsBannedUser(true);
-        } else if (status === 401) {
-          navigate("/login");
-        } else {
-          console.error("Error cargando perfil:", err);
-        }
-      } finally {
-        if (mounted) setIsLoading(false);
-      }
-    })();
+    if (authContext.email) {
+      loadPublications(1, mounted);
+    }
 
     (async () => {
       try {
@@ -97,6 +134,18 @@ export default function MyProfile() {
         appStateListener = await App.addListener('appStateChange', ({ isActive }) => {
           if (isActive) checkAppLinks();
         });
+
+        const checkPushStatus = async () => {
+          try {
+            const status = await PushNotifications.checkPermissions();
+            if (mounted) {
+              setPushEnabled(status.receive === 'granted');
+            }
+          } catch {
+          }
+        };
+
+        checkPushStatus();
       }
     })();
 
@@ -122,8 +171,7 @@ export default function MyProfile() {
       setEmail(null);
       setProfilePictureUrl(null);
       navigate("/");
-    } catch (err) {
-      console.error("Error en acción de cuenta:", err);
+    } catch {
     } finally {
       setIsLoadingAction(false);
       setAccion(null);
@@ -134,11 +182,7 @@ export default function MyProfile() {
     <Heading textAlign="center" color="red.500" fontWeight="bold" fontSize="6xl" mt={5}>USUARIO BLOQUEADO</Heading>
   );
 
-  if (isLoading) return (
-    <Flex minH="100vh" justify="center" align="center">
-      <Spinner size="xl" color="white" boxSize="15rem" borderWidth="8px" />
-    </Flex>
-  );
+  if (isLoading) return <SkeletonProfileHeader isMyProfile={true} />;
 
   return (
     <Flex justify="center" minH="100vh">
@@ -207,13 +251,7 @@ export default function MyProfile() {
                 _hover={{ bg: "gray.200" }}
                 mb={2}
                 borderRadius="1rem"
-                onClick={async () => {
-                  try {
-                    await (OpenDefaultSettings as any).openAppLinkSettings();
-                  } catch (e) {
-                    console.error("Error abriendo ajustes", e);
-                  }
-                }}
+                onClick={() => setShowTurnOffLinks(true)}
                 w="fit-content"
               >
                 Desactivar App Links
@@ -233,6 +271,67 @@ export default function MyProfile() {
                 Configurar App Links
               </Button>
             )}
+
+            <AppLinkPrompt
+              isOpen={showTurnOffLinks}
+              onClose={() => setShowTurnOffLinks(false)}
+              title="Desactivar App Links"
+              description={<>Evita que los links de <strong>Comunired</strong> abran automáticamente en la app.</>}
+              instructionHeader='Al presionar "Desactivar":'
+              instructionStep1={<>1. Toca <strong>Agregar vínculo</strong></>}
+              instructionStep2={<>2. Apaga <strong>comuni-red.com</strong></>}
+              primaryButtonText="Desactivar ahora"
+              secondaryButtonText="Cancelar"
+            />
+
+            <Text color="white" fontWeight="bold" mt={4}>Notificaciones:</Text>
+            <Text color="white" mb={3}>
+              {pushEnabled ? "✅ Activado" : "❌ Desactivado"}
+            </Text>
+            {pushEnabled ? (
+              <Button
+                bg="white"
+                color="black"
+                _hover={{ bg: "gray.200" }}
+                mb={2}
+                borderRadius="1rem"
+                onClick={() => setShowTurnOffPush(true)}
+                w="fit-content"
+              >
+                Desactivar Notificaciones
+              </Button>
+            ) : (
+              <Button
+                bg="white"
+                color="black"
+                _hover={{ bg: "gray.200" }}
+                mb={2}
+                borderRadius="1rem"
+                onClick={() => {
+                  window.dispatchEvent(new Event('show-push-prompt'));
+                }}
+                w="fit-content"
+              >
+                Configurar Notificaciones
+              </Button>
+            )}
+
+            <PushNotificationPrompt
+              isOpen={showTurnOffPush}
+              onClose={() => setShowTurnOffPush(false)}
+              title="Desactivar Notificaciones"
+              description={<>Dejarás de recibir alertas en tiempo real sobre tu actividad en <strong>Comunired</strong>.</>}
+              instructionHeader='Cómo desactivarlas:'
+              instructionStep1={<>1. Ve a <strong>Ajustes del teléfono</strong> {'>'} Apps {'>'} Comunired</>}
+              instructionStep2={<>2. Apaga el permiso de <strong>Notificaciones</strong></>}
+              primaryButtonText="Entendido"
+              secondaryButtonText="Volver"
+            />
+
+            <PushErrorPrompt
+              isOpen={pushRegistrationError}
+              onClose={() => setPushRegistrationError(false)}
+            />
           </>
         )}
 
@@ -265,9 +364,20 @@ export default function MyProfile() {
 
         <Heading as="h3" size="lg" color="white" mb={5} textAlign="center">Tus publicaciones</Heading>
         {posts.length === 0 ? <Text color="white" textAlign="center">No tienes publicaciones aún 😔</Text> : (
-          <>
+          <InfiniteScroll
+            dataLength={posts.length}
+            next={fetchMoreData}
+            hasMore={hasMore}
+            loader={<Box mt={4}><SkeletonFeed count={1} /></Box>}
+            endMessage={
+              <Text color="gray.500" textAlign="center" mt={6} mb={4} fontSize="sm">
+                No hay más publicaciones por cargar
+              </Text>
+            }
+            style={{ overflow: 'hidden' }}
+          >
             {posts.map((post: any) => <PublicationCard key={post.Id_publicacion} post={post} onImageClick={setImagenSeleccionada} />)}
-          </>
+          </InfiniteScroll>
         )}
 
         <ImageModal image={imagenSeleccionada} onClose={() => setImagenSeleccionada(null)} />

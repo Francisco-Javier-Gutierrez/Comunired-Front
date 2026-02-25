@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { Box, Text, Button } from "@chakra-ui/react"; // Chakra UI imports
+import { Box, Text, Button } from "@chakra-ui/react";
+import { Geolocation } from '@capacitor/geolocation';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -51,19 +52,40 @@ export default function LocationPicker({ latitude, longitude, setLocation, readO
 
     useEffect(() => {
         if (!latitude && !longitude && !loadedUserLocation && !readOnly) {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        setCenter([pos.coords.latitude, pos.coords.longitude]);
-                        setLoadedUserLocation(true);
-                    },
-                    () => {
+            const fetchLocation = async () => {
+                try {
+                    const permissions = await Geolocation.checkPermissions();
+                    if (permissions.location !== 'granted') {
+                        await Geolocation.requestPermissions();
+                    }
+
+                    const pos = await Geolocation.getCurrentPosition({
+                        enableHighAccuracy: true,
+                        timeout: 10000
+                    });
+
+                    setCenter([pos.coords.latitude, pos.coords.longitude]);
+                    setLoadedUserLocation(true);
+                } catch {
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                            (pos) => {
+                                setCenter([pos.coords.latitude, pos.coords.longitude]);
+                                setLoadedUserLocation(true);
+                            },
+                            () => {
+                                setLoadedUserLocation(true);
+                            }
+                        );
+                    } else {
                         setLoadedUserLocation(true);
                     }
-                );
-            }
+                }
+            };
+
+            fetchLocation();
         }
-    }, []);
+    }, [latitude, longitude, loadedUserLocation, readOnly]);
 
     return (
         <Box w="100%" mb={3}>

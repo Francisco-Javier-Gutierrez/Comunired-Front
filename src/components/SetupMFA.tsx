@@ -28,8 +28,7 @@ function SetupMFA() {
                 setSetupDetails(totpSetupDetails);
                 setSecretKey(totpSetupDetails.sharedSecret);
                 setIsLoading(false);
-            } catch (err: any) {
-                console.error("Error setting up TOTP:", err);
+            } catch {
                 setError("Error al configurar MFA. Por favor, intenta de nuevo.");
                 setIsLoading(false);
             }
@@ -63,8 +62,7 @@ function SetupMFA() {
             setTimeout(() => {
                 navigate("/my-profile");
             }, 2000);
-        } catch (err: any) {
-            console.error("Error verifying TOTP:", err);
+        } catch {
             setError("Código inválido. Por favor, verifica e intenta de nuevo.");
             setIsVerifying(false);
         }

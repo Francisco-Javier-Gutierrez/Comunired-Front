@@ -182,8 +182,7 @@ function CreatePublication() {
                 setPreviewImage(fileUrl);
                 setImage(fileUrl);
             }
-        } catch (err) {
-            console.error("Error subiendo imagen:", err);
+        } catch {
             setImageError("Error subiendo imagen, intenta de nuevo");
             setIsValidImage(false);
             setPreviewImage(null);
@@ -227,8 +226,7 @@ function CreatePublication() {
                 setPreviewVideo(fileUrl);
                 setVideo(fileUrl);
             }
-        } catch (err) {
-            console.error("Error subiendo video:", err);
+        } catch {
             setVideoError("Error subiendo video, intenta de nuevo");
             setIsValidVideo(false);
             setPreviewVideo(null);
@@ -299,8 +297,7 @@ function CreatePublication() {
             setPreviewVideo(null);
             setShowMap(false);
             navigate("/my-profile");
-        } catch (err) {
-            console.error("Error publicando:", err);
+        } catch {
         } finally {
             setIsSendingForm(false);
         }

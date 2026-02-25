@@ -69,7 +69,6 @@ function EditPassword() {
             setConfirmPassword("");
             setTimeout(() => navigate("/my-profile"), 1500);
         } catch (err: any) {
-            console.error("Error cambiando contraseña:", err);
 
             if (err.name === "NotAuthorizedException") {
                 setErrorMessage("La contraseña actual es incorrecta");

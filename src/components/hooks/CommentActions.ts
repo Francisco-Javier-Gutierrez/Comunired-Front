@@ -50,10 +50,34 @@ export function useCommentActions(initialComments: any, publicationId: string, o
             const status = err?.response?.status;
             if (status === 401) triggerAuth("Para comentar necesitas iniciar sesión en Comunired.");
             if (status === 403) triggerAuth("Usted está baneado, no puede comentar.");
-            console.error(err);
             return false;
         } finally {
             setIsCreatingComment(false);
+        }
+        return false;
+    };
+
+    const handleEditComment = async (commentId: string, newContent: string) => {
+        if (!newContent.trim()) return false;
+
+        try {
+            const token = await getToken();
+            const res = await axios.put(
+                apiRoutes.edit_comment_url,
+                { Id_comentario: commentId, Contenido: newContent },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            if (res.status === 200 || res.status === 204) {
+                setComments((prev: any[]) => prev.map((c: any) =>
+                    c.id_comentario === commentId ? { ...c, contenido: newContent } : c
+                ));
+                return true;
+            }
+        } catch (err: any) {
+            const status = err?.response?.status;
+            if (status === 401) triggerAuth("Para editar un comentario necesitas iniciar sesión.");
+            if (status === 403) triggerAuth("No tienes permiso para editar este comentario.");
         }
         return false;
     };
@@ -75,7 +99,6 @@ export function useCommentActions(initialComments: any, publicationId: string, o
             const status = err?.response?.status;
             if (status === 401) triggerAuth("Para eliminar un comentario necesitas iniciar sesión.");
             if (status === 403) triggerAuth("No tienes permiso para eliminar este comentario.");
-            console.error(err);
             return false;
         }
     };
@@ -88,6 +111,7 @@ export function useCommentActions(initialComments: any, publicationId: string, o
         setShowAuthModal,
         authMessage,
         handleAddComment,
+        handleEditComment,
         handleDeleteComment
     };
 }

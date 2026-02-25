@@ -79,7 +79,6 @@ function ResetPassword() {
             setIsValidPassword(null);
             navigate("/login");
         } catch (error: any) {
-            console.error(error);
             if (error.name === "CodeMismatchException") {
                 setRequestMessage("El código ingresado es incorrecto.");
             } else if (error.name === "ExpiredCodeException") {
@@ -103,7 +102,6 @@ function ResetPassword() {
             await resetPassword({ username: email });
             setRequestMessage("Código reenviado correctamente. Revisa tu correo.");
         } catch (error: any) {
-            console.error(error);
             if (error.name === "LimitExceededException") {
                 setRequestMessage("Demasiados intentos. Intente más tarde.");
             } else {

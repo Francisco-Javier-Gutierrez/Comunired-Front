@@ -65,6 +65,7 @@ function ForgotPassword() {
                 flexDirection="column"
                 justifyContent="center"
                 alignItems="center"
+                color="white"
                 mt={10}
             >
                 <Flex w={{ base: "90%", md: "50%" }} mb={2}>
@@ -89,7 +90,7 @@ function ForgotPassword() {
                 )}
 
                 <Box w={{ base: "90%", md: "50%" }} mx="auto" px={4}>
-                    <Text color={isValidEmail === false ? "red.500" : "white"} mb={2}>
+                    <Text color={isValidEmail === false ? "red.500" : "inherit"} mb={2}>
                         {emailMessage}
                     </Text>
 
@@ -107,10 +108,12 @@ function ForgotPassword() {
                         w="100%"
                         bg="#454545"
                         color="white"
-                        borderColor={isValidEmail === false ? "red.500" : "inherit"}
+                        border="solid 0.05rem"
+                        borderColor={isValidEmail === false ? "red.500" : { base: "gray.300", _dark: "#ffffff" }}
                         borderRadius="1rem"
                         _placeholder={{ color: "gray.400" }}
                         mb={4}
+                        _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                     />
 
                     <Button

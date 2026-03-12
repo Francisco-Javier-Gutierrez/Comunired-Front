@@ -31,13 +31,12 @@ function Home() {
                 }),
             });
 
-            // Fallback for current backend vs. new paginated backend response scheme
             let newPosts = [];
             let more = false;
 
             if (Array.isArray(res.data)) {
                 newPosts = res.data;
-                more = false; // The old endpoint returns everything at once
+                more = false;
             } else {
                 newPosts = res.data.publicaciones || [];
                 more = res.data.hasMore ?? false;

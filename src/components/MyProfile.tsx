@@ -24,7 +24,7 @@ const OpenDefaultSettings = registerPlugin("OpenDefaultSettings");
 export default function MyProfile() {
   const navigate = useNavigate();
   const authContext = useOutletContext<AuthContext>();
-  const { name, email, profilePictureUrl, setName, setEmail, setProfilePictureUrl } = useUserData();
+  const { name, email, profilePictureUrl, setName, setEmail, setProfilePictureUrl, setRole, resetUser} = useUserData();
   const [posts, setPosts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [imagenSeleccionada, setImagenSeleccionada] = useState<string | null>(null);
@@ -64,6 +64,9 @@ export default function MyProfile() {
 
       if (Array.isArray(res.data.publicaciones)) {
         newPosts = res.data.publicaciones;
+        setName(res.data.usuario.nombre_usuario);
+        setProfilePictureUrl(res.data.usuario.foto_perfil);
+        setRole(res.data.usuario.role);
         more = false;
       } else if (res.data.publicaciones) {
         newPosts = res.data.publicaciones;
@@ -160,6 +163,7 @@ export default function MyProfile() {
     try {
       if (accion === "cerrar") {
         await signOut();
+        resetUser();
         navigate("/");
       } else if (accion === "desactivarMFA") {
         await updateMFAPreference({ totp: "DISABLED" });
@@ -177,10 +181,6 @@ export default function MyProfile() {
       setAccion(null);
     }
   };
-
-  if (isBannedUser) return (
-    <Heading textAlign="center" color="red.500" fontWeight="bold" fontSize="6xl" mt={5}>USUARIO BLOQUEADO</Heading>
-  );
 
   if (isLoading) return <SkeletonProfileHeader isMyProfile={true} />;
 
@@ -338,16 +338,18 @@ export default function MyProfile() {
         <Separator borderColor="#333" my={2} />
 
         <Flex py={2} align="center" justify="space-around" wrap="wrap" gap={4}>
-          <Button
-            bg="white"
-            color="black"
-            _hover={{ bg: "gray.200" }}
-            w={["100%", "30%"]}
-            borderRadius="1rem"
-            onClick={() => navigate("/edit-profile")}
-          >
-            Editar mi perfil
-          </Button>
+          {!isBannedUser && (
+            <Button
+              bg="white"
+              color="black"
+              _hover={{ bg: "gray.200" }}
+              w={["100%", "30%"]}
+              borderRadius="1rem"
+              onClick={() => navigate("/edit-profile")}
+            >
+              Editar mi perfil
+            </Button>
+          )}
           <Button
             bg="white"
             color="black"

@@ -161,6 +161,7 @@ function Notifications() {
                                     m={1}
                                     boxSize="1rem"
                                     alt="Eliminar"
+                                    filter="none"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         leerNotificacion(noti.id_notificacion);

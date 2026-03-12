@@ -168,7 +168,7 @@ function SignUp() {
             <Heading as="h1" size="4xl" color="white" mb={4}>Registrarse</Heading>
 
             <Box w={{ base: "90%", md: "50%" }} mx="auto" px={4}>
-                <Text color={isValidName === false ? "red.500" : "white"} mb={2}>{nameMessage}</Text>
+                <Text color={isValidName === false ? "red.500" : "inherit"} mb={2}>{nameMessage}</Text>
                 <Input
                     type="text"
                     value={username}
@@ -181,13 +181,15 @@ function SignUp() {
                     }}
                     bg="#454545"
                     color="white"
-                    borderColor={isValidName === false ? "red.500" : "inherit"}
+                    border="solid 0.05rem"
+                    borderColor={isValidName === false ? "red.500" : { base: "gray.300", _dark: "#ffffff" }}
                     borderRadius="1rem"
                     _placeholder={{ color: "gray.400" }}
                     mb={4}
+                    _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                 />
 
-                <Text color={isValidEmail === false ? "red.500" : "white"} mb={2}>{emailMessage}</Text>
+                <Text color={isValidEmail === false ? "red.500" : "inherit"} mb={2}>{emailMessage}</Text>
                 <Input
                     type="email"
                     value={email}
@@ -200,13 +202,15 @@ function SignUp() {
                     }}
                     bg="#454545"
                     color="white"
-                    borderColor={isValidEmail === false ? "red.500" : "inherit"}
+                    border="solid 0.05rem"
+                    borderColor={isValidEmail === false ? "red.500" : { base: "gray.300", _dark: "#ffffff" }}
                     borderRadius="1rem"
                     _placeholder={{ color: "gray.400" }}
                     mb={4}
+                    _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                 />
 
-                <Text color={isValidPassword === false ? "red.500" : "white"} mb={2}>{passwordMessage}</Text>
+                <Text color={isValidPassword === false ? "red.500" : "inherit"} mb={2}>{passwordMessage}</Text>
                 <Box pos="relative" display="flex" alignItems="center" mb={4}>
                     <Input
                         type={showPassword ? "text" : "password"}
@@ -220,9 +224,11 @@ function SignUp() {
                         }}
                         bg="#454545"
                         color="white"
-                        borderColor={isValidPassword === false ? "red.500" : "inherit"}
+                        border="solid 0.05rem"
+                        borderColor={isValidPassword === false ? "red.500" : { base: "gray.300", _dark: "#ffffff" }}
                         borderRadius="1rem"
                         _placeholder={{ color: "gray.400" }}
+                        _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                     />
                     <Image
                         position="absolute"

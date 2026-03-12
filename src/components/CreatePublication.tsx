@@ -35,6 +35,7 @@ function CreatePublication() {
     const [isUploadingVideo, setIsUploadingVideo] = useState(false);
     const [isSendingForm, setIsSendingForm] = useState(false);
     const [showMap, setShowMap] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
 
     const [modalData, setModalData] = useState({
         isOpen: false,
@@ -297,7 +298,13 @@ function CreatePublication() {
             setPreviewVideo(null);
             setShowMap(false);
             navigate("/my-profile");
-        } catch {
+        } catch (error: any) {
+            if (error.response?.data?.error) {
+                setErrorMessage(error.response.data.error);
+            } else {
+                setErrorMessage("Ocurrió un error al publicar.");
+            }
+            setTimeout(() => setErrorMessage(""), 5000);
         } finally {
             setIsSendingForm(false);
         }
@@ -343,15 +350,16 @@ function CreatePublication() {
                     overflow="hidden"
                     bg="#454545"
                     color="white"
-                    borderColor={isValidText === false ? "red.500" : "white"}
+                    borderColor={isValidText === false ? "red.500" : { base: "gray.300", _dark: "white" }}
                     borderRadius="1rem"
                     _placeholder={{ color: "gray.400" }}
+                    _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                 />
 
                 <Flex align="center" mb={3} gap={4}>
-                    <Image src="/AddImage.svg" alt="Agregar imagen" boxSize="1.5rem" cursor="pointer" onClick={handleAddImage} />
-                    <Image src="/AddVideo.svg" alt="Agregar video" boxSize="1.5rem" cursor="pointer" onClick={handleAddVideo} />
-                    <Image src="/AddLocation.svg" alt="Agregar ubicación" boxSize="1.5rem" cursor="pointer" onClick={toggleLocation} />
+                    <Image src="/AddImage.svg" alt="Agregar imagen" boxSize="1.5rem" cursor="pointer" onClick={handleAddImage} filter="none" />
+                    <Image src="/AddVideo.svg" alt="Agregar video" boxSize="1.5rem" cursor="pointer" onClick={handleAddVideo} filter="none" />
+                    <Image src="/AddLocation.svg" alt="Agregar ubicación" boxSize="1.5rem" cursor="pointer" onClick={toggleLocation} filter="none" />
                 </Flex>
 
                 {imageError && <Text color="red.500" textAlign="center" mt={2}>{imageError}</Text>}
@@ -457,6 +465,30 @@ function CreatePublication() {
                 onConfirm={modalData.onConfirm}
                 onCancel={() => setModalData(prev => ({ ...prev, isOpen: false }))}
             />
+
+            {errorMessage && (
+                <Box
+                    position="fixed"
+                    bottom="90px"
+                    left="50%"
+                    transform="translateX(-50%)"
+                    bg="white"
+                    color="red.500"
+                    px={5}
+                    py={3}
+                    borderRadius="xl"
+                    fontWeight="bold"
+                    fontSize="sm"
+                    zIndex={9999}
+                    boxShadow="0 4px 20px rgba(0,0,0,0.4)"
+                    display="flex"
+                    alignItems="center"
+                    gap={2}
+                    textAlign="center"
+                >
+                    ⚠️ {errorMessage}
+                </Box>
+            )}
         </Box>
     );
 }

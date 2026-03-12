@@ -6,6 +6,7 @@ import ConfirmModal from "./modals/ConfirmModal";
 import RequireAuthModal from "./modals/RequireAuthModal";
 import LocationPicker from "./LocationPicker";
 import EditPublicationModal from "./modals/EditPublicationModal";
+import { useUserData } from "../utils/UserStore";
 import { Box, Flex, Image, Text, chakra } from "@chakra-ui/react";
 
 export default function PublicationCard({ post: initialPost, onImageClick, onClickComent, isPreview = false }: any) {
@@ -33,6 +34,9 @@ export default function PublicationCard({ post: initialPost, onImageClick, onCli
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const { role: globalRole } = useUserData();
+    const isBannedUser = globalRole === "banned";
+
     const { isLiked, likes, sharedCount, showCopied, showAuthModal, setShowAuthModal, authMessage, handleLike, handleShare, handleDelete } =
         usePublicationActions(post);
 
@@ -60,8 +64,7 @@ export default function PublicationCard({ post: initialPost, onImageClick, onCli
             <Flex
                 my={3}
                 userSelect="none"
-                cursor={isPreview ? "default" : "pointer"}
-                onClick={() => !isPreview && navigate("/publication?post=" + post.Id_publicacion)}
+                onClick={() => !isBannedUser && !isPreview && navigate("/publication?post=" + post.Id_publicacion)}
                 alignItems="flex-start"
             >
                 <Box>
@@ -87,11 +90,12 @@ export default function PublicationCard({ post: initialPost, onImageClick, onCli
                             {post.Usuario?.nombre_usuario}
                         </Text>
                         <Flex align="center" position="relative" ref={optionsRef}>
-                            <Text as="span" mr={post.Is_mine ? 2 : 3} fontSize="sm" color="gray.400">{formatFecha(post.Fecha_publicacion)}</Text>
-                            {post.Is_mine && (
+                            <Text as="span" mr={post.Can_delete ? 2 : 3} fontSize="sm" color="gray.400">{formatFecha(post.Fecha_publicacion)}</Text>
+                            {post.Can_delete && !isBannedUser && (
                                 <>
                                     <Image
                                         src="/Show_Options.svg"
+                                        filter="invert(0)"
                                         cursor="pointer"
                                         height="1.2rem"
                                         alt="Opciones"
@@ -110,17 +114,19 @@ export default function PublicationCard({ post: initialPost, onImageClick, onCli
                                             py={2}
                                             w="150px"
                                         >
-                                            <Flex
-                                                align="center"
-                                                px={4}
-                                                py={2}
-                                                cursor="pointer"
-                                                _hover={{ bg: "#3d3d3d" }}
-                                                onClick={e => { e.stopPropagation(); setShowOptions(false); setShowEditModal(true); }}
-                                            >
-                                                <Image src="/Edit.svg" width="20px" mr={3} alt="Editar" />
-                                                <Text fontSize="sm" color="white" fontWeight="bold">Editar</Text>
-                                            </Flex>
+                                            {post.Can_update && (
+                                                <Flex
+                                                    align="center"
+                                                    px={4}
+                                                    py={2}
+                                                    cursor="pointer"
+                                                    _hover={{ bg: "#3d3d3d" }}
+                                                    onClick={e => { e.stopPropagation(); setShowOptions(false); setShowEditModal(true); }}
+                                                >
+                                                    <Image src="/Edit.svg" width="20px" mr={3} alt="Editar" filter="none" />
+                                                    <Text fontSize="sm" color="white" fontWeight="bold">Editar</Text>
+                                                </Flex>
+                                            )}
                                             <Flex
                                                 align="center"
                                                 px={4}
@@ -130,7 +136,7 @@ export default function PublicationCard({ post: initialPost, onImageClick, onCli
                                                 onClick={e => { e.stopPropagation(); setShowOptions(false); setShowDeleteModal(true); }}
                                             >
                                                 <Image src="/Delete.svg" width="20px" mr={3} alt="Eliminar" />
-                                                <Text fontSize="sm" color="red.400" fontWeight="bold">Eliminar</Text>
+                                                <Text fontSize="sm" color="red.500" fontWeight="bold">Eliminar</Text>
                                             </Flex>
                                         </Flex>
                                     )}
@@ -180,18 +186,18 @@ export default function PublicationCard({ post: initialPost, onImageClick, onCli
                     )}
 
                     <Flex justify="space-between" mt={2}>
-                        <Flex onClick={e => { e.stopPropagation(); !isPreview && handleLike(); }} align="center">
-                            <Image mr={1} cursor="pointer" src={isLiked ? "Like_active.svg" : "Like.svg"} width="20px" />
+                        <Flex onClick={e => { e.stopPropagation(); !isPreview && !isBannedUser && handleLike(); }} align="center">
+                            <Image mr={1} cursor={"pointer"} src={isLiked ? "Like_active.svg" : "Like.svg"} width="20px" opacity={isBannedUser ? 0.5 : 1} />
                             <Text>{likes}</Text>
                         </Flex>
 
-                        <Flex onClick={e => { if (onClickComent) { e.stopPropagation(); !isPreview && onClickComent(); } }} align="center">
-                            <Image mr={1} cursor="pointer" src="Comment.svg" width="20px" />
+                        <Flex onClick={e => { if (onClickComent) { e.stopPropagation(); !isPreview && !isBannedUser && onClickComent(); } }} align="center">
+                            <Image mr={1} cursor={isBannedUser ? "default" : "pointer"} src="Comment.svg" width="20px" opacity={isBannedUser ? 0.5 : 1} filter="none" />
                             <Text>{post.comentarios?.total ?? 0}</Text>
                         </Flex>
 
-                        <Flex onClick={e => { e.stopPropagation(); !isPreview && handleShare(); }} align="center">
-                            <Image mr={1} cursor="pointer" src="Share.svg" width="20px" />
+                        <Flex onClick={e => { e.stopPropagation(); !isPreview && !isBannedUser && handleShare(); }} align="center">
+                            <Image mr={1} cursor={"pointer"} src="Share.svg" width="20px" opacity={isBannedUser ? 0.5 : 1} filter="none" />
                             <Text>{sharedCount}</Text>
                         </Flex>
                     </Flex>

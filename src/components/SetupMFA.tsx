@@ -70,9 +70,9 @@ function SetupMFA() {
 
     if (isLoading) {
         return (
-            <Flex direction="column" align="center" justify="center" minH="100vh">
-                <Spinner size="xl" color="white" boxSize="15rem" borderWidth="8px" mb={4} />
-                <Heading as="h3" color="white" mt={4}>Configurando MFA...</Heading>
+            <Flex direction="column" align="center" justify="center" minH="100vh" color="white">
+                <Spinner size="xl" boxSize="15rem" borderWidth="8px" mb={4} />
+                <Heading as="h3" mt={4}>Configurando MFA...</Heading>
             </Flex>
         );
     }
@@ -85,6 +85,7 @@ function SetupMFA() {
             flexDirection="column"
             justifyContent="center"
             alignItems="center"
+            color="white"
             mt={10}
         >
             <Flex w={{ base: "90%", md: "50%" }} mb={2}>
@@ -109,6 +110,7 @@ function SetupMFA() {
                     <Input
                         bg="#454545"
                         color="white"
+                        borderColor="inherit"
                         borderRadius="1rem"
                         _placeholder={{ color: "gray.400" }}
                         mb={3}
@@ -116,6 +118,7 @@ function SetupMFA() {
                         value={accountName}
                         onChange={(e) => setAccountName(e.target.value)}
                         placeholder="Ej: juan@comunired.com"
+                        _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                     />
 
                     <Heading as="h4" color="white" mb={3} size="md">Paso 2: Escanea el código QR</Heading>
@@ -153,6 +156,7 @@ function SetupMFA() {
                     <Input
                         bg="#454545"
                         color="white"
+                        borderColor="inherit"
                         borderRadius="1rem"
                         _placeholder={{ color: "gray.400" }}
                         mb={3}
@@ -168,6 +172,7 @@ function SetupMFA() {
                         textAlign="center"
                         fontSize="24px"
                         letterSpacing="8px"
+                        _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                     />
                 </Box>
 

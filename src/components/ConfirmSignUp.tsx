@@ -100,6 +100,7 @@ function ConfirmSignUp() {
             flexDirection="column"
             justifyContent="center"
             alignItems="center"
+            color="white"
             mt={10}
         >
 
@@ -133,11 +134,12 @@ function ConfirmSignUp() {
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
                     placeholder="Ingresa tu código de 6 dígitos"
-                    borderColor={isValidCode === false ? "red.500" : "inherit"}
+                    borderColor={isValidCode === false ? "red.500" : { base: "gray.300", _dark: "inherit" }}
                     bg="#454545"
                     color="white"
                     _placeholder={{ color: "gray.400" }}
                     borderRadius="1rem"
+                    _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                 />
 
                 <Button

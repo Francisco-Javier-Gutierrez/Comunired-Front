@@ -15,7 +15,11 @@ export interface EditPublicationModalProps {
 }
 
 export default function EditPublicationModal({ isOpen, onClose, post, onSuccess }: EditPublicationModalProps) {
-    const { profilePictureUrl, name } = useUserData();
+    const { profilePictureUrl, name, email: globalEmail } = useUserData();
+    const postOwnerName = post?.Usuario?.Nombre_usuario ?? post?.Usuario?.nombre_usuario ?? name ?? "Usuario";
+    const postOwnerPic = post?.Usuario?.Url_foto_perfil ?? post?.Usuario?.url_foto_perfil ?? profilePictureUrl ?? "/Profile.svg";
+    const isOwner = post?.Usuario?.Correo_electronico === globalEmail;
+
     const [image, setImage] = useState<string | null>(post?.Url_imagen || null);
     const [video, setVideo] = useState<string | null>(post?.Url_video || null);
     const [latitude, setLatitude] = useState<number | null>(post?.Lat ? Number(post.Lat) : null);
@@ -321,12 +325,12 @@ export default function EditPublicationModal({ isOpen, onClose, post, onSuccess 
                     <Dialog.Body p={0}>
                         <Box className={`${isDisabled ? "disabled-form" : ""}`} userSelect="none">
                             <Text color="white" fontSize="20px" fontWeight="700" mb={4} textAlign="center">
-                                Editar publicación
+                                {isOwner || !globalEmail ? "Editar publicación" : `Editar publicación de ${postOwnerName}`}
                             </Text>
 
                             <Flex align="center" my={3}>
                                 <Image
-                                    src={profilePictureUrl ?? "/Profile.svg"}
+                                    src={postOwnerPic}
                                     alt="Foto de perfil"
                                     borderRadius="full"
                                     mr={2}
@@ -334,7 +338,7 @@ export default function EditPublicationModal({ isOpen, onClose, post, onSuccess 
                                     userSelect="none"
                                 />
                                 <Box>
-                                    <Text color="white" fontWeight="bold" fontSize="sm">{name ?? "Usuario"}</Text>
+                                    <Text color="white" fontWeight="bold" fontSize="sm">{postOwnerName}</Text>
                                     <Text color="gray.400" fontSize="xs">Editando...</Text>
                                 </Box>
                             </Flex>
@@ -345,7 +349,7 @@ export default function EditPublicationModal({ isOpen, onClose, post, onSuccess 
                                 className={`textarea-input ${isValidText === false ? "input-error" : ""}`}
                                 placeholder="Corrige tu idea u opinión aquí"
                                 onInput={autoResize}
-                                onChange={() => { setIsValidText(null); setTextMessage("");}}
+                                onChange={() => { setIsValidText(null); setTextMessage(""); }}
                                 mb={3}
                                 minH="80px"
                                 resize="none"
@@ -360,9 +364,9 @@ export default function EditPublicationModal({ isOpen, onClose, post, onSuccess 
                             />
 
                             <Flex align="center" mb={3} gap={4}>
-                                <Image src="/AddImage.svg" alt="Agregar imagen" boxSize="1.5rem" cursor="pointer" onClick={handleAddImage} opacity={image ? 0.5 : 1} />
-                                <Image src="/AddVideo.svg" alt="Agregar video" boxSize="1.5rem" cursor="pointer" onClick={handleAddVideo} opacity={video ? 0.5 : 1} />
-                                <Image src="/AddLocation.svg" alt="Agregar ubicación" boxSize="1.5rem" cursor="pointer" onClick={toggleLocation} opacity={showMap ? 0.5 : 1} />
+                                <Image src="/AddImage.svg" alt="Agregar imagen" boxSize="1.5rem" cursor="pointer" onClick={handleAddImage} opacity={image ? 0.5 : 1} filter="none" />
+                                <Image src="/AddVideo.svg" alt="Agregar video" boxSize="1.5rem" cursor="pointer" onClick={handleAddVideo} opacity={video ? 0.5 : 1} filter="none" />
+                                <Image src="/AddLocation.svg" alt="Agregar ubicación" boxSize="1.5rem" cursor="pointer" onClick={toggleLocation} opacity={showMap ? 0.5 : 1} filter="none" />
                             </Flex>
 
                             {imageError && <Text color="red.500" textAlign="center" mt={2} fontSize="sm">{imageError}</Text>}

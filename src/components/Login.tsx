@@ -21,6 +21,7 @@ function Login() {
     const {
         setEmail: setGlobalEmail,
         setName: setGlobalName,
+        setRole: setGlobalRole,
         setProfilePictureUrl,
     } = useUserData();
 
@@ -86,6 +87,7 @@ function Login() {
 
             setGlobalEmail(claims.email as string);
             setGlobalName((claims.name as string) ?? "");
+            setGlobalRole((claims["cognito:groups"] as string[])[0] ?? "");
 
             setProfilePictureUrl(null);
 
@@ -142,18 +144,18 @@ function Login() {
                     <Heading as="h3" color="red.500" textAlign="center" mb={5} fontSize="lg">{loginFailedMessage}</Heading>
 
                     <Box w={{ base: "90%", md: "50%" }} mx="auto" px={4}>
-                        <Text mb={2} color={isValidEmail === false ? "red.500" : "white"}>
+                        <Text mb={2} color={isValidEmail === false ? "red.500" : "inherit"}>
                             {emailMessage}
                         </Text>
 
                         <Input
                             mb={4}
                             bg="#454545"
-                            border="solid 0.05rem #ffffff"
+                            border="solid 0.05rem"
+                            borderColor={isValidEmail === false ? "red.500" : { base: "gray.300", _dark: "#ffffff" }}
                             borderRadius="1rem"
                             color="white"
                             _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
-                            borderColor={isValidEmail === false ? "red.500" : "white"}
                             type="email"
                             value={email}
                             onChange={(e) => {
@@ -165,18 +167,18 @@ function Login() {
                             }}
                         />
 
-                        <Text mb={2} color={isValidPassword === false ? "red.500" : "white"}>
+                        <Text mb={2} color={isValidPassword === false ? "red.500" : "inherit"}>
                             {passwordMessage}
                         </Text>
 
                         <Box position="relative" mb={4}>
                             <Input
                                 bg="#454545"
-                                border="solid 0.05rem #ffffff"
+                                border="solid 0.05rem"
+                                borderColor={isValidPassword === false ? "red.500" : { base: "gray.300", _dark: "#ffffff" }}
                                 borderRadius="1rem"
                                 color="white"
                                 _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
-                                borderColor={isValidPassword === false ? "red.500" : "white"}
                                 type={showPassword ? "text" : "password"}
                                 value={password}
                                 onChange={(e) => {

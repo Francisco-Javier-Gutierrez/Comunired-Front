@@ -2,6 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { paths } from "../utils/GlobalVariables";
 import { Flex, Image } from "@chakra-ui/react";
 
+
 function NavBar() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -46,6 +47,7 @@ function NavBar() {
                         maxW="3.5rem"
                         onClick={() => navigate("/my-profile")}
                     />
+                    
                 </>
             )}
         </Flex>

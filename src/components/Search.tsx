@@ -17,7 +17,7 @@ function normalizePublications(data: any[]) {
         Url_video: p.Url_video ?? p.url_video,
         Lat: p.Lat ?? p.lat,
         Long: p.Long ?? p.long,
-        Is_mine: p.Is_mine ?? p.is_mine,
+        Can_delete: p.Can_delete ?? p.can_delete,
         Usuario: p.Usuario ?? p.usuario ?? {
             nombre_usuario: "Usuario",
             Url_foto_perfil: null,
@@ -101,6 +101,7 @@ function Search() {
                                 _placeholder={{ color: "gray.400" }}
                                 borderRadius="1rem"
                                 borderColor="white"
+                                _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                                 w="100%"
                                 value={text}
                                 onChange={e => setText(e.target.value)}

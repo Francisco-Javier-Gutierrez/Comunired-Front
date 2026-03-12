@@ -17,9 +17,6 @@ export const apiRoutes = {
   search_resources_url: `${base_url}/search/search-resources`,
   search_resources_user_auth_url: `${base_url}/search/search-resources-user-auth`,
 
-  edit_account_url: `${base_url}/account/edit`,
-
-  get_account_url: `${base_url}/account/get-account`,
   messages_account_url: `${base_url}/account/messages`,
 
   comment_publication_url: `${base_url}/comment/create`,
@@ -40,6 +37,11 @@ export const apiRoutes = {
   list_publication_user_auth_url: `${base_url}/publications/list-publication-user-auth`,
   list_publications_user_auth_url: `${base_url}/publications/list-publications-user-auth`,
   list_user_publications_user_auth_url: `${base_url}/publications/list-user-publications-user-auth`,
+
+  make_moderator_url: `${base_url}/admin/make-moderator`,
+  remove_moderator_url: `${base_url}/admin/remove-moderator`,
+  ban_user_url: `${base_url}/admin/ban-user`,
+  unban_user_url: `${base_url}/admin/unban-user`,
 };
 
 type Paths = {
@@ -84,7 +86,8 @@ export const PathsInitializer = () => {
         "/publication",
         "/edit-password",
         "/not-found",
-        "/verify-mfa"
+        "/verify-mfa",
+        "/confirm-signup"
       ].includes(currentPath),
 
       showFooter: [
@@ -116,7 +119,8 @@ export const PathsInitializer = () => {
         "/publication",
         "/edit-password",
         "/not-found",
-        "/verify-mfa"
+        "/verify-mfa",
+        "/confirm-signup"
       ].includes(currentPath),
 
       showLogoOnly: [
@@ -124,7 +128,8 @@ export const PathsInitializer = () => {
         "/signUp",
         "/forgot-password",
         "/reset-password",
-        "/verify-mfa"
+        "/verify-mfa",
+        "/confirm-signup"
       ].includes(currentPath)
     };
   }, [location]);

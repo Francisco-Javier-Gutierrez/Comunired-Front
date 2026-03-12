@@ -34,7 +34,7 @@ export function useCommentActions(initialComments: any, publicationId: string, o
                     id_comentario: res.data.id,
                     contenido: content,
                     fecha_comentario: new Date().toISOString(),
-                    Is_mine: true,
+                    Can_delete: true,
                     Usuario: {
                         Nombre_usuario: name ?? "Usuario",
                         Url_foto_perfil: profilePictureUrl ?? "/Profile.svg"

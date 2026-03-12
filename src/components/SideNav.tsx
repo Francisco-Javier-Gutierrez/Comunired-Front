@@ -3,6 +3,7 @@ import { paths } from "../utils/GlobalVariables";
 import { Flex, Image, Tooltip, Box } from "@chakra-ui/react";
 import { useNotificationStore } from "../utils/NotificationStore";
 
+
 const NavTooltip = ({ label, children }: { label: string, children: React.ReactNode }) => {
     return (
         <Tooltip.Root positioning={{ placement: "bottom" }} openDelay={200} closeDelay={0}>
@@ -41,6 +42,9 @@ function SideNav() {
             h={isSideNavVisible ? "100dvh" : "auto"}
             pos={isSideNavVisible ? "sticky" : "static"}
             top={0}
+            bg="#000000"
+            borderRight="none"
+            borderColor="gray.200"
             mx={!isSideNavVisible ? "auto" : undefined}
         >
             {paths.showLogoOnly ? (

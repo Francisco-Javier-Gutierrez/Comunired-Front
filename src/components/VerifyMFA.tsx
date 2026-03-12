@@ -69,6 +69,7 @@ function VerifyMFA() {
                 flexDirection="column"
                 justifyContent="center"
                 alignItems="center"
+                color="white"
                 mt={10}
             >
                 <Flex w={{ base: "90%", md: "50%" }} mb={2}>
@@ -116,6 +117,7 @@ function VerifyMFA() {
                         borderRadius="1rem"
                         borderColor="white"
                         _placeholder={{ color: "gray.400" }}
+                        _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                     />
 
                     <Button

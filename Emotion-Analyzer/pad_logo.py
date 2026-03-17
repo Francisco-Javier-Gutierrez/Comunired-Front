@@ -22,4 +22,4 @@ def pad_image(image_path, output_path, padding_percent=0.25):
     print(f"Saved padded logo to {output_path}")
 
 if __name__ == "__main__":
-    pad_image("../public/Logo.png", "../public/Logo-padded.png")
+    pad_image("../public/Logo.svg", "../public/Logo-padded.png")

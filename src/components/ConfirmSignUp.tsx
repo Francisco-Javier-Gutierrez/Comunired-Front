@@ -1,16 +1,18 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useUserData } from "../utils/UserStore";
-import { confirmSignUp } from "aws-amplify/auth";
-import { Box, Heading, Input, Button, Spinner, Text, Link, Flex } from "@chakra-ui/react";
+import { confirmSignUp, resendSignUpCode } from "aws-amplify/auth";
+import { Box, Heading, Input, Button, Spinner, Text, Flex } from "@chakra-ui/react";
 
 function ConfirmSignUp() {
     const [code, setCode] = useState("");
     const [isSendingForm, setIsSendingForm] = useState(false);
+    const [isResending, setIsResending] = useState(false);
     const [requestMessage, setRequestMessage] = useState("");
     const [isValidCode, setIsValidCode] = useState<boolean | null>(null);
 
     const navigate = useNavigate();
+    const location = useLocation();
 
     const Correo_electronico = useUserData.getState().email;
 
@@ -56,13 +58,39 @@ function ConfirmSignUp() {
                     setRequestMessage("Usuario no encontrado");
                     break;
                 default:
-                    console.error(error);
                     setRequestMessage("Ocurrió un error al verificar el código");
             }
         } finally {
             setIsSendingForm(false);
         }
     };
+
+    const handleResendCode = useCallback(async () => {
+        if (!Correo_electronico) {
+            setRequestMessage("No se encontró el correo. Regístrate de nuevo.");
+            return;
+        }
+
+        setIsResending(true);
+        setRequestMessage("");
+
+        try {
+            await resendSignUpCode({ username: Correo_electronico });
+            setRequestMessage("Se ha enviado un nuevo código a tu correo");
+            setIsValidCode(null);
+        } catch (error: any) {
+            setRequestMessage("Error al reenviar el código. Inténtalo más tarde.");
+        } finally {
+            setIsResending(false);
+        }
+    }, [Correo_electronico]);
+
+    useEffect(() => {
+        if (location.state?.autoResend && Correo_electronico) {
+            handleResendCode();
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state, Correo_electronico, handleResendCode]);
 
     return (
         <Box
@@ -72,8 +100,23 @@ function ConfirmSignUp() {
             flexDirection="column"
             justifyContent="center"
             alignItems="center"
+            color="white"
             mt={10}
         >
+
+            <Flex w={{ base: "90%", md: "50%" }} mb={2}>
+                <Text
+                    color="#aaa"
+                    cursor="pointer"
+                    fontWeight="600"
+                    onClick={() => navigate("/login")}
+                    _hover={{ color: "white" }}
+                    transition="color 0.2s"
+                >
+                    ← Volver al inicio de sesión
+                </Text>
+            </Flex>
+
             <Heading as="h1" size="4xl" color="white" mb={4}>Verificar código</Heading>
 
             {requestMessage && (
@@ -91,11 +134,12 @@ function ConfirmSignUp() {
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
                     placeholder="Ingresa tu código de 6 dígitos"
-                    borderColor={isValidCode === false ? "red.500" : "inherit"}
+                    borderColor={isValidCode === false ? "red.500" : { base: "gray.300", _dark: "inherit" }}
                     bg="#454545"
                     color="white"
                     _placeholder={{ color: "gray.400" }}
                     borderRadius="1rem"
+                    _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                 />
 
                 <Button
@@ -104,7 +148,7 @@ function ConfirmSignUp() {
                     w="100%"
                     my={4}
                     onClick={sendCode}
-                    disabled={isSendingForm}
+                    disabled={isSendingForm || isResending}
                     _hover={{ bg: "gray.200" }}
                     borderRadius="1rem"
                 >
@@ -116,12 +160,21 @@ function ConfirmSignUp() {
                     )}
                 </Button>
 
-                <Text color="white" display="block" mt={3} cursor="pointer">
-                    ¿No recibiste el código?{" "}
-                    <Link color="white" onClick={() => navigate("/signUp")} _hover={{ textDecoration: "underline" }}>
-                        Volver a registrarse
-                    </Link>
-                </Text>
+                <Flex justify="center" mt={2}>
+                    {isResending ? (
+                        <Spinner size="sm" color="white" />
+                    ) : (
+                        <Text
+                            color="gray.400"
+                            fontSize="sm"
+                            cursor="pointer"
+                            _hover={{ color: "white", textDecoration: "underline" }}
+                            onClick={handleResendCode}
+                        >
+                            ¿No recibiste el código? Reenviar código
+                        </Text>
+                    )}
+                </Flex>
             </Box>
         </Box>
     );

@@ -1,6 +1,8 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { paths } from "../utils/GlobalVariables";
 import { Flex, Image, Tooltip, Box } from "@chakra-ui/react";
+import { useNotificationStore } from "../utils/NotificationStore";
+
 
 const NavTooltip = ({ label, children }: { label: string, children: React.ReactNode }) => {
     return (
@@ -25,6 +27,8 @@ function SideNav() {
     const location = useLocation();
     const currentPath = location.pathname;
 
+    const hasUnreadNotifications = useNotificationStore((state) => state.hasUnreadNotifications);
+
     const isSideNavVisible = !paths.showLogoOnly && paths.showSideNav;
 
     return (
@@ -38,11 +42,14 @@ function SideNav() {
             h={isSideNavVisible ? "100dvh" : "auto"}
             pos={isSideNavVisible ? "sticky" : "static"}
             top={0}
+            bg="#000000"
+            borderRight="none"
+            borderColor="gray.200"
             mx={!isSideNavVisible ? "auto" : undefined}
         >
             {paths.showLogoOnly ? (
                 <Image
-                    src="Logo.png"
+                    src="Logo.svg"
                     alt="Logo"
                     mx="auto"
                     w="7rem"
@@ -52,7 +59,7 @@ function SideNav() {
                     <NavTooltip label="Logo">
                         <Box w="100%" display="flex" justifyContent="center">
                             <Image
-                                src="Logo.png"
+                                src="Logo.svg"
                                 alt="Logo"
                                 w="20%"
                             />
@@ -64,7 +71,7 @@ function SideNav() {
                     <NavTooltip label="Buscar">
                         <Box w="100%" display="flex" justifyContent="center">
                             <Image
-                                src="Search.svg"
+                                src={currentPath === "/search" ? "Search_Active.svg" : "Search.svg"}
                                 alt="Search"
                                 cursor="pointer"
                                 onClick={() => navigate("/search")}
@@ -74,27 +81,40 @@ function SideNav() {
                     </NavTooltip>
 
                     <NavTooltip label="Notificaciones">
-                        <Box w="100%" display="flex" justifyContent="center">
-                            <Image
-                                src={`${currentPath === "/notifications" ? "Messages_Grey.svg" : "Messages.svg"}`}
-                                alt="Messages"
-                                cursor="pointer"
-                                onClick={() => navigate("/notifications")}
-                                w="15%"
-                            />
+                        <Box w="100%" display="flex" justifyContent="center" pos="relative">
+                            <Box pos="relative" w="15%">
+                                <Image
+                                    src={currentPath === "/notifications" ? "Messages_Active.svg" : "Messages.svg"}
+                                    alt="Messages"
+                                    cursor="pointer"
+                                    onClick={() => navigate("/notifications")}
+                                    w="100%"
+                                />
+                                {hasUnreadNotifications && (
+                                    <Box
+                                        pos="absolute"
+                                        top="-2px"
+                                        right="-2px"
+                                        w="10px"
+                                        h="10px"
+                                        bg="#3b82f6"
+                                        borderRadius="full"
+                                        border="2px solid black"
+                                        animation="pulse-glow 2s infinite"
+                                    />
+                                )}
+                            </Box>
                         </Box>
                     </NavTooltip>
 
                     <NavTooltip label="Crear publicación">
                         <Box w="100%" display="flex" justifyContent="center">
                             <Image
-                                src="AddPublication.svg"
+                                src={currentPath === "/create-publication" ? "AddPublication_Active.svg" : "AddPublication.svg"}
                                 alt="AddPublication"
                                 cursor="pointer"
                                 onClick={() => navigate("/create-publication")}
                                 w="15%"
-                                bg="#7F7F7F"
-                                borderRadius="0.5rem"
                             />
                         </Box>
                     </NavTooltip>
@@ -102,7 +122,7 @@ function SideNav() {
                     <NavTooltip label="Inicio">
                         <Box w="100%" display="flex" justifyContent="center">
                             <Image
-                                src={`${currentPath === "/" ? "Home_Grey.svg" : "Home.svg"}`}
+                                src={currentPath === "/" ? "Home_Active.svg" : "Home.svg"}
                                 alt="Home"
                                 cursor="pointer"
                                 onClick={() => navigate("/")}
@@ -114,7 +134,7 @@ function SideNav() {
                     <NavTooltip label="Perfil">
                         <Box w="100%" display="flex" justifyContent="center">
                             <Image
-                                src={`${currentPath === "/my-profile" ? "Profile_Grey.svg" : "Profile.svg"}`}
+                                src={currentPath === "/my-profile" ? "Profile_Active.svg" : "Profile.svg"}
                                 alt="ProfileImage"
                                 cursor="pointer"
                                 onClick={() => navigate("/my-profile")}

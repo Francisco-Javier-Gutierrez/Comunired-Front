@@ -10,6 +10,9 @@ import { useMediaQuery } from "./components/hooks/UseMediaQuery.ts";
 import DesktopLayout from './components/layouts/DesktopLayout.tsx';
 import MobileLayout from './components/layouts/MobileLayout.tsx';
 import AppLinkPrompt from './components/AppLinkPrompt.tsx';
+import NetworkLoader from './components/NetworkLoader.tsx';
+import { useNotificationPolling } from './components/hooks/useNotificationPolling.ts';
+import { usePushNotifications } from './components/hooks/usePushNotifications.ts';
 import { StrictMode } from 'react';
 
 const system = createSystem(defaultConfig, {
@@ -37,6 +40,8 @@ function NavigatorAndPaths({ setPathsState }: { setPathsState: any }) {
     const location = useLocation();
     const navigate = useNavigate();
 
+    usePushNotifications(location.pathname);
+
     useEffect(() => {
         setPathsState({ ...paths });
         const urlListener = CapacitorApp.addListener('appUrlOpen', data => {
@@ -45,8 +50,7 @@ function NavigatorAndPaths({ setPathsState }: { setPathsState: any }) {
                     const url = new URL(data.url);
                     const path = url.pathname + url.search;
                     navigate(path);
-                } catch (e) {
-                    console.error("Error al parsear el deep link:", e);
+                } catch {
                 }
             }
         });
@@ -73,11 +77,14 @@ function App() {
     const [pathsState, setPathsState] = useState(paths);
     const isDesktop = useMediaQuery("(min-width: 1024px)");
 
+    useNotificationPolling();
+
     return (
         <Router>
             <ScrollToTop />
             <NavigatorAndPaths setPathsState={setPathsState} />
             <AppLinkPrompt />
+            <NetworkLoader />
 
             {isDesktop ? (
                 <DesktopLayout pathsState={pathsState} />

@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { apiRoutes, isUserAuthenticated, getToken } from "../utils/GlobalVariables";
 import PublicationCard from "./PublicationCard";
 import ImageModal from "./modals/ImageModal";
-import { Box, Flex, Heading, Input, Button, Spinner } from "@chakra-ui/react";
+import { Box, Flex, Heading, Input, Button } from "@chakra-ui/react";
+import { SkeletonFeed } from "./Skeletons";
 
 function normalizePublications(data: any[]) {
     return data.map(p => ({
@@ -16,7 +17,7 @@ function normalizePublications(data: any[]) {
         Url_video: p.Url_video ?? p.url_video,
         Lat: p.Lat ?? p.lat,
         Long: p.Long ?? p.long,
-        Is_mine: p.Is_mine ?? p.is_mine,
+        Can_delete: p.Can_delete ?? p.can_delete,
         Usuario: p.Usuario ?? p.usuario ?? {
             nombre_usuario: "Usuario",
             Url_foto_perfil: null,
@@ -37,38 +38,46 @@ function Search() {
     const [hasSearched, setHasSearched] = useState(false);
     const [imagenSeleccionada, setImagenSeleccionada] = useState<string | null>(null);
 
-    const handleSearch = async () => {
+    const loadSearch = async () => {
         const lowered = text.toLowerCase().trim();
         if (!lowered) return;
 
         setHasSearched(true);
-
         setIsLoading(true);
 
-        const isAuth = await isUserAuthenticated();
+        try {
+            const isAuth = await isUserAuthenticated();
+            const token = isAuth ? await getToken() : null;
 
-        const token = isAuth ? await getToken() : null;
+            const res = await axios.post(
+                (isAuth ? apiRoutes.search_resources_user_auth_url : apiRoutes.search_resources_url),
+                { texto: lowered },
+                {
+                    ...(isAuth && {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }),
+                }
+            );
 
-        await axios.post(
-            (isAuth ? apiRoutes.search_resources_user_auth_url : apiRoutes.search_resources_url),
-            { texto: lowered },
-            {
-                ...(isAuth && {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }),
+            let newPosts = [];
+            if (Array.isArray(res.data)) {
+                newPosts = res.data;
+            } else {
+                newPosts = res.data?.publicaciones || [];
             }
-        )
-            .then(res => {
-                const pubs = normalizePublications(res.data ?? []);
-                setResultados(pubs);
-            })
-            .catch(err => {
-                console.error("Error en búsqueda:", err);
-                setResultados([]);
-            })
-            .finally(() => setIsLoading(false));
+
+            setResultados(normalizePublications(newPosts));
+        } catch {
+            setResultados([]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleSearch = () => {
+        loadSearch();
     };
 
     return (
@@ -92,6 +101,7 @@ function Search() {
                                 _placeholder={{ color: "gray.400" }}
                                 borderRadius="1rem"
                                 borderColor="white"
+                                _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                                 w="100%"
                                 value={text}
                                 onChange={e => setText(e.target.value)}
@@ -115,15 +125,7 @@ function Search() {
 
             <Box w={["90%", "75%"]} mx="auto" mt={4}>
                 {isLoading ? (
-                    <Flex justify="center" mt={10}>
-                        <Spinner
-                            color='white'
-                            size='xl'
-                            w="15rem"
-                            h="15rem"
-                            borderWidth="4px"
-                        />
-                    </Flex>
+                    <SkeletonFeed count={3} />
                 ) : (
                     <>
                         {resultados.map(post => (

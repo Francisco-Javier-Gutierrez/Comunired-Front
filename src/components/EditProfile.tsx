@@ -1,17 +1,24 @@
 import { useRef, useState, useEffect } from "react";
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext, useLocation } from "react-router-dom";
 import { uploadFile } from "../utils/UploadUtils";
 import { updateUserAttributes, fetchAuthSession } from "aws-amplify/auth";
 import { useUserData } from "../utils/UserStore";
 import type { AuthContext } from "./layouts/LoggedLayout";
-import { apiRoutes, getToken } from "../utils/GlobalVariables";
+import { apiRoutes, getToken, useSearchParamsGlobal } from "../utils/GlobalVariables";
 import { Box, Flex, Heading, Text, Input, Button, Spinner, Image } from "@chakra-ui/react";
 import axios from "axios";
 
 function EditProfile() {
     const navigate = useNavigate();
     const authContext = useOutletContext<AuthContext>();
+    const location = useLocation();
+    const searchParams = useSearchParamsGlobal();
     const { setName: setGlobalName, setProfilePictureUrl } = useUserData();
+
+    const targetUserEmail = searchParams.get("user");
+    const isAdminEdit = !!targetUserEmail;
+
+    const locationState = location.state as { userName?: string; userPic?: string } | null;
 
     const [name, setName] = useState("");
     const [isDragging, setIsDragging] = useState(false);
@@ -24,17 +31,36 @@ function EditProfile() {
     const [imageError, setImageError] = useState<string>("");
     const [isValidImage, setIsValidImage] = useState<boolean>(true);
 
+    const [originalName, setOriginalName] = useState<string>("");
+    const [originalPicture, setOriginalPicture] = useState<string>("");
+
     const MAX_MB = 5;
     const MAX_BYTES = MAX_MB * 1024 * 1024;
 
     useEffect(() => {
-        if (authContext.name) setName(authContext.name);
-        if (authContext.picture) {
-            setPreviewImage(authContext.picture);
-            setProfileImage(authContext.picture);
-        }
-    }, [authContext]);
+        if (isAdminEdit && locationState) {
+            const stateName = locationState.userName || "";
+            const statePic = locationState.userPic || "";
 
+            setName(stateName);
+            setOriginalName(stateName);
+            setOriginalPicture(statePic);
+            if (statePic) {
+                setPreviewImage(statePic);
+                setProfileImage(statePic);
+            }
+        } else if (!isAdminEdit) {
+            if (authContext.name) {
+                setName(authContext.name);
+                setOriginalName(authContext.name);
+            }
+            if (authContext.picture) {
+                setPreviewImage(authContext.picture);
+                setProfileImage(authContext.picture);
+                setOriginalPicture(authContext.picture);
+            }
+        }
+    }, [authContext, isAdminEdit, locationState]);
 
     const handleImageSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -66,8 +92,7 @@ function EditProfile() {
                 setPreviewImage(fileUrl);
                 setProfileImage(fileUrl);
             }
-        } catch (err) {
-            console.error("Error subiendo imagen:", err);
+        } catch {
             setImageError("Error subiendo imagen, intenta de nuevo");
             setIsValidImage(false);
             setPreviewImage(null);
@@ -90,11 +115,11 @@ function EditProfile() {
 
     const handleSave = async () => {
         const trimmedName = name.trim();
-        const hasNameChange = trimmedName && trimmedName !== authContext.name;
-        const hasPictureChange = profileImage && profileImage !== authContext.picture;
+        const hasNameChange = trimmedName && trimmedName !== originalName;
+        const hasPictureChange = profileImage && profileImage !== originalPicture;
 
         if (!hasNameChange && !hasPictureChange) {
-            setErrorMessage("Debes cambiar tu nombre o actualizar tu foto antes de guardar");
+            setErrorMessage("Debes cambiar el nombre o actualizar la foto antes de guardar");
             return;
         }
 
@@ -107,36 +132,42 @@ function EditProfile() {
         setIsSendingForm(true);
 
         try {
-            const userAttributes: Record<string, string> = {};
-
-            if (hasNameChange) {
-                userAttributes.name = trimmedName;
-            }
-
-            if (hasPictureChange && profileImage) {
-                userAttributes.picture = profileImage;
-            }
-
             const token = await getToken();
 
-            await axios.post(
-                apiRoutes.update_user_url,
-                {
-                    nombre_usuario: trimmedName,
-                    foto_perfil: profileImage,
-                },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            if (isAdminEdit) {
+                await axios.post(
+                    apiRoutes.update_user_url,
+                    {
+                        correo_objetivo: targetUserEmail,
+                        nombre_usuario: trimmedName,
+                        foto_perfil: profileImage,
+                    },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                navigate(`/profile?user=${targetUserEmail}`);
+            } else {
+                const userAttributes: Record<string, string> = {};
+                if (hasNameChange) userAttributes.name = trimmedName;
+                if (hasPictureChange && profileImage) userAttributes.picture = profileImage;
 
-            await updateUserAttributes({ userAttributes });
+                await axios.post(
+                    apiRoutes.update_user_url,
+                    {
+                        nombre_usuario: trimmedName,
+                        foto_perfil: profileImage,
+                    },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
 
-            await fetchAuthSession({ forceRefresh: true });
-            if (hasNameChange) setGlobalName(trimmedName);
-            if (hasPictureChange && profileImage) setProfilePictureUrl(profileImage);
+                await updateUserAttributes({ userAttributes });
+                await fetchAuthSession({ forceRefresh: true });
 
-            navigate("/my-profile");
+                if (hasNameChange) setGlobalName(trimmedName);
+                if (hasPictureChange && profileImage) setProfilePictureUrl(profileImage);
+
+                navigate("/my-profile");
+            }
         } catch (err: any) {
-            console.error("Error actualizando perfil:", err);
             setErrorMessage(err.message || "Error al actualizar el perfil");
         } finally {
             setIsSendingForm(false);
@@ -144,6 +175,7 @@ function EditProfile() {
     };
 
     const isFormDisabled = isSendingForm || isUploadingImage;
+
 
     return (
         <Box className={`${isFormDisabled ? "disabled-form" : ""}`} userSelect="none">
@@ -153,26 +185,29 @@ function EditProfile() {
                         color="#aaa"
                         cursor="pointer"
                         fontWeight="600"
-                        onClick={() => navigate("/my-profile")}
+                        onClick={() => navigate(-1)}
                         _hover={{ color: "white" }}
                         transition="color 0.2s"
                     >
-                        ← Volver a mi perfil
+                        ← Volver
                     </Text>
                 </Flex>
 
-                <Heading as="h1" textAlign="center" size="4xl" color="white" mb={4}>Actualizar mis datos</Heading>
+                <Heading as="h1" textAlign="center" size="4xl" color="white" mb={4}>
+                    {isAdminEdit ? `Editar perfil de ${originalName}` : "Actualizar mis datos"}
+                </Heading>
 
                 {errorMessage && <Heading as="h6" size="sm" color="red.500">{errorMessage}</Heading>}
 
-                <Text color={!isValidImage ? "red.500" : "white"}>
+                <Text color={!isValidImage ? "red.500" : { base: "black", _dark: "white" }}>
                     {imageError || "Foto de perfil"}
                 </Text>
 
                 <Box
                     textAlign="center"
                     mb={4}
-                    border="0.05rem solid #ffffff"
+                    border="0.05rem solid"
+                    borderColor="#ffffff"
                     borderRadius="0.5rem"
                     w="100%"
                     cursor="pointer"
@@ -180,8 +215,7 @@ function EditProfile() {
                     onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                     onDragLeave={() => setIsDragging(false)}
                     onDrop={handleDropImage}
-                    bg={isDragging ? "rgba(255, 255, 255, 0.1)" : "#454545"}
-                    borderColor={isDragging ? "white" : "white"}
+                    bg={isDragging ? (false ? "rgba(0,0,0,0.1)" : "rgba(255, 255, 255, 0.1)") : { base: "gray.100", _dark: "#454545" }}
                     borderStyle={isDragging ? "dashed" : "solid"}
                     borderWidth={isDragging ? "2px" : "0.05rem"}
                     transition="0.2s ease-in-out"
@@ -206,7 +240,7 @@ function EditProfile() {
                         ) : (
                             <>
                                 <Text display="block" color="white">Haz click o arrastra una imagen aquí</Text>
-                                <Image src="/AddImage.svg" alt="Agregar imagen" w="4rem" mb={2} mx="auto" />
+                                <Image src="/AddImage.svg" alt="Agregar imagen" w="4rem" mb={2} mx="auto" filter="none" />
                             </>
                         )
                     )}
@@ -227,27 +261,30 @@ function EditProfile() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder={authContext.name || "Tu nombre"}
+                    placeholder={originalName || "Nombre de usuario"}
                     bg="#454545"
                     color="white"
                     _placeholder={{ color: "gray.400" }}
                     borderColor="white"
                     borderRadius="1rem"
+                    _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                 />
 
                 <Flex w="100%" justify="center" align="center">
-                    <Box w="50%" textAlign="start">
-                        <Button
-                            bg="white"
-                            color="black"
-                            _hover={{ bg: "gray.200" }}
-                            onClick={() => navigate("/edit-password")}
-                            borderRadius="1rem"
-                        >
-                            Cambiar contraseña
-                        </Button>
-                    </Box>
-                    <Box w="50%" textAlign="end">
+                    {!isAdminEdit && (
+                        <Box w="50%" textAlign="start">
+                            <Button
+                                bg="white"
+                                color="black"
+                                _hover={{ bg: "gray.200" }}
+                                onClick={() => navigate("/edit-password")}
+                                borderRadius="1rem"
+                            >
+                                Cambiar contraseña
+                            </Button>
+                        </Box>
+                    )}
+                    <Box w={isAdminEdit ? "100%" : "50%"} textAlign="end">
                         <Button
                             bg="white"
                             color="black"

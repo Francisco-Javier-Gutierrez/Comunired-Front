@@ -69,7 +69,6 @@ function EditPassword() {
             setConfirmPassword("");
             setTimeout(() => navigate("/my-profile"), 1500);
         } catch (err: any) {
-            console.error("Error cambiando contraseña:", err);
 
             if (err.name === "NotAuthorizedException") {
                 setErrorMessage("La contraseña actual es incorrecta");
@@ -136,6 +135,7 @@ function EditPassword() {
                         _placeholder={{ color: "gray.400" }}
                         borderColor="white"
                         borderRadius="1rem"
+                        _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                     />
                     <Image
                         position="absolute"
@@ -147,6 +147,7 @@ function EditPassword() {
                         src={!showCurrentPassword ? "Text.svg" : "Password.svg"}
                         alt="Mostrar u ocultar contraseña"
                         onClick={handleToggleCurrentPassword}
+                        filter="none"
                     />
                 </Box>
 
@@ -163,6 +164,7 @@ function EditPassword() {
                         _placeholder={{ color: "gray.400" }}
                         borderColor="white"
                         borderRadius="1rem"
+                        _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                     />
                     <Image
                         position="absolute"
@@ -174,6 +176,7 @@ function EditPassword() {
                         src={!showNewPassword ? "Text.svg" : "Password.svg"}
                         alt="Mostrar u ocultar contraseña"
                         onClick={handleToggleNewPassword}
+                        filter="none"
                     />
                 </Box>
 
@@ -190,6 +193,7 @@ function EditPassword() {
                         _placeholder={{ color: "gray.400" }}
                         borderColor="white"
                         borderRadius="1rem"
+                        _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                     />
                     <Image
                         position="absolute"
@@ -201,6 +205,7 @@ function EditPassword() {
                         src={!showConfirmPassword ? "Text.svg" : "Password.svg"}
                         alt="Mostrar u ocultar contraseña"
                         onClick={handleToggleConfirmPassword}
+                        filter="none"
                     />
                 </Box>
 

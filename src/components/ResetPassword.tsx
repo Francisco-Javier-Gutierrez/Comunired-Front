@@ -79,7 +79,6 @@ function ResetPassword() {
             setIsValidPassword(null);
             navigate("/login");
         } catch (error: any) {
-            console.error(error);
             if (error.name === "CodeMismatchException") {
                 setRequestMessage("El código ingresado es incorrecto.");
             } else if (error.name === "ExpiredCodeException") {
@@ -103,7 +102,6 @@ function ResetPassword() {
             await resetPassword({ username: email });
             setRequestMessage("Código reenviado correctamente. Revisa tu correo.");
         } catch (error: any) {
-            console.error(error);
             if (error.name === "LimitExceededException") {
                 setRequestMessage("Demasiados intentos. Intente más tarde.");
             } else {
@@ -120,6 +118,7 @@ function ResetPassword() {
             flexDirection="column"
             justifyContent="center"
             alignItems="center"
+            color="white"
             mt={10}
         >
             <Flex w={{ base: "90%", md: "50%" }} mb={2}>
@@ -145,12 +144,15 @@ function ResetPassword() {
                     onChange={e => setConfirmationCode(e.target.value)}
                     bg="#454545"
                     color="white"
+                    border="solid 0.05rem"
+                    borderColor="#ffffff"
                     borderRadius="1rem"
                     _placeholder={{ color: "gray.400" }}
                     mb={4}
+                    _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                 />
 
-                <Text color={isValidPassword === false ? "red.500" : "white"} mb={2}>{passwordMessage}</Text>
+                <Text color={isValidPassword === false ? "red.500" : "inherit"} mb={2}>{passwordMessage}</Text>
 
                 <Box pos="relative" display="flex" alignItems="center" mb={4}>
                     <Input
@@ -160,9 +162,11 @@ function ResetPassword() {
                         onChange={e => setPassword(e.target.value)}
                         bg="#454545"
                         color="white"
-                        borderColor={isValidPassword === false ? "red.500" : "inherit"}
+                        border="solid 0.05rem"
+                        borderColor={isValidPassword === false ? "red.500" : { base: "gray.300", _dark: "#ffffff" }}
                         borderRadius="1rem"
                         _placeholder={{ color: "gray.400" }}
+                        _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                     />
                     <Image
                         position="absolute"
@@ -185,9 +189,11 @@ function ResetPassword() {
                         onChange={e => setConfirmPassword(e.target.value)}
                         bg="#454545"
                         color="white"
-                        borderColor={isValidPassword === false ? "red.500" : "inherit"}
+                        border="solid 0.05rem"
+                        borderColor={isValidPassword === false ? "red.500" : { base: "gray.300", _dark: "#ffffff" }}
                         borderRadius="1rem"
                         _placeholder={{ color: "gray.400" }}
+                        _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                     />
                     <Image
                         position="absolute"

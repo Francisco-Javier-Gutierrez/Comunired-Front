@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Capacitor, registerPlugin } from '@capacitor/core';
+import { PushNotifications } from '@capacitor/push-notifications';
 import { Box, Button, Text, Dialog } from '@chakra-ui/react';
+import { useNotificationStore } from '../utils/NotificationStore';
 
-const OpenDefaultSettings = registerPlugin('OpenDefaultSettings');
+const OpenDefaultSettings = registerPlugin("OpenDefaultSettings");
 
-export interface AppLinkPromptProps {
+export interface PushNotificationPromptProps {
     title?: string;
     description?: ReactNode;
     instructionHeader?: string;
@@ -17,18 +19,19 @@ export interface AppLinkPromptProps {
     onClose?: () => void;
 }
 
-export default function AppLinkPrompt({
-    title = "Abrir links automáticamente",
-    description = <>Permite que los links de <strong>Comunired</strong> abran directamente en la app en vez del navegador.</>,
+export default function PushNotificationPrompt({
+    title = "Activar Notificaciones",
+    description = <>Permite que <strong>Comunired</strong> te envíe notificaciones cuando alguien comente, le dé like a tus publicaciones o te siga.</>,
     instructionHeader = 'Al presionar "Activar":',
-    instructionStep1 = <>1. Toca <strong>Agregar vínculo</strong></>,
-    instructionStep2 = <>2. Activa <strong>comuni-red.com</strong></>,
+    instructionStep1 = <>1. Toca <strong>Permitir</strong> en el recuadro que aparecerá</>,
+    instructionStep2 = <>2. ¡Listo! Recibirás notificaciones al instante.</>,
     primaryButtonText = "Activar ahora",
     secondaryButtonText = "Ahora no",
     isOpen,
     onClose
-}: AppLinkPromptProps = {}) {
+}: PushNotificationPromptProps = {}) {
     const [internalShow, setInternalShow] = useState(false);
+    const { setPushEnabled, setPushRegistrationError } = useNotificationStore();
     const show = isOpen !== undefined ? isOpen : internalShow;
 
     const hideDialog = () => {
@@ -40,14 +43,15 @@ export default function AppLinkPrompt({
         if (isOpen !== undefined) return;
 
         if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
-            const seen = localStorage.getItem('applink_prompt_seen');
+            const seen = localStorage.getItem('push_prompt_seen');
             if (seen) return;
 
             const checkAndShow = async () => {
                 try {
-                    const status = await (OpenDefaultSettings as any).checkAppLinksStatus();
-                    if (status && status.enabled) {
-                        localStorage.setItem('applink_prompt_seen', 'true');
+                    const status = await PushNotifications.checkPermissions();
+                    if (status.receive === 'granted') {
+                        localStorage.setItem('push_prompt_seen', 'true');
+                        setPushEnabled(true);
                         return;
                     }
                 } catch {
@@ -55,29 +59,46 @@ export default function AppLinkPrompt({
                 setInternalShow(true);
             };
 
-            const timer = setTimeout(checkAndShow, 4000);
+            const timer = setTimeout(checkAndShow, 2000);
             return () => clearTimeout(timer);
         }
-    }, []);
+    }, [setPushEnabled]);
 
     useEffect(() => {
         if (isOpen !== undefined) return;
         const handleShowPrompt = () => setInternalShow(true);
-        window.addEventListener('show-app-link-prompt', handleShowPrompt);
-        return () => window.removeEventListener('show-app-link-prompt', handleShowPrompt);
+        window.addEventListener('show-push-prompt', handleShowPrompt);
+        return () => window.removeEventListener('show-push-prompt', handleShowPrompt);
     }, [isOpen]);
 
-    const handleOpen = async () => {
+    const handleEnable = async () => {
         try {
-            await (OpenDefaultSettings as any).openAppLinkSettings();
+            let permStatus = await PushNotifications.checkPermissions();
+
+            if (permStatus.receive === 'prompt' || permStatus.receive === 'denied') {
+                permStatus = await PushNotifications.requestPermissions();
+            }
+
+            if (permStatus.receive === 'granted') {
+                setPushEnabled(true);
+                await PushNotifications.register();
+            } else if (permStatus.receive === 'denied') {
+                // If it's outright denied, pushing the button should bridge to native settings pane
+                if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+                    try {
+                        await (OpenDefaultSettings as any).openNotificationSettings();
+                    } catch { }
+                }
+            }
         } catch {
+            setPushRegistrationError(true);
         }
-        if (isOpen === undefined) localStorage.setItem('applink_prompt_seen', 'true');
+        if (isOpen === undefined) localStorage.setItem('push_prompt_seen', 'true');
         hideDialog();
     };
 
     const handleDismiss = () => {
-        if (isOpen === undefined) localStorage.setItem('applink_prompt_seen', 'true');
+        if (isOpen === undefined) localStorage.setItem('push_prompt_seen', 'true');
         hideDialog();
     };
 
@@ -96,7 +117,7 @@ export default function AppLinkPrompt({
                     textAlign="center"
                 >
                     <Dialog.Body p={0}>
-                        <Text fontSize="48px" mb={4}>🔗</Text>
+                        <Text fontSize="48px" mb={4}>🔔</Text>
 
                         <Text color="white" fontSize="18px" fontWeight="700" mb={2}>
                             {title}
@@ -134,7 +155,7 @@ export default function AppLinkPrompt({
                             fontSize="15px"
                             fontWeight="700"
                             mb={2}
-                            onClick={handleOpen}
+                            onClick={handleEnable}
                             _hover={{ opacity: 0.9 }}
                         >
                             {primaryButtonText}

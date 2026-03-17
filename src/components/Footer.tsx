@@ -1,11 +1,14 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { paths } from "../utils/GlobalVariables";
 import { Box, Flex, Image } from "@chakra-ui/react";
+import { useNotificationStore } from "../utils/NotificationStore";
 
 function Footer() {
     const navigate = useNavigate();
     const location = useLocation();
     const currentPath = location.pathname;
+
+    const hasUnreadNotifications = useNotificationStore((state) => state.hasUnreadNotifications);
 
     return (
         paths.showFooter && (
@@ -22,35 +25,50 @@ function Footer() {
             >
                 <Flex justify="space-around" align="center">
                     <Image
-                        src="Home.svg"
+                        src={currentPath === "/" ? "Home_Active.svg" : "Home.svg"}
                         alt="Home"
                         cursor="pointer"
-                        boxSize="10%"
+                        boxSize="8%"
+                        maxW="3.5rem"
                         p="1%"
-                        bg={currentPath === "/" ? "#373737" : "transparent"}
                         borderRadius="0.5rem"
                         onClick={() => navigate("/")}
                     />
                     <Image
-                        src="AddPublication.svg"
+                        src={currentPath === "/create-publication" ? "AddPublication_Active.svg" : "AddPublication.svg"}
                         alt="AddPublication"
                         cursor="pointer"
-                        boxSize="10%"
+                        boxSize="8%"
+                        maxW="3.5rem"
                         p="1%"
-                        bg="#7F7F7F"
                         borderRadius="0.5rem"
                         onClick={() => navigate("/create-publication")}
                     />
-                    <Image
-                        src="Messages.svg"
-                        alt="Messages"
-                        cursor="pointer"
-                        boxSize="10%"
-                        p="1%"
-                        bg={currentPath === "/notifications" ? "#373737" : "transparent"}
-                        borderRadius="0.5rem"
-                        onClick={() => navigate("/notifications")}
-                    />
+                    <Box pos="relative" boxSize="8%" maxW="3.5rem">
+                        <Image
+                            src={currentPath === "/notifications" ? "Messages_Active.svg" : "Messages.svg"}
+                            alt="Messages"
+                            cursor="pointer"
+                            p="10%"
+                            w="100%"
+                            h="100%"
+                            borderRadius="0.5rem"
+                            onClick={() => navigate("/notifications")}
+                        />
+                        {hasUnreadNotifications && (
+                            <Box
+                                pos="absolute"
+                                top="-2px"
+                                right="-2px"
+                                w="10px"
+                                h="10px"
+                                bg="#3b82f6"
+                                borderRadius="full"
+                                border="2px solid black"
+                                animation="pulse-glow 2s infinite"
+                            />
+                        )}
+                    </Box>
                 </Flex>
             </Box>
         )

@@ -9,7 +9,8 @@ import {
 import PublicationCard from "./PublicationCard";
 import ImageModal from "./modals/ImageModal";
 import PublicationComments from "./PublicationComments";
-import { Flex, Box, Heading, Spinner } from "@chakra-ui/react";
+import { Flex, Box, Heading } from "@chakra-ui/react";
+import { SkeletonPublicationCard } from "./Skeletons";
 
 function ViewPublication() {
     const [publication, setPublication] = useState<any>(null);
@@ -47,8 +48,7 @@ function ViewPublication() {
                 );
 
                 setPublication(res.data);
-            } catch (err) {
-                console.error("Error al cargar la publicación:", err);
+            } catch {
                 setError("Error al obtener la publicación");
             } finally {
                 setIsLoading(false);
@@ -87,8 +87,8 @@ function ViewPublication() {
     };
 
     if (isLoading) return (
-        <Flex minH="100vh" justify="center" align="center">
-            <Spinner size="xl" color="white" boxSize="15rem" borderWidth="8px" />
+        <Flex direction="column" w={["90%", "75%"]} mx="auto" minH="100vh" py={4}>
+            <SkeletonPublicationCard />
         </Flex>
     );
 

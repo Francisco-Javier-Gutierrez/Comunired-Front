@@ -36,7 +36,6 @@ export const uploadFile = async (file: File, type: "publications" | "profile"): 
 
         return fileUrl;
     } catch (err) {
-        console.error("Error en uploadFile:", err);
         throw err;
     }
 };

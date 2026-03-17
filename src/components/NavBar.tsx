@@ -1,9 +1,12 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { paths } from "../utils/GlobalVariables";
 import { Flex, Image } from "@chakra-ui/react";
 
+
 function NavBar() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const currentPath = location.pathname;
 
     if (!paths.showLogoOnly && !paths.showNavBar) {
         return null;
@@ -23,25 +26,28 @@ function NavBar() {
             className="no-select"
         >
             {paths.showLogoOnly ? (
-                <Image src="Logo.png" mx="auto" alt="Logo"
-                    boxSize="25%" />
+                <Image src="Logo.svg" mx="auto" alt="Logo"
+                    boxSize="16%" maxW="150px" />
             ) : (
                 <>
                     <Image
-                        src="Search.svg"
+                        src={currentPath === "/search" ? "Search_Active.svg" : "Search.svg"}
                         alt="Search"
                         cursor="pointer"
-                        boxSize="10%"
+                        boxSize="8%"
+                        maxW="3.5rem"
                         onClick={() => navigate("/search")}
                     />
-                    <Image src="Logo.png" alt="Logo" boxSize="10%" />
+                    <Image src="Logo.svg" alt="Logo" boxSize="8%" maxW="5rem" />
                     <Image
-                        src="Profile.svg"
+                        src={currentPath === "/my-profile" ? "Profile_Active.svg" : "Profile.svg"}
                         alt="Profile"
                         cursor="pointer"
-                        boxSize="10%"
+                        boxSize="8%"
+                        maxW="3.5rem"
                         onClick={() => navigate("/my-profile")}
                     />
+                    
                 </>
             )}
         </Flex>

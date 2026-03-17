@@ -2,12 +2,16 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { apiRoutes, getToken } from "../utils/GlobalVariables";
 import { useNavigate } from "react-router-dom";
-import { Box, Flex, Heading, Text, Spinner, Image, VStack } from "@chakra-ui/react";
+import { Box, Flex, Heading, Text, Image, VStack, Button } from "@chakra-ui/react";
+import { useNotificationStore } from "../utils/NotificationStore";
+import { SkeletonNotification } from "./Skeletons";
 
 function Notifications() {
     const navigate = useNavigate();
     const [notificaciones, setNotificaciones] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isClearing, setIsClearing] = useState<boolean>(false);
+    const setHasUnreadNotifications = useNotificationStore((state) => state.setHasUnreadNotifications);
 
     useEffect(() => {
         setIsLoading(true);
@@ -21,8 +25,11 @@ function Notifications() {
                 });
                 const data = res.data.notifications || [];
                 setNotificaciones(data);
-            } catch (err) {
-                console.error("Error consultando notificaciones:", err);
+
+                if (data.length === 0) {
+                    setHasUnreadNotifications(false);
+                }
+            } catch {
             } finally {
                 setIsLoading(false);
             }
@@ -32,20 +39,48 @@ function Notifications() {
     }, []);
 
     const leerNotificacion = async (id: string) => {
-
+        const previousNotifications = [...notificaciones];
         const token = await getToken();
+
+        setNotificaciones(prev => {
+            const newNotifs = prev.filter(n => n.id_notificacion !== id);
+            if (newNotifs.length === 0) {
+                setHasUnreadNotifications(false);
+            }
+            return newNotifs;
+        });
+
         try {
             await axios.post(
                 apiRoutes.read_notification_url,
                 { Id_notificacion: id },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
+        } catch {
+            setNotificaciones(previousNotifications);
+            setHasUnreadNotifications(previousNotifications.length > 0);
+        }
+    };
 
-            setNotificaciones(prev =>
-                prev.filter(n => n.id_notificacion !== id)
+    const handleClearAll = async () => {
+        const previousNotifications = [...notificaciones];
+        setIsClearing(true);
+        setNotificaciones([]);
+        setHasUnreadNotifications(false);
+
+        try {
+            const token = await getToken();
+            await axios.post(
+                apiRoutes.delete_all_notifications_url,
+                {},
+                { headers: { Authorization: `Bearer ${token}` } }
             );
-        } catch (err) {
-            console.error("Error leyendo notificación:", err);
+        } catch (error) {
+            console.error(error);
+            setNotificaciones(previousNotifications);
+            setHasUnreadNotifications(previousNotifications.length > 0);
+        } finally {
+            setIsClearing(false);
         }
     };
 
@@ -53,12 +88,33 @@ function Notifications() {
 
     return (
         <Flex direction="column" minH="100vh" textAlign="center">
-            <Heading as="h1" size="4xl" color="white" mb={4}>Notificaciones</Heading>
+            <Flex w={["90%", "75%"]} mx="auto" mb={4} justify="space-between" align="center" mt={3}>
+                <Heading as="h1" size="4xl" color="white" textAlign="left">Notificaciones</Heading>
+                {hasNotificaciones && (
+                    <Button
+                        size="sm"
+                        bg="transparent"
+                        color="red.400"
+                        _hover={{ bg: "rgba(255,0,0,0.15)" }}
+                        onClick={handleClearAll}
+                        disabled={isClearing}
+                        fontWeight="bold"
+                    >
+                        {isClearing ? "Limpiando..." : "Limpiar Todo"}
+                    </Button>
+                )}
+            </Flex>
 
             {isLoading && (
-                <Flex justify="center" mt="5rem">
-                    <Spinner size="xl" color="white" boxSize="15rem" borderWidth="8px" />
-                </Flex>
+                <VStack w={["90%", "75%"]} mx="auto" gap={3}>
+                    <SkeletonNotification />
+                    <SkeletonNotification />
+                    <SkeletonNotification />
+                    <SkeletonNotification />
+                    <SkeletonNotification />
+                    <SkeletonNotification />
+                    <SkeletonNotification />
+                </VStack>
             )}
 
             {!isLoading && !hasNotificaciones && (
@@ -105,6 +161,7 @@ function Notifications() {
                                     m={1}
                                     boxSize="1rem"
                                     alt="Eliminar"
+                                    filter="none"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         leerNotificacion(noti.id_notificacion);

@@ -118,7 +118,7 @@ function ResetPassword() {
             flexDirection="column"
             justifyContent="center"
             alignItems="center"
-            color="white"
+            color="var(--text-color)"
             mt={10}
         >
             <Flex w={{ base: "90%", md: "50%" }} mb={2}>
@@ -134,7 +134,7 @@ function ResetPassword() {
                 </Text>
             </Flex>
 
-            <Heading as="h1" size="4xl" color="white" mb={4}>Restablecer contraseña</Heading>
+            <Heading as="h1" size="4xl" color="var(--text-color)" mb={4}>Restablecer contraseña</Heading>
             <Heading as="h3" size="md" color="yellow.400" textAlign="center" mb={4}>{requestMessage}</Heading>
 
             <Box w={{ base: "90%", md: "50%" }} mx="auto" px={4}>
@@ -142,10 +142,10 @@ function ResetPassword() {
                     placeholder="Código de verificación"
                     value={confirmationCode}
                     onChange={e => setConfirmationCode(e.target.value)}
-                    bg="#454545"
-                    color="white"
+                    bg="var(--input-bg)"
+                    color="var(--text-color)"
                     border="solid 0.05rem"
-                    borderColor="#ffffff"
+                    borderColor="var(--input-border)"
                     borderRadius="1rem"
                     _placeholder={{ color: "gray.400" }}
                     mb={4}
@@ -160,10 +160,10 @@ function ResetPassword() {
                         value={password}
                         placeholder="Nueva contraseña"
                         onChange={e => setPassword(e.target.value)}
-                        bg="#454545"
-                        color="white"
+                        bg="var(--input-bg)"
+                        color="var(--text-color)"
                         border="solid 0.05rem"
-                        borderColor={isValidPassword === false ? "red.500" : { base: "gray.300", _dark: "#ffffff" }}
+                        borderColor={isValidPassword === false ? "red.500" : { base: "gray.300", _dark: "var(--input-border)" }}
                         borderRadius="1rem"
                         _placeholder={{ color: "gray.400" }}
                         _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
@@ -187,10 +187,10 @@ function ResetPassword() {
                         value={confirmPassword}
                         placeholder="Confirmar nueva contraseña"
                         onChange={e => setConfirmPassword(e.target.value)}
-                        bg="#454545"
-                        color="white"
+                        bg="var(--input-bg)"
+                        color="var(--text-color)"
                         border="solid 0.05rem"
-                        borderColor={isValidPassword === false ? "red.500" : { base: "gray.300", _dark: "#ffffff" }}
+                        borderColor={isValidPassword === false ? "red.500" : { base: "gray.300", _dark: "var(--input-border)" }}
                         borderRadius="1rem"
                         _placeholder={{ color: "gray.400" }}
                         _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
@@ -208,7 +208,7 @@ function ResetPassword() {
                     />
                 </Box>
 
-                <Box p={2} mb={4} borderRadius="md" className="no-select-no-click" bg="gray.800" color="white">
+                <Box p={2} mb={4} borderRadius="md" className="no-select-no-click" bg="var(--card-bg)" color="var(--text-color)">
                     <Text mb={2}>La contraseña debe contener:</Text>
 
                     <Flex direction="column" gap={1}>
@@ -251,25 +251,25 @@ function ResetPassword() {
                 </Box>
 
                 <Button
-                    bg="white"
-                    color="black"
+                    bg="var(--button-bg)"
+                    color="var(--button-text)"
                     w="100%"
                     my={4}
-                    _hover={{ bg: "gray.200" }}
+                    _hover={{ bg: "var(--button-hover-bg)" }}
                     onClick={handleResetPassword}
                     borderRadius="1rem"
                 >
                     {!isSendingForm ? "Restablecer contraseña" : (
                         <Flex justify="center" align="center">
                             <Text mr={3}>Procesando...</Text>
-                            <Spinner size="sm" color="black" />
+                            <Spinner size="sm" color="var(--button-text)" />
                         </Flex>
                     )}
                 </Button>
 
                 <Flex justify="end">
                     <Link
-                        color="white"
+                        color="var(--text-color)"
                         textDecoration="underline"
                         cursor="pointer"
                         onClick={handleResendCode}

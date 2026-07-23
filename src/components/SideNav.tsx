@@ -2,6 +2,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { paths } from "../utils/GlobalVariables";
 import { Flex, Image, Tooltip, Box } from "@chakra-ui/react";
 import { useNotificationStore } from "../utils/NotificationStore";
+import ThemeToggle from "./ThemeToggle";
+import { FiShield } from "react-icons/fi";
+import { useUserData } from "../utils/UserStore";
 
 const NavTooltip = ({ label, children }: { label: string, children: React.ReactNode }) => {
     return (
@@ -13,7 +16,7 @@ const NavTooltip = ({ label, children }: { label: string, children: React.ReactN
                 <Tooltip.Arrow>
                     <Tooltip.ArrowTip />
                 </Tooltip.Arrow>
-                <Tooltip.Content bg="#000000" color="white" px={2} py={1} borderRadius="md" fontSize="sm">
+                <Tooltip.Content bg="var(--tooltip-bg)" color="var(--tooltip-text)" px={2} py={1} borderRadius="md" fontSize="sm">
                     {label}
                 </Tooltip.Content>
             </Tooltip.Positioner>
@@ -27,6 +30,8 @@ function SideNav() {
     const currentPath = location.pathname;
 
     const hasUnreadNotifications = useNotificationStore((state) => state.hasUnreadNotifications);
+    const { role } = useUserData();
+    const isPrivileged = role === "admin" || role === "moderator";
 
     const isSideNavVisible = !paths.showLogoOnly && paths.showSideNav;
 
@@ -41,18 +46,22 @@ function SideNav() {
             h={isSideNavVisible ? "100dvh" : "auto"}
             pos={isSideNavVisible ? "sticky" : "static"}
             top={0}
-            bg="#000000"
-            borderRight="none"
-            borderColor="gray.200"
+            bg="var(--bg-color)"
+            borderRight={isSideNavVisible ? "1px solid var(--border-color)" : "none"}
             mx={!isSideNavVisible ? "auto" : undefined}
+            transition="background-color 0.3s ease, border-color 0.3s ease"
         >
             {paths.showLogoOnly ? (
-                <Image
-                    src="Logo.svg"
-                    alt="Logo"
-                    mx="auto"
-                    w="7rem"
-                />
+                <Flex align="center" gap={4}>
+                    <Image
+                        src="Logo.svg"
+                        alt="Logo"
+                        mx="auto"
+                        w="7rem"
+                        className="no-filter"
+                    />
+                    <ThemeToggle />
+                </Flex>
             ) : paths.showSideNav ? (
                 <>
                     <NavTooltip label="Logo">
@@ -61,11 +70,18 @@ function SideNav() {
                                 src="Logo.svg"
                                 alt="Logo"
                                 w="20%"
+                                className="no-filter"
                             />
                         </Box>
                     </NavTooltip>
 
-                    <Box pb={24}></Box>
+                    <NavTooltip label="Tema">
+                        <Box w="100%" display="flex" justifyContent="center">
+                            <ThemeToggle />
+                        </Box>
+                    </NavTooltip>
+
+                    <Box pb={14}></Box>
 
                     <NavTooltip label="Buscar">
                         <Box w="100%" display="flex" justifyContent="center">
@@ -98,13 +114,32 @@ function SideNav() {
                                         h="10px"
                                         bg="#3b82f6"
                                         borderRadius="full"
-                                        border="2px solid black"
+                                        border="2px solid var(--bg-color)"
                                         animation="pulse-glow 2s infinite"
                                     />
                                 )}
                             </Box>
                         </Box>
                     </NavTooltip>
+
+                    {isPrivileged && (
+                        <NavTooltip label="Reportes">
+                            <Box w="100%" display="flex" justifyContent="center">
+                                <Box
+                                    as="button"
+                                    cursor="pointer"
+                                    color={currentPath === "/admin/reports" ? "#3b82f6" : "var(--text-color)"}
+                                    onClick={() => navigate("/admin/reports")}
+                                    display="flex"
+                                    alignItems="center"
+                                    justifyContent="center"
+                                    aria-label="Reportes"
+                                >
+                                    <FiShield size={24} />
+                                </Box>
+                            </Box>
+                        </NavTooltip>
+                    )}
 
                     <NavTooltip label="Crear publicación">
                         <Box w="100%" display="flex" justifyContent="center">

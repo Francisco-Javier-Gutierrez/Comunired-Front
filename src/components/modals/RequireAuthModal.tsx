@@ -20,7 +20,7 @@ export default function RequireAuthModal({ isOpen, onClose, message }: Props) {
                     boxShadow="0 20px 60px rgba(0,0,0,0.6)"
                     borderRadius="20px"
                     p={6}
-                    color="white"
+                    color="var(--text-color)"
                     maxW="360px"
                     textAlign="center"
                 >
@@ -39,8 +39,8 @@ export default function RequireAuthModal({ isOpen, onClose, message }: Props) {
                             <Button
                                 w="100%"
                                 py={3}
-                                bg="white"
-                                color="black"
+                                bg="var(--button-bg)"
+                                color="var(--button-text)"
                                 borderRadius="12px"
                                 fontSize="15px"
                                 fontWeight="700"

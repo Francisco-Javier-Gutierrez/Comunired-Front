@@ -1,29 +1,30 @@
 import { useRef, useState, useEffect } from "react";
-import axios from "axios";
-import { apiRoutes, getToken } from "../../utils/GlobalVariables";
+import { api } from "../../services/api";
 import { uploadFile } from "../../utils/UploadUtils";
 import LocationPicker from "../LocationPicker";
 import ConfirmModal from "./ConfirmModal";
 import { Dialog, Flex, Box, Text, Textarea, Image, Button, Spinner, Input } from "@chakra-ui/react";
 import { useUserData } from "../../utils/UserStore";
+import type { Publication } from "../../types";
 
 export interface EditPublicationModalProps {
     isOpen: boolean;
     onClose: () => void;
-    post: any;
-    onSuccess: (updatedPost: any) => void;
+    post: Publication;
+    onSuccess: (updatedPost: Publication) => void;
 }
 
 export default function EditPublicationModal({ isOpen, onClose, post, onSuccess }: EditPublicationModalProps) {
     const { profilePictureUrl, name, email: globalEmail } = useUserData();
-    const postOwnerName = post?.Usuario?.Nombre_usuario ?? post?.Usuario?.nombre_usuario ?? name ?? "Usuario";
-    const postOwnerPic = post?.Usuario?.Url_foto_perfil ?? post?.Usuario?.url_foto_perfil ?? profilePictureUrl ?? "/Profile.svg";
-    const isOwner = post?.Usuario?.Correo_electronico === globalEmail;
+    const postOwnerName = post.user?.username ?? name ?? "Usuario";
+    const postOwnerPic = post.user?.profilePicUrl ?? profilePictureUrl ?? "/Profile.svg";
+    const postOwnerEmail = post.user?.email ?? post.userEmail;
+    const isOwner = !!postOwnerEmail && !!globalEmail && postOwnerEmail.toLowerCase() === globalEmail.toLowerCase();
 
-    const [image, setImage] = useState<string | null>(post?.Url_imagen || null);
-    const [video, setVideo] = useState<string | null>(post?.Url_video || null);
-    const [latitude, setLatitude] = useState<number | null>(post?.Lat ? Number(post.Lat) : null);
-    const [longitude, setLongitude] = useState<number | null>(post?.Long ? Number(post.Long) : null);
+    const [image, setImage] = useState<string | null>(post.imageUrl || null);
+    const [video, setVideo] = useState<string | null>(post.videoUrl || null);
+    const [latitude, setLatitude] = useState<number | null>(post.lat ?? null);
+    const [longitude, setLongitude] = useState<number | null>(post.long ?? null);
 
     const [textMessage, setTextMessage] = useState("");
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -31,8 +32,8 @@ export default function EditPublicationModal({ isOpen, onClose, post, onSuccess 
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
     const [isValidText, setIsValidText] = useState<boolean | null>(null);
-    const [previewImage, setPreviewImage] = useState<string | null>(post?.Url_imagen || null);
-    const [previewVideo, setPreviewVideo] = useState<string | null>(post?.Url_video || null);
+    const [previewImage, setPreviewImage] = useState<string | null>(post.imageUrl || null);
+    const [previewVideo, setPreviewVideo] = useState<string | null>(post.videoUrl || null);
 
     const [imageError, setImageError] = useState("");
     const [videoError, setVideoError] = useState("");
@@ -42,7 +43,8 @@ export default function EditPublicationModal({ isOpen, onClose, post, onSuccess 
     const [isUploadingImage, setIsUploadingImage] = useState(false);
     const [isUploadingVideo, setIsUploadingVideo] = useState(false);
     const [isSendingForm, setIsSendingForm] = useState(false);
-    const [showMap, setShowMap] = useState(post?.Lat && post?.Long ? true : false);
+    const [showMap, setShowMap] = useState(post.lat !== null && post.lat !== undefined && post.long !== null && post.long !== undefined);
+    const [formError, setFormError] = useState("");
 
     const [modalData, setModalData] = useState({
         isOpen: false,
@@ -53,21 +55,22 @@ export default function EditPublicationModal({ isOpen, onClose, post, onSuccess 
 
     useEffect(() => {
         if (isOpen && post) {
-            setImage(post.Url_imagen || null);
-            setPreviewImage(post.Url_imagen || null);
-            setVideo(post.Url_video || null);
-            setPreviewVideo(post.Url_video || null);
+            setImage(post.imageUrl || null);
+            setPreviewImage(post.imageUrl || null);
+            setVideo(post.videoUrl || null);
+            setPreviewVideo(post.videoUrl || null);
 
-            const lat = post.Lat ? Number(post.Lat) : null;
-            const lng = post.Long ? Number(post.Long) : null;
+            const lat = post.lat ?? null;
+            const lng = post.long ?? null;
             setLatitude(lat);
             setLongitude(lng);
             setShowMap(lat !== null && lng !== null);
 
             setIsValidText(null);
             setTextMessage("");
+            setFormError("");
             if (textareaRef.current) {
-                textareaRef.current.value = post.Contenido || "";
+                textareaRef.current.value = post.content || "";
                 setTimeout(autoResize, 10);
             }
         }
@@ -278,28 +281,21 @@ export default function EditPublicationModal({ isOpen, onClose, post, onSuccess 
         if (!textIsValid || isValidImage === false || isValidVideo === false) return;
 
         setIsSendingForm(true);
+        setFormError("");
         try {
             const realText = textareaRef.current?.value || "";
-            const token = await getToken();
-            const payload = {
-                Id_publicacion: post.Id_publicacion,
-                Contenido: realText,
-                Url_imagen: image,
-                Url_video: video,
-                Lat: latitude,
-                Long: longitude
-            };
+            const updatedPost = await api.publications.edit(post.id, {
+                content: realText,
+                imageUrl: image,
+                videoUrl: video,
+                lat: latitude,
+                long: longitude,
+            });
 
-            await axios.put(
-                apiRoutes.edit_publication_url,
-                payload,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            onSuccess({ ...post, ...payload });
+            onSuccess(updatedPost);
             onClose();
-
-        } catch {
+        } catch (error) {
+            setFormError(error instanceof Error ? error.message : "No pudimos actualizar la publicacion.");
         } finally {
             setIsSendingForm(false);
         }
@@ -308,7 +304,7 @@ export default function EditPublicationModal({ isOpen, onClose, post, onSuccess 
     const isDisabled = isSendingForm || isUploadingImage || isUploadingVideo;
 
     return (
-        <Dialog.Root open={isOpen} onOpenChange={(e) => !e.open && onClose()} placement="center" closeOnInteractOutside={!isDisabled}>
+        <Dialog.Root open={isOpen} onOpenChange={(e) => !e.open && !isDisabled && onClose()} placement="center" closeOnInteractOutside={!isDisabled}>
             <Dialog.Backdrop bg="rgba(0,0,0,0.85)" />
             <Dialog.Positioner>
                 <Dialog.Content
@@ -324,7 +320,7 @@ export default function EditPublicationModal({ isOpen, onClose, post, onSuccess 
                 >
                     <Dialog.Body p={0}>
                         <Box className={`${isDisabled ? "disabled-form" : ""}`} userSelect="none">
-                            <Text color="white" fontSize="20px" fontWeight="700" mb={4} textAlign="center">
+                            <Text color="var(--text-color)" fontSize="20px" fontWeight="700" mb={4} textAlign="center">
                                 {isOwner || !globalEmail ? "Editar publicación" : `Editar publicación de ${postOwnerName}`}
                             </Text>
 
@@ -338,12 +334,13 @@ export default function EditPublicationModal({ isOpen, onClose, post, onSuccess 
                                     userSelect="none"
                                 />
                                 <Box>
-                                    <Text color="white" fontWeight="bold" fontSize="sm">{postOwnerName}</Text>
+                                    <Text color="var(--text-color)" fontWeight="bold" fontSize="sm">{postOwnerName}</Text>
                                     <Text color="gray.400" fontSize="xs">Editando...</Text>
                                 </Box>
                             </Flex>
 
                             <Text color="red.500" fontSize="sm">{textMessage}</Text>
+                            {formError && <Text role="alert" color="red.500" fontSize="sm" mb={2}>{formError}</Text>}
                             <Textarea
                                 ref={textareaRef}
                                 className={`textarea-input ${isValidText === false ? "input-error" : ""}`}
@@ -355,7 +352,7 @@ export default function EditPublicationModal({ isOpen, onClose, post, onSuccess 
                                 resize="none"
                                 overflow="hidden"
                                 bg="#2d2d2d"
-                                color="white"
+                                color="var(--text-color)"
                                 borderColor={isValidText === false ? "red.500" : "transparent"}
                                 borderRadius="1rem"
                                 p={3}
@@ -371,10 +368,10 @@ export default function EditPublicationModal({ isOpen, onClose, post, onSuccess 
 
                             {imageError && <Text color="red.500" textAlign="center" mt={2} fontSize="sm">{imageError}</Text>}
                             {videoError && <Text color="red.500" textAlign="center" mt={2} fontSize="sm">{videoError}</Text>}
-                            {(isUploadingImage || isUploadingVideo) && <Text color="white" mt={2} fontSize="sm">Sincronizando archivo de reemplazo...</Text>}
+                            {(isUploadingImage || isUploadingVideo) && <Text color="var(--text-color)" mt={2} fontSize="sm">Sincronizando archivo de reemplazo...</Text>}
 
-                            <Input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageSelected} display="none" />
-                            <Input type="file" accept="video/*" ref={fileInputVideoRef} onChange={handleVideoSelected} display="none" />
+                            <Input type="file" accept="image/jpeg,image/png,image/webp" ref={fileInputRef} onChange={handleImageSelected} display="none" />
+                            <Input type="file" accept="video/mp4,video/webm,video/quicktime" ref={fileInputVideoRef} onChange={handleVideoSelected} display="none" />
 
                             {showMap && (
                                 <Box mb={4} pos="relative">
@@ -397,7 +394,7 @@ export default function EditPublicationModal({ isOpen, onClose, post, onSuccess 
                                         zIndex={1000}
                                         bg="red.500"
                                         _hover={{ bg: "red.600" }}
-                                        color="white"
+                                        color="var(--text-color)"
                                         w="30px" h="30px" minW="0" p="0"
                                     >✕</Button>
                                 </Box>
@@ -416,7 +413,7 @@ export default function EditPublicationModal({ isOpen, onClose, post, onSuccess 
                                         onClick={handleRemoveImage}
                                         bg="red.500"
                                         _hover={{ bg: "red.600" }}
-                                        color="white"
+                                        color="var(--text-color)"
                                         w="30px" h="30px" minW="0" p="0"
                                     >✕</Button>
                                 </Box>
@@ -436,7 +433,7 @@ export default function EditPublicationModal({ isOpen, onClose, post, onSuccess 
                                         zIndex={1}
                                         bg="red.500"
                                         _hover={{ bg: "red.600" }}
-                                        color="white"
+                                        color="var(--text-color)"
                                         w="30px" h="30px" minW="0" p="0"
                                     >✕</Button>
                                 </Box>
@@ -453,15 +450,15 @@ export default function EditPublicationModal({ isOpen, onClose, post, onSuccess 
                                     Cancelar
                                 </Button>
                                 <Button
-                                    bg="white"
-                                    color="black"
+                                    bg="var(--button-bg)"
+                                    color="var(--button-text)"
                                     _hover={{ opacity: 0.8 }}
                                     onClick={handleUpdatePublication}
                                     disabled={isDisabled}
                                     borderRadius="1rem"
                                     px={6}
                                 >
-                                    {!isSendingForm ? "Guardar cambios" : <Spinner size="sm" color="black" />}
+                                    {!isSendingForm ? "Guardar cambios" : <Spinner size="sm" color="var(--button-text)" />}
                                 </Button>
                             </Flex>
                         </Box>

@@ -36,7 +36,7 @@ function Search() {
 
     return (
         <Box minH="100vh">
-            <Heading as="h1" size="4xl" color="white" mb={4} textAlign="center">Buscador</Heading>
+            <Heading as="h1" size="4xl" color="var(--text-color)" mb={4} textAlign="center">Buscador</Heading>
 
             <form
                 style={{ width: "100%" }}
@@ -50,11 +50,11 @@ function Search() {
                         <Box w="75%">
                             <Input
                                 type="text"
-                                bg="#454545"
-                                color="white"
+                                bg="var(--input-bg)"
+                                color="var(--text-color)"
                                 _placeholder={{ color: "gray.400" }}
                                 borderRadius="1rem"
-                                borderColor="white"
+                                borderColor="var(--text-color)"
                                 _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                                 w="100%"
                                 value={text}
@@ -64,10 +64,10 @@ function Search() {
                         <Box w="25%" textAlign="center">
                             <Button
                                 type="submit"
-                                bg="white"
-                                color="black"
+                                bg="var(--button-bg)"
+                                color="var(--button-text)"
                                 w="75%"
-                                _hover={{ bg: "gray.200" }}
+                                _hover={{ bg: "var(--button-hover-bg)" }}
                                 borderRadius="1rem"
                             >
                                 Buscar
@@ -91,7 +91,7 @@ function Search() {
                         ))}
 
                         {hasSearched && resultados.length === 0 && (
-                            <Heading as="h1" color="white" textAlign="center" mt={5}>
+                            <Heading as="h1" color="var(--text-color)" textAlign="center" mt={5}>
                                 No se encontraron publicaciones.
                             </Heading>
                         )}

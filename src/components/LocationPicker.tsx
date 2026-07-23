@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { Box, Text, Button } from "@chakra-ui/react";
-import { Geolocation } from '@capacitor/geolocation';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -13,124 +12,49 @@ L.Icon.Default.mergeOptions({
 });
 
 function LocationMarker({ position, setPosition, readOnly }: any) {
-    useMapEvents({
-        click(e) {
-            if (!readOnly) {
-                setPosition(e.latlng);
-            }
-        },
-    });
-
-    return position === null ? null : (
-        <Marker position={position}></Marker>
-    );
+    useMapEvents({ click(e) { if (!readOnly) setPosition(e.latlng); } });
+    return position === null ? null : <Marker position={position} />;
 }
 
 function MapUpdater({ center }: { center: L.LatLngExpression }) {
     const map = useMap();
-    useEffect(() => {
-        map.setView(center);
-    }, [center]);
+    useEffect(() => { map.setView(center); }, [center, map]);
     return null;
 }
 
 export default function LocationPicker({ latitude, longitude, setLocation, readOnly = false }: any) {
-    const [position, setPosition] = useState<L.LatLng | null>(
-        latitude && longitude ? new L.LatLng(latitude, longitude) : null
-    );
-
-    const [center, setCenter] = useState<L.LatLngExpression>(
-        latitude && longitude ? [latitude, longitude] : [19.4326, -99.1332]
-    );
+    const hasCoordinates = latitude !== null && latitude !== undefined && longitude !== null && longitude !== undefined;
+    const [position, setPosition] = useState<L.LatLng | null>(hasCoordinates ? new L.LatLng(latitude, longitude) : null);
+    const [center, setCenter] = useState<L.LatLngExpression>(hasCoordinates ? [latitude, longitude] : [19.4326, -99.1332]);
     const [loadedUserLocation, setLoadedUserLocation] = useState(false);
 
     useEffect(() => {
-        if (position && !readOnly && setLocation) {
-            setLocation(position.lat, position.lng);
-        }
-    }, [position]);
+        if (position && !readOnly && setLocation) setLocation(position.lat, position.lng);
+    }, [position, readOnly, setLocation]);
 
     useEffect(() => {
-        if (!latitude && !longitude && !loadedUserLocation && !readOnly) {
-            const fetchLocation = async () => {
-                try {
-                    const permissions = await Geolocation.checkPermissions();
-                    if (permissions.location !== 'granted') {
-                        await Geolocation.requestPermissions();
-                    }
-
-                    const pos = await Geolocation.getCurrentPosition({
-                        enableHighAccuracy: true,
-                        timeout: 10000
-                    });
-
-                    setCenter([pos.coords.latitude, pos.coords.longitude]);
-                    setLoadedUserLocation(true);
-                } catch {
-                    if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition(
-                            (pos) => {
-                                setCenter([pos.coords.latitude, pos.coords.longitude]);
-                                setLoadedUserLocation(true);
-                            },
-                            () => {
-                                setLoadedUserLocation(true);
-                            }
-                        );
-                    } else {
-                        setLoadedUserLocation(true);
-                    }
-                }
-            };
-
-            fetchLocation();
+        if (!hasCoordinates && !loadedUserLocation && !readOnly && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => { setCenter([pos.coords.latitude, pos.coords.longitude]); setLoadedUserLocation(true); },
+                () => setLoadedUserLocation(true),
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
         }
-    }, [latitude, longitude, loadedUserLocation, readOnly]);
+    }, [hasCoordinates, loadedUserLocation, readOnly]);
 
     return (
         <Box w="100%" mb={3}>
             <Box h="300px" w="100%" pos="relative" zIndex={0}>
-                <MapContainer
-                    center={center}
-                    zoom={13}
-                    style={{ height: '100%', width: '100%', borderRadius: '10px' }}
-                    dragging={true}
-                    scrollWheelZoom={true}
-                    doubleClickZoom={!readOnly}
-                    touchZoom={true}
-                    attributionControl={false}
-                >
-                    <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
+                <MapContainer center={center} zoom={13} style={{ height: '100%', width: '100%', borderRadius: '10px' }} dragging scrollWheelZoom doubleClickZoom={!readOnly} touchZoom attributionControl={false}>
+                    <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                     <LocationMarker position={position} setPosition={setPosition} readOnly={readOnly} />
                     <MapUpdater center={center} />
                 </MapContainer>
             </Box>
-            {!readOnly && (
-                <>
-                    <Text color="white" mt={2} fontSize="sm" textAlign="center" opacity={0.7}>
-                        Toca en el mapa para marcar la ubicación del suceso (Opcional)
-                    </Text>
-                    {position && (
-                        <Button
-                            display="block"
-                            mx="auto"
-                            mt={2}
-                            size="sm"
-                            variant="outline"
-                            colorScheme="whiteAlpha"
-                            color="white"
-                            _hover={{ bg: "whiteAlpha.200" }}
-                            onClick={() => { setPosition(null); setLocation(null, null); }}
-                            borderRadius="1rem"
-                        >
-                            Borrar ubicación
-                        </Button>
-                    )}
-                </>
-            )}
+            {!readOnly && <>
+                <Text color="var(--text-color)" mt={2} fontSize="sm" textAlign="center" opacity={0.7}>Toca en el mapa para marcar la ubicación del suceso (Opcional)</Text>
+                {position && <Button display="block" mx="auto" mt={2} size="sm" variant="outline" color="var(--text-color)" _hover={{ bg: "whiteAlpha.200" }} onClick={() => { setPosition(null); setLocation(null, null); }} borderRadius="1rem">Borrar ubicación</Button>}
+            </>}
         </Box>
     );
 }

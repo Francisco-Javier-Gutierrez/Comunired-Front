@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
-import { Capacitor, registerPlugin } from "@capacitor/core";
-import { App } from "@capacitor/app";
+﻿import { useEffect, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { api } from "../services/api";
 import { useUserData } from "../utils/UserStore";
@@ -10,15 +8,9 @@ import ConfirmModal from "./modals/ConfirmModal";
 import { signOut, fetchMFAPreference, updateMFAPreference } from "aws-amplify/auth";
 import type { AuthContext } from "./layouts/LoggedLayout";
 import { Box, Flex, Heading, Text, Image, Button, VStack, Separator } from "@chakra-ui/react";
-import AppLinkPrompt from "./AppLinkPrompt";
-import PushNotificationPrompt from "./PushNotificationPrompt";
-import PushErrorPrompt from "./PushErrorPrompt";
-import { useNotificationStore } from "../utils/NotificationStore";
 import { SkeletonProfileHeader, SkeletonFeed } from "./Skeletons";
-import { PushNotifications } from '@capacitor/push-notifications';
 import InfiniteScroll from "react-infinite-scroll-component";
 
-const OpenDefaultSettings = registerPlugin("OpenDefaultSettings");
 
 export default function MyProfile() {
   const navigate = useNavigate();
@@ -31,12 +23,6 @@ export default function MyProfile() {
   const [isLoadingAction, setIsLoadingAction] = useState<boolean>(false);
   const [isBannedUser, setIsBannedUser] = useState<boolean | null>(null);
   const [mfaEnabled, setMfaEnabled] = useState<boolean>(false);
-  const [appLinksEnabled, setAppLinksEnabled] = useState<boolean>(true);
-  const { pushEnabled, setPushEnabled, pushRegistrationError, setPushRegistrationError } = useNotificationStore();
-
-  const [isNative, setIsNative] = useState<boolean>(false);
-  const [showTurnOffLinks, setShowTurnOffLinks] = useState<boolean>(false);
-  const [showTurnOffPush, setShowTurnOffPush] = useState<boolean>(false);
 
   const [nextToken, setNextToken] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
@@ -53,6 +39,7 @@ export default function MyProfile() {
         setName(res.userProfile.username);
         setProfilePictureUrl(res.userProfile.profilePicUrl || null);
         setRole(res.userProfile.role);
+        setIsBannedUser(res.userProfile.role === "banned");
       }
 
       setPosts(prev => token === null ? res.items : [...prev, ...res.items]);
@@ -89,53 +76,16 @@ export default function MyProfile() {
     (async () => {
       try {
         const mfaPreference = await fetchMFAPreference();
-        setMfaEnabled(mfaPreference.preferred === "TOTP");
+        if (mounted) setMfaEnabled(mfaPreference.preferred === "TOTP");
       } catch {
-        setMfaEnabled(false);
-      }
-    })();
-
-    let appStateListener: any = null;
-
-    (async () => {
-      if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
-        setIsNative(true);
-
-        const checkAppLinks = async () => {
-          try {
-            const status = await (OpenDefaultSettings as any).checkAppLinksStatus();
-            if (mounted) setAppLinksEnabled(status?.enabled ?? true);
-          } catch {
-            if (mounted) setAppLinksEnabled(true);
-          }
-        };
-
-        checkAppLinks();
-
-        appStateListener = await App.addListener('appStateChange', ({ isActive }) => {
-          if (isActive) checkAppLinks();
-        });
-
-        const checkPushStatus = async () => {
-          try {
-            const status = await PushNotifications.checkPermissions();
-            if (mounted) {
-              setPushEnabled(status.receive === 'granted');
-            }
-          } catch {
-          }
-        };
-
-        checkPushStatus();
+        if (mounted) setMfaEnabled(false);
       }
     })();
 
     return () => {
       mounted = false;
-      if (appStateListener) appStateListener.remove();
     };
-  }, []);
-
+  }, [authContext.email, authContext.name, authContext.picture]);
   const handleConfirm = async () => {
     setIsLoadingAction(true);
     try {
@@ -166,7 +116,7 @@ export default function MyProfile() {
     <Flex justify="center" minH="100vh">
       <VStack w={["90%", "75%"]} maxW="container.md" gap={4} align="stretch">
         <Box textAlign="center">
-          <Heading as="h1" size="4xl" color="white" mb={4}>Tu perfil</Heading>
+          <Heading as="h1" size="4xl" color="var(--text-color)" mb={4}>Tu perfil</Heading>
           <Image
             mb={4}
             mx="auto"
@@ -180,21 +130,21 @@ export default function MyProfile() {
           />
         </Box>
 
-        <Text color="white" fontWeight="bold">Nombre de usuario:</Text>
-        <Text color="white" mb={5}>{name}</Text>
-        <Text color="white" fontWeight="bold">Correo Electrónico:</Text>
-        <Text color="white" mb={5}>{email}</Text>
+        <Text color="var(--text-color)" fontWeight="bold">Nombre de usuario:</Text>
+        <Text color="var(--text-color)" mb={5}>{name}</Text>
+        <Text color="var(--text-color)" fontWeight="bold">Correo ElectrÃ³nico:</Text>
+        <Text color="var(--text-color)" mb={5}>{email}</Text>
 
-        <Text color="white" fontWeight="bold">Autenticación de Dos Factores (MFA):</Text>
-        <Text color="white" mb={3}>
-          {mfaEnabled ? "✅ Activada" : "❌ Desactivada"}
+        <Text color="var(--text-color)" fontWeight="bold">AutenticaciÃ³n de Dos Factores (MFA):</Text>
+        <Text color="var(--text-color)" mb={3}>
+          {mfaEnabled ? "âœ… Activada" : "âŒ Desactivada"}
         </Text>
 
         {mfaEnabled ? (
           <Button
-            bg="white"
-            color="black"
-            _hover={{ bg: "gray.200" }}
+            bg="var(--button-bg)"
+            color="var(--button-text)"
+            _hover={{ bg: "var(--button-hover-bg)" }}
             mb={5}
             borderRadius="1rem"
             onClick={() => setAccion("desactivarMFA")}
@@ -204,9 +154,9 @@ export default function MyProfile() {
           </Button>
         ) : (
           <Button
-            bg="white"
-            color="black"
-            _hover={{ bg: "gray.200" }}
+            bg="var(--button-bg)"
+            color="var(--button-text)"
+            _hover={{ bg: "var(--button-hover-bg)" }}
             mb={5}
             borderRadius="1rem"
             onClick={() => navigate("/setup-mfa")}
@@ -216,111 +166,15 @@ export default function MyProfile() {
           </Button>
         )}
 
-        {isNative && (
-          <>
-            <Text color="white" fontWeight="bold">Abrir enlaces en la app:</Text>
-            <Text color="white" mb={3}>
-              {appLinksEnabled ? "✅ Activado" : "❌ Desactivado"}
-            </Text>
-            {appLinksEnabled ? (
-              <Button
-                bg="white"
-                color="black"
-                _hover={{ bg: "gray.200" }}
-                mb={2}
-                borderRadius="1rem"
-                onClick={() => setShowTurnOffLinks(true)}
-                w="fit-content"
-              >
-                Desactivar App Links
-              </Button>
-            ) : (
-              <Button
-                bg="white"
-                color="black"
-                _hover={{ bg: "gray.200" }}
-                mb={2}
-                borderRadius="1rem"
-                onClick={() => {
-                  window.dispatchEvent(new Event('show-app-link-prompt'));
-                }}
-                w="fit-content"
-              >
-                Configurar App Links
-              </Button>
-            )}
-
-            <AppLinkPrompt
-              isOpen={showTurnOffLinks}
-              onClose={() => setShowTurnOffLinks(false)}
-              title="Desactivar App Links"
-              description={<>Evita que los links de <strong>Comunired</strong> abran automáticamente en la app.</>}
-              instructionHeader='Al presionar "Desactivar":'
-              instructionStep1={<>1. Toca <strong>Agregar vínculo</strong></>}
-              instructionStep2={<>2. Apaga <strong>comuni-red.com</strong></>}
-              primaryButtonText="Desactivar ahora"
-              secondaryButtonText="Cancelar"
-            />
-
-            <Text color="white" fontWeight="bold" mt={4}>Notificaciones:</Text>
-            <Text color="white" mb={3}>
-              {pushEnabled ? "✅ Activado" : "❌ Desactivado"}
-            </Text>
-            {pushEnabled ? (
-              <Button
-                bg="white"
-                color="black"
-                _hover={{ bg: "gray.200" }}
-                mb={2}
-                borderRadius="1rem"
-                onClick={() => setShowTurnOffPush(true)}
-                w="fit-content"
-              >
-                Desactivar Notificaciones
-              </Button>
-            ) : (
-              <Button
-                bg="white"
-                color="black"
-                _hover={{ bg: "gray.200" }}
-                mb={2}
-                borderRadius="1rem"
-                onClick={() => {
-                  window.dispatchEvent(new Event('show-push-prompt'));
-                }}
-                w="fit-content"
-              >
-                Configurar Notificaciones
-              </Button>
-            )}
-
-            <PushNotificationPrompt
-              isOpen={showTurnOffPush}
-              onClose={() => setShowTurnOffPush(false)}
-              title="Desactivar Notificaciones"
-              description={<>Dejarás de recibir alertas en tiempo real sobre tu actividad en <strong>Comunired</strong>.</>}
-              instructionHeader='Cómo desactivarlas:'
-              instructionStep1={<>1. Ve a <strong>Ajustes del teléfono</strong> {'>'} Apps {'>'} Comunired</>}
-              instructionStep2={<>2. Apaga el permiso de <strong>Notificaciones</strong></>}
-              primaryButtonText="Entendido"
-              secondaryButtonText="Volver"
-            />
-
-            <PushErrorPrompt
-              isOpen={pushRegistrationError}
-              onClose={() => setPushRegistrationError(false)}
-            />
-          </>
-        )}
 
         <Separator borderColor="#333" my={2} />
 
         <Flex py={2} align="center" justify="space-around" wrap="wrap" gap={4}>
           {!isBannedUser && (
             <Button
-              bg="white"
-              color="black"
-              _hover={{ bg: "gray.200" }}
+              bg="var(--button-bg)"
+              color="var(--button-text)"
+              _hover={{ bg: "var(--button-hover-bg)" }}
               w={["100%", "30%"]}
               borderRadius="1rem"
               onClick={() => navigate("/edit-profile")}
@@ -329,21 +183,21 @@ export default function MyProfile() {
             </Button>
           )}
           <Button
-            bg="white"
-            color="black"
-            _hover={{ bg: "gray.200" }}
+            bg="var(--button-bg)"
+            color="var(--button-text)"
+            _hover={{ bg: "var(--button-hover-bg)" }}
             w={["100%", "30%"]}
             borderRadius="1rem"
             onClick={() => setAccion("cerrar")}
           >
-            Cerrar sesión
+            Cerrar sesiÃ³n
           </Button>
         </Flex>
 
-        <Separator borderColor="white" mt={2} mb={4} />
+        <Separator borderColor="var(--text-color)" mt={2} mb={4} />
 
-        <Heading as="h3" size="lg" color="white" mb={5} textAlign="center">Tus publicaciones</Heading>
-        {posts.length === 0 ? <Text color="white" textAlign="center">No tienes publicaciones aún 😔</Text> : (
+        <Heading as="h3" size="lg" color="var(--text-color)" mb={5} textAlign="center">Tus publicaciones</Heading>
+        {posts.length === 0 ? <Text color="var(--text-color)" textAlign="center">No tienes publicaciones aÃºn ðŸ˜”</Text> : (
           <InfiniteScroll
             dataLength={posts.length}
             next={fetchMoreData}
@@ -351,7 +205,7 @@ export default function MyProfile() {
             loader={<Box mt={4}><SkeletonFeed count={1} /></Box>}
             endMessage={
               <Text color="gray.500" textAlign="center" mt={6} mb={4} fontSize="sm">
-                No hay más publicaciones por cargar
+                No hay mÃ¡s publicaciones por cargar
               </Text>
             }
             style={{ overflow: 'hidden' }}
@@ -366,8 +220,8 @@ export default function MyProfile() {
       <ConfirmModal
         isOpen={accion !== null}
         title={
-          accion === "desactivarMFA" ? "¿Estás seguro de que deseas desactivar MFA?" :
-            "¿Estás seguro de que deseas cerrar sesión?"
+          accion === "desactivarMFA" ? "Â¿EstÃ¡s seguro de que deseas desactivar MFA?" :
+            "Â¿EstÃ¡s seguro de que deseas cerrar sesiÃ³n?"
         }
         isLoading={isLoadingAction}
         onConfirm={handleConfirm}
@@ -376,3 +230,6 @@ export default function MyProfile() {
     </Flex>
   );
 }
+
+
+

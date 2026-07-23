@@ -1,21 +1,22 @@
 import { useState } from "react";
 import { signIn, fetchAuthSession } from "aws-amplify/auth";
 import { useUserData } from "../utils/UserStore";
-import { useNavigate } from "react-router-dom";
-import { Box, Button, Flex, Heading, Image, Input, Spinner, Text, Link } from "@chakra-ui/react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Box, Button, Flex, Heading, Input, Spinner, Text, Link } from "@chakra-ui/react";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 import ConfirmModal from "./modals/ConfirmModal";
 
 function Login() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loginFailedMessage, setLoginFailedMessage] = useState("");
+    const [noticeMessage, setNoticeMessage] = useState((location.state as { notice?: string } | null)?.notice || "");
     const [isValidEmail, setIsValidEmail] = useState<boolean | null>(null);
-    const [showPassword, setShowPassword] = useState<boolean | null>(null);
-    const [isSendingForm, setIsSendingForm] = useState<boolean | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
+    const [isSendingForm, setIsSendingForm] = useState(false);
     const [isValidPassword, setIsValidPassword] = useState<boolean | null>(null);
-    const [passwordMessage, setPasswordMessage] = useState("Ingrese su contraseña");
-    const [emailMessage, setEmailMessage] = useState("Ingrese su correo electrónico");
     const [showUnconfirmedModal, setShowUnconfirmedModal] = useState(false);
 
     const {
@@ -23,43 +24,45 @@ function Login() {
         setName: setGlobalName,
         setRole: setGlobalRole,
         setProfilePictureUrl,
+        resetUser,
     } = useUserData();
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    const validateEmail = (): boolean => {
-        if (!emailRegex.test(email)) {
-            setEmailMessage("El correo no es válido");
-            setIsValidEmail(false);
+    const validateForm = () => {
+        const normalizedEmail = email.trim().toLowerCase();
+        const emailIsValid = emailRegex.test(normalizedEmail);
+        const passwordIsValid = password.trim().length > 0;
+
+        setIsValidEmail(emailIsValid);
+        setIsValidPassword(passwordIsValid);
+
+        if (!emailIsValid) {
+            setLoginFailedMessage("Ingresa un correo valido.");
             return false;
         }
-        setEmailMessage("Enviando correo...");
-        setIsValidEmail(true);
-        return true;
-    };
 
-    const validatePassword = (): boolean => {
-        if (!password.trim()) {
-            setPasswordMessage("No ha ingresado su contraseña");
-            setIsValidPassword(false);
+        if (!passwordIsValid) {
+            setLoginFailedMessage("Ingresa tu contrasena.");
             return false;
         }
-        setPasswordMessage("Enviando contraseña...");
-        setIsValidPassword(true);
-        return true;
-    };
 
-    const handleTogglePassword = () => {
-        setShowPassword(prev => !prev);
+        return true;
     };
 
     const login = async () => {
+        if (!validateForm()) return;
+
+        const normalizedEmail = email.trim().toLowerCase();
         setIsSendingForm(true);
+        setLoginFailedMessage("");
+        setNoticeMessage("");
+        resetUser();
 
         try {
             const signInOutput = await signIn({
-                username: email,
-                password: password,
+                username: normalizedEmail,
+                password,
             });
 
             if (signInOutput.nextStep.signInStep === "CONFIRM_SIGN_IN_WITH_TOTP_CODE") {
@@ -68,9 +71,9 @@ function Login() {
             }
 
             if (signInOutput.nextStep.signInStep === "CONFIRM_SIGN_UP") {
-                setGlobalEmail(email);
+                setGlobalEmail(normalizedEmail);
                 setShowUnconfirmedModal(true);
-                setLoginFailedMessage("Debes confirmar tu correo");
+                setLoginFailedMessage("Confirma tu correo antes de iniciar sesion.");
                 setIsSendingForm(false);
                 return;
             }
@@ -85,166 +88,170 @@ function Login() {
 
             const claims = idToken.payload;
             const groups = claims["cognito:groups"] as string[] | undefined;
+            const primaryRole = groups && groups.length > 0 ? groups[0] : "user";
 
-            setGlobalEmail(claims.email as string);
+            setGlobalEmail((claims.email as string) || normalizedEmail);
             setGlobalName((claims.name as string) ?? "");
-            setGlobalRole(groups && groups.length > 0 ? groups[0] : "user");
-
+            setGlobalRole(primaryRole === "moderators" ? "moderator" : primaryRole);
             setProfilePictureUrl(null);
 
-            setIsSendingForm(false);
-            setIsValidEmail(null);
-            setIsValidPassword(null);
-            setPasswordMessage("Ingrese una contraseña");
-            setEmailMessage("Ingrese su correo electrónico");
-            setLoginFailedMessage("");
             setEmail("");
             setPassword("");
-
+            setIsValidEmail(null);
+            setIsValidPassword(null);
             navigate("/");
-
         } catch (error: any) {
-            setIsSendingForm(false);
-            console.log("Login error:", error);
-
             switch (error.name) {
                 case "NotAuthorizedException":
-                    setLoginFailedMessage("Correo o contraseña incorrectos");
+                    setLoginFailedMessage("Correo o contrasena incorrectos.");
                     break;
-
                 case "PasswordResetRequiredException":
-                    setLoginFailedMessage("Debes restablecer tu contraseña");
+                    setLoginFailedMessage("Debes restablecer tu contrasena.");
                     break;
-
+                case "UserNotConfirmedException":
+                    setGlobalEmail(normalizedEmail);
+                    setShowUnconfirmedModal(true);
+                    setLoginFailedMessage("Confirma tu correo antes de iniciar sesion.");
+                    break;
                 default:
-                    setLoginFailedMessage("Error al iniciar sesión");
+                    setLoginFailedMessage("No pudimos iniciar sesion. Intenta de nuevo.");
             }
+        } finally {
+            setIsSendingForm(false);
         }
     };
 
-    const handleValidateForm = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const emailIsValid = validateEmail();
-        const passwordIsValid = validatePassword();
-        if (emailIsValid && passwordIsValid) login();
+        login();
     };
 
     return (
         <>
-            <form onSubmit={handleValidateForm}>
+            <form onSubmit={handleSubmit}>
                 <Box
                     className={`${isSendingForm ? "disabled-form no-select" : ""}`}
-                    display="flex"
-                    flexDirection="column"
-                    justifyContent="center"
-                    alignItems="center"
-                    color="white"
-                    mt={10}
+                    w={{ base: "90%", sm: "26rem" }}
+                    mx="auto"
+                    mt={{ base: 6, md: 10 }}
+                    color="var(--text-color)"
                 >
-                    <Heading as="h1" size="4xl" color="white" mb={4}>Iniciar sesión</Heading>
-                    <Heading as="h3" color="red.500" textAlign="center" mb={5} fontSize="lg">{loginFailedMessage}</Heading>
+                    <Flex direction="column" gap={4}>
+                        <Box textAlign="center">
+                            <Heading as="h1" size="3xl" color="var(--text-color)">Iniciar sesion</Heading>
+                            <Text mt={2} color="var(--muted-text)">Entra con tu cuenta de ComuniRed.</Text>
+                        </Box>
 
-                    <Box w={{ base: "90%", md: "50%" }} mx="auto" px={4}>
-                        <Text mb={2} color={isValidEmail === false ? "red.500" : "inherit"}>
-                            {emailMessage}
+                    {noticeMessage && (
+                        <Box bg="rgba(34, 197, 94, 0.12)" border="1px solid rgba(34, 197, 94, 0.35)" color="var(--text-color)" borderRadius="0.75rem" px={4} py={3}>
+                            {noticeMessage}
+                        </Box>
+                    )}
+
+                    {loginFailedMessage && (
+                        <Box bg="rgba(239, 68, 68, 0.12)" border="1px solid rgba(239, 68, 68, 0.35)" color="red.400" borderRadius="0.75rem" px={4} py={3}>
+                            {loginFailedMessage}
+                        </Box>
+                    )}
+
+                    <Box>
+                        <Text mb={2} fontWeight="600" color={isValidEmail === false ? "red.400" : "var(--text-color)"}>
+                            Correo electronico
                         </Text>
-
                         <Input
-                            mb={4}
-                            bg="#454545"
+                            bg="var(--input-bg)"
                             border="solid 0.05rem"
-                            borderColor={isValidEmail === false ? "red.500" : { base: "gray.300", _dark: "#ffffff" }}
+                            borderColor={isValidEmail === false ? "red.500" : "var(--input-border)"}
                             borderRadius="1rem"
-                            color="white"
+                            color="var(--text-color)"
                             _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                             type="email"
+                            autoComplete="email"
                             value={email}
                             onChange={(e) => {
                                 setEmail(e.target.value);
-                                if (isValidEmail === false) {
-                                    setIsValidEmail(null);
-                                    setEmailMessage("Ingrese su correo electrónico");
-                                }
+                                if (isValidEmail === false) setIsValidEmail(null);
+                                if (loginFailedMessage) setLoginFailedMessage("");
                             }}
                         />
+                    </Box>
 
-                        <Text mb={2} color={isValidPassword === false ? "red.500" : "inherit"}>
-                            {passwordMessage}
+                    <Box>
+                        <Text mb={2} fontWeight="600" color={isValidPassword === false ? "red.400" : "var(--text-color)"}>
+                            Contrasena
                         </Text>
-
-                        <Box position="relative" mb={4}>
+                        <Box position="relative">
                             <Input
-                                bg="#454545"
+                                bg="var(--input-bg)"
                                 border="solid 0.05rem"
-                                borderColor={isValidPassword === false ? "red.500" : { base: "gray.300", _dark: "#ffffff" }}
+                                borderColor={isValidPassword === false ? "red.500" : "var(--input-border)"}
                                 borderRadius="1rem"
-                                color="white"
+                                color="var(--text-color)"
+                                pr="3rem"
                                 _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                                 type={showPassword ? "text" : "password"}
+                                autoComplete="current-password"
                                 value={password}
                                 onChange={(e) => {
                                     setPassword(e.target.value);
-                                    if (isValidPassword === false) {
-                                        setIsValidPassword(null);
-                                        setPasswordMessage("Ingrese su contraseña");
-                                    }
+                                    if (isValidPassword === false) setIsValidPassword(null);
+                                    if (loginFailedMessage) setLoginFailedMessage("");
                                 }}
                             />
-
-                            <Image
+                            <Button
+                                type="button"
+                                aria-label={showPassword ? "Ocultar contrasena" : "Mostrar contrasena"}
                                 position="absolute"
-                                right="1rem"
+                                right="0.35rem"
                                 top="50%"
                                 transform="translateY(-50%)"
-                                width="1.5rem"
-                                cursor="pointer"
-                                src={!showPassword ? "Text.svg" : "Password.svg"}
-                                alt="Mostrar u ocultar contraseña"
-                                onClick={handleTogglePassword}
-                            />
+                                minW="2.25rem"
+                                h="2.25rem"
+                                p={0}
+                                bg="transparent"
+                                color="var(--text-color)"
+                                _hover={{ bg: "var(--hover-bg)" }}
+                                onClick={() => setShowPassword(prev => !prev)}
+                            >
+                                {showPassword ? <FiEyeOff /> : <FiEye />}
+                            </Button>
                         </Box>
-
-                        <Text mb={3}>
-                            ¿Olvidaste tu contraseña?{" "}
-                            <Link as="span" cursor="pointer" color="white" textDecoration="underline" onClick={() => navigate("/forgot-password")}>
-                                ¡Recupérala!
-                            </Link>
-                        </Text>
-
-                        <Text>
-                            ¿Todavía no tienes una cuenta?{" "}
-                            <Link as="span" cursor="pointer" color="white" textDecoration="underline" onClick={() => navigate("/signUp")}>
-                                Regístrate aquí
-                            </Link>
-                        </Text>
-
-                        <Button
-                            w="100%"
-                            my={4}
-                            bg="white"
-                            color="black"
-                            type="submit"
-                            borderRadius="1rem"
-                            _hover={{ bg: "gray.200" }}
-                        >
-                            {!isSendingForm ? (
-                                "Iniciar sesión"
-                            ) : (
-                                <Flex justify="center" align="center">
-                                    <Text mr={3}>Autenticándote...</Text>
-                                    <Spinner size="sm" />
-                                </Flex>
-                            )}
-                        </Button>
                     </Box>
+
+                    <Flex justify="space-between" gap={4} flexWrap="wrap" fontSize="sm">
+                        <Link as="button" type="button" color="var(--text-color)" textDecoration="underline" onClick={() => navigate("/forgot-password")}>
+                            Olvide mi contrasena
+                        </Link>
+                        <Link as="button" type="button" color="var(--text-color)" textDecoration="underline" onClick={() => navigate("/signUp")}>
+                            Crear cuenta
+                        </Link>
+                    </Flex>
+
+                    <Button
+                        w="100%"
+                        bg="var(--button-bg)"
+                        color="var(--button-text)"
+                        type="submit"
+                        borderRadius="1rem"
+                        disabled={isSendingForm}
+                        _hover={{ bg: "var(--button-hover-bg)" }}
+                    >
+                        {!isSendingForm ? "Iniciar sesion" : (
+                            <Flex justify="center" align="center">
+                                <Text mr={3}>Autenticando...</Text>
+                                <Spinner size="sm" />
+                            </Flex>
+                        )}
+                    </Button>
+                    </Flex>
                 </Box>
             </form>
 
             <ConfirmModal
                 isOpen={showUnconfirmedModal}
-                title="Usted no está verificado"
-                description="Su cuenta aún no ha sido confirmada. Haga clic en confirmar para enviarle un código y verificar su cuenta ahora."
-                onConfirm={() => navigate("/confirm-signup", { state: { autoResend: true } })}
+                title="Cuenta pendiente de verificacion"
+                description="Te enviaremos un codigo para confirmar tu correo y activar tu cuenta."
+                onConfirm={() => navigate("/confirm-signup", { state: { autoResend: true, email: email.trim().toLowerCase() } })}
                 onCancel={() => setShowUnconfirmedModal(false)}
             />
         </>

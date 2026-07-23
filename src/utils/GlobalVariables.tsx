@@ -2,9 +2,8 @@ import { useLocation, useSearchParams } from "react-router-dom";
 import { useEffect } from "react";
 import { fetchAuthSession } from "aws-amplify/auth";
 
-const base_url = 'https://zb9wlsnes1.execute-api.us-east-1.amazonaws.com';
+const base_url = import.meta.env.VITE_API_BASE_URL || '/api';
 export const apiRoutes = {
-  create_user_url: `${base_url}/user/create`,
   delete_account_url: `${base_url}/user/delete`,
   update_user_url: `${base_url}/user/update`,
   update_fcm_token_url: `${base_url}/user/fcm-token/update`,
@@ -23,9 +22,31 @@ export const apiRoutes = {
   comment_publication_url: `${base_url}/comment/create`,
   delete_comment_url: `${base_url}/comment/delete`,
   edit_comment_url: `${base_url}/comment/edit`,
+  pin_comment_url: `${base_url}/comment/pin`,
 
   like_publications_url: `${base_url}/like/create`,
   unlike_publications_url: `${base_url}/like/delete`,
+  follow_create_url: `${base_url}/follow/create`,
+  follow_delete_url: `${base_url}/follow/delete`,
+  followers_list_url: `${base_url}/follow/list-followers`,
+  following_list_url: `${base_url}/follow/list-following`,
+  block_create_url: `${base_url}/block/create`,
+  block_delete_url: `${base_url}/block/delete`,
+  mute_create_url: `${base_url}/mute/create`,
+  mute_delete_url: `${base_url}/mute/delete`,
+  save_create_url: `${base_url}/save/create`,
+  save_delete_url: `${base_url}/save/delete`,
+  save_list_url: `${base_url}/save/list`,
+  reaction_set_url: `${base_url}/reaction/set`,
+  reaction_delete_url: `${base_url}/reaction/delete`,
+  reaction_list_url: `${base_url}/reaction/list`,
+  report_create_url: `${base_url}/report/create`,
+  reports_list_url: `${base_url}/admin/reports/list`,
+  report_update_url: `${base_url}/admin/reports/update`,
+  view_register_url: `${base_url}/view/register`,
+  view_register_auth_url: `${base_url}/view/register-auth`,
+  poll_vote_url: `${base_url}/poll/vote`,
+  event_rsvp_url: `${base_url}/event/rsvp`,
 
   create_publication_url: `${base_url}/publications/create`,
   delete_publication_url: `${base_url}/publications/delete`,
@@ -43,6 +64,7 @@ export const apiRoutes = {
   remove_moderator_url: `${base_url}/admin/remove-moderator`,
   ban_user_url: `${base_url}/admin/ban-user`,
   unban_user_url: `${base_url}/admin/unban-user`,
+  admin_update_user_url: `${base_url}/admin/user/update`,
 };
 
 type Paths = {
@@ -60,7 +82,7 @@ let pathsData: Paths = {
   showLogoOnly: false
 };
 
-export const BanMensaje = "Usted se encuentra baneado. Si requiere asistencia adicional, envíe un correo a [EMAIL_ADDRESS]."
+export const BanMensaje = "Usted se encuentra baneado. Si requiere asistencia adicional, envÃƒÆ’Ã‚Â­e un correo a [EMAIL_ADDRESS]."
 
 export const PathsInitializer = () => {
   const location = useLocation();
@@ -78,6 +100,7 @@ export const PathsInitializer = () => {
         "/create-publication",
         "/preview-publication",
         "/notifications",
+        "/admin/reports",
         "/search",
         "/profile",
         "/login",
@@ -100,6 +123,7 @@ export const PathsInitializer = () => {
         "/edit-password",
         "/not-found",
         "/notifications",
+        "/admin/reports",
         "/create-publication",
         "/preview-publication",
         "/edit-profile"
@@ -110,6 +134,7 @@ export const PathsInitializer = () => {
         "/edit-profile",
         "/create-publication",
         "/notifications",
+        "/admin/reports",
         "/login",
         "/signUp",
         "/forgot-password",
@@ -161,8 +186,12 @@ export const currentPath = () => pathsData.currentPath;
 export const searchParams = useSearchParamsGlobal;
 
 export async function getToken() {
-  const session = await fetchAuthSession();
-  return session.tokens?.idToken?.toString() ?? null;
+  try {
+    const session = await fetchAuthSession();
+    return session.tokens?.idToken?.toString() ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export async function isUserAuthenticated() {

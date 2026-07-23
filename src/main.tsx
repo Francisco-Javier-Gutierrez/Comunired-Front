@@ -1,19 +1,15 @@
-import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react';
+﻿import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react';
 import './index.css';
 import './awsConfig.ts';
 import { useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter as Router, useLocation, useNavigate } from "react-router-dom";
-import { PathsInitializer, paths } from "./utils/GlobalVariables.tsx";
+import { BrowserRouter as Router, useLocation } from "react-router-dom";
+import { paths } from "./utils/GlobalVariables.tsx";
 import { useMediaQuery } from "./components/hooks/UseMediaQuery.ts";
 
 import RootLayout from './components/layouts/RootLayout.tsx';
-import AppLinkPrompt from './components/AppLinkPrompt.tsx';
 import NetworkLoader from './components/NetworkLoader.tsx';
 import { useNotificationPolling } from './components/hooks/useNotificationPolling.ts';
-import { usePushNotifications } from './components/hooks/usePushNotifications.ts';
-
-import { App as CapacitorApp } from '@capacitor/app';
 
 const system = createSystem(defaultConfig, {
     theme: {
@@ -34,31 +30,14 @@ const system = createSystem(defaultConfig, {
     },
 });
 
-function NavigatorAndPaths({ setPathsState }: { setPathsState: any }) {
+function NavigatorAndPaths({ setPathsState }: { setPathsState: (value: typeof paths) => void }) {
     const location = useLocation();
-    const navigate = useNavigate();
-
-    usePushNotifications(location.pathname);
 
     useEffect(() => {
         setPathsState({ ...paths });
-        const urlListener = CapacitorApp.addListener('appUrlOpen', data => {
-            if (data.url) {
-                try {
-                    const url = new URL(data.url);
-                    const path = url.pathname + url.search;
-                    navigate(path);
-                } catch {
-                }
-            }
-        });
+    }, [location.pathname, setPathsState]);
 
-        return () => {
-            urlListener.then(listener => listener.remove());
-        };
-    }, [location, navigate, setPathsState]);
-
-    return <PathsInitializer />;
+    return null;
 }
 
 function ScrollToTop() {
@@ -81,16 +60,14 @@ function App() {
         <Router>
             <ScrollToTop />
             <NavigatorAndPaths setPathsState={setPathsState} />
-            <AppLinkPrompt />
             <NetworkLoader />
-
             <RootLayout isDesktop={isDesktop} pathsState={pathsState} />
         </Router>
     );
 }
 
 createRoot(document.getElementById("root")!).render(
-        <ChakraProvider value={system}>
-            <App />
-        </ChakraProvider>
+    <ChakraProvider value={system}>
+        <App />
+    </ChakraProvider>
 );

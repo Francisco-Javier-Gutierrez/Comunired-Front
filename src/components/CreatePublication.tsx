@@ -311,7 +311,7 @@ function CreatePublication() {
     return (
         <Box className={`${isDisabled ? "disabled-form" : ""}`} userSelect="none">
             <Flex direction="column" minH="100vh" w={["90%", "75%"]} mx="auto">
-                <Heading as="h1" size="4xl" textAlign="center" color="white" mb={4}>Nueva publicación</Heading>
+                <Heading as="h1" size="4xl" textAlign="center" color="var(--text-color)" mb={4}>Nueva publicación</Heading>
 
                 <Flex align="center" my={3}>
                     <Image
@@ -322,7 +322,7 @@ function CreatePublication() {
                         boxSize="1.5rem"
                         userSelect="none"
                     />
-                    <Text color="white">
+                    <Text color="var(--text-color)">
                         {name ?? "Usuario"} &gt; <Text as="span" color="#616161">Publicación</Text>
                     </Text>
                 </Flex>
@@ -338,9 +338,9 @@ function CreatePublication() {
                     minH="80px"
                     resize="none"
                     overflow="hidden"
-                    bg="#454545"
-                    color="white"
-                    borderColor={isValidText === false ? "red.500" : { base: "gray.300", _dark: "white" }}
+                    bg="var(--input-bg)"
+                    color="var(--text-color)"
+                    borderColor={isValidText === false ? "red.500" : { base: "gray.300", _dark: "var(--input-border)" }}
                     borderRadius="1rem"
                     _placeholder={{ color: "gray.400" }}
                     _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
@@ -354,10 +354,10 @@ function CreatePublication() {
 
                 {imageError && <Text color="red.500" textAlign="center" mt={2}>{imageError}</Text>}
                 {videoError && <Text color="red.500" textAlign="center" mt={2}>{videoError}</Text>}
-                {(isUploadingImage || isUploadingVideo) && <Text color="white" mt={2}>Subiendo archivo...</Text>}
+                {(isUploadingImage || isUploadingVideo) && <Text color="var(--text-color)" mt={2}>Subiendo archivo...</Text>}
 
-                <Input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageSelected} display="none" />
-                <Input type="file" accept="video/*" ref={fileInputVideoRef} onChange={handleVideoSelected} display="none" />
+                <Input type="file" accept="image/jpeg,image/png,image/webp" ref={fileInputRef} onChange={handleImageSelected} display="none" />
+                <Input type="file" accept="video/mp4,video/webm,video/quicktime" ref={fileInputVideoRef} onChange={handleVideoSelected} display="none" />
 
                 {showMap && (
                     <Box mb={4} pos="relative">
@@ -379,8 +379,8 @@ function CreatePublication() {
                             onClick={handleRemoveLocation}
                             zIndex={1000}
                             bg="gray.100"
-                            _hover={{ bg: "gray.200" }}
-                            color="black"
+                            _hover={{ bg: "var(--button-hover-bg)" }}
+                            color="var(--button-text)"
                         >X</Button>
                     </Box>
                 )}
@@ -397,8 +397,8 @@ function CreatePublication() {
                             borderRadius="full"
                             onClick={handleRemoveImage}
                             bg="gray.100"
-                            _hover={{ bg: "gray.200" }}
-                            color="black"
+                            _hover={{ bg: "var(--button-hover-bg)" }}
+                            color="var(--button-text)"
                         >X</Button>
                     </Box>
                 )}
@@ -416,8 +416,8 @@ function CreatePublication() {
                             onClick={handleRemoveVideo}
                             zIndex={1}
                             bg="gray.100"
-                            _hover={{ bg: "gray.200" }}
-                            color="black"
+                            _hover={{ bg: "var(--button-hover-bg)" }}
+                            color="var(--button-text)"
                         >X</Button>
                     </Box>
                 )}
@@ -425,9 +425,9 @@ function CreatePublication() {
                 <Flex w="100%" mt={5} justify="center" align="center">
                     <Box w="50%" textAlign="start">
                         <Button
-                            bg="white"
-                            color="black"
-                            _hover={{ bg: "gray.200" }}
+                            bg="var(--button-bg)"
+                            color="var(--button-text)"
+                            _hover={{ bg: "var(--button-hover-bg)" }}
                             onClick={handleValidatePreviewPublication}
                             disabled={isDisabled}
                             borderRadius="1rem"
@@ -435,14 +435,14 @@ function CreatePublication() {
                     </Box>
                     <Box w="50%" textAlign="end">
                         <Button
-                            bg="white"
-                            color="black"
-                            _hover={{ bg: "gray.200" }}
+                            bg="var(--button-bg)"
+                            color="var(--button-text)"
+                            _hover={{ bg: "var(--button-hover-bg)" }}
                             onClick={handleValidatePublicatePublication}
                             disabled={isDisabled}
                             borderRadius="1rem"
                         >
-                            {!isSendingForm ? "Publicar" : (<Flex justify="center" align="center"><Text mr={3}>Publicando...</Text><Spinner size="sm" color="black" /></Flex>)}
+                            {!isSendingForm ? "Publicar" : (<Flex justify="center" align="center"><Text mr={3}>Publicando...</Text><Spinner size="sm" color="var(--button-text)" /></Flex>)}
                         </Button>
                     </Box>
                 </Flex>
@@ -462,7 +462,7 @@ function CreatePublication() {
                     bottom="90px"
                     left="50%"
                     transform="translateX(-50%)"
-                    bg="white"
+                    bg="var(--button-bg)"
                     color="red.500"
                     px={5}
                     py={3}

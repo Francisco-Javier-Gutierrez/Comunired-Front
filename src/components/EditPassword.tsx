@@ -102,7 +102,7 @@ function EditPassword() {
                     </Text>
                 </Flex>
 
-                <Heading as="h1" textAlign="center" size="4xl" color="white" mb={4}>Cambiar mi contraseña</Heading>
+                <Heading as="h1" textAlign="center" size="4xl" color="var(--text-color)" mb={4}>Cambiar mi contraseña</Heading>
 
                 {errorMessage && (
                     <Alert.Root status="error" mb={4} borderRadius="md">
@@ -122,7 +122,7 @@ function EditPassword() {
                     </Alert.Root>
                 )}
 
-                <Text color="white">Contraseña actual</Text>
+                <Text color="var(--text-color)">Contraseña actual</Text>
                 <Box pos="relative" display="flex" alignItems="center" mb={4}>
                     <Input
                         w="100%"
@@ -130,10 +130,10 @@ function EditPassword() {
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
                         placeholder="Ingresa tu contraseña actual"
-                        bg="#454545"
-                        color="white"
+                        bg="var(--input-bg)"
+                        color="var(--text-color)"
                         _placeholder={{ color: "gray.400" }}
-                        borderColor="white"
+                        borderColor="var(--text-color)"
                         borderRadius="1rem"
                         _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                     />
@@ -151,7 +151,7 @@ function EditPassword() {
                     />
                 </Box>
 
-                <Text color="white">Nueva contraseña</Text>
+                <Text color="var(--text-color)">Nueva contraseña</Text>
                 <Box pos="relative" display="flex" alignItems="center" mb={4}>
                     <Input
                         w="100%"
@@ -159,10 +159,10 @@ function EditPassword() {
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="Ingresa tu nueva contraseña"
-                        bg="#454545"
-                        color="white"
+                        bg="var(--input-bg)"
+                        color="var(--text-color)"
                         _placeholder={{ color: "gray.400" }}
-                        borderColor="white"
+                        borderColor="var(--text-color)"
                         borderRadius="1rem"
                         _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                     />
@@ -180,7 +180,7 @@ function EditPassword() {
                     />
                 </Box>
 
-                <Text color="white">Confirmar nueva contraseña</Text>
+                <Text color="var(--text-color)">Confirmar nueva contraseña</Text>
                 <Box pos="relative" display="flex" alignItems="center" mb={4}>
                     <Input
                         w="100%"
@@ -188,10 +188,10 @@ function EditPassword() {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Confirma tu nueva contraseña"
-                        bg="#454545"
-                        color="white"
+                        bg="var(--input-bg)"
+                        color="var(--text-color)"
                         _placeholder={{ color: "gray.400" }}
-                        borderColor="white"
+                        borderColor="var(--text-color)"
                         borderRadius="1rem"
                         _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                     />
@@ -211,9 +211,9 @@ function EditPassword() {
 
                 <Flex w="100%" justify="end">
                     <Button
-                        bg="white"
-                        color="black"
-                        _hover={{ bg: "gray.200" }}
+                        bg="var(--button-bg)"
+                        color="var(--button-text)"
+                        _hover={{ bg: "var(--button-hover-bg)" }}
                         my={4}
                         onClick={handleChangePassword}
                         disabled={isSendingForm}
@@ -224,7 +224,7 @@ function EditPassword() {
                         ) : (
                             <Flex justify="center" align="center">
                                 <Text mr={3}>Actualizando...</Text>
-                                <Spinner size="sm" color="black" />
+                                <Spinner size="sm" color="var(--button-text)" />
                             </Flex>
                         )}
                     </Button>

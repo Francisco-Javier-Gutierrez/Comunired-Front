@@ -7,8 +7,6 @@ export function useNotificationPolling() {
     const setHasUnreadNotifications = useNotificationStore((state) => state.setHasUnreadNotifications);
 
     useEffect(() => {
-        let intervalId: NodeJS.Timeout;
-
         const checkNotifications = async () => {
             try {
                 const isAuthenticated = await isUserAuthenticated();
@@ -28,7 +26,7 @@ export function useNotificationPolling() {
 
         checkNotifications();
 
-        intervalId = setInterval(checkNotifications, 30000);
+        const intervalId = setInterval(checkNotifications, 30000);
 
         return () => {
             if (intervalId) clearInterval(intervalId);

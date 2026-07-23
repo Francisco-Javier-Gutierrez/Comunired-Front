@@ -72,9 +72,9 @@ function PreviewPublication() {
                 <Flex w="100%" mt="auto" justify="center" align="center">
                     <Box w="50%" textAlign="start">
                         <Button
-                            bg="white"
-                            color="black"
-                            _hover={{ bg: "gray.200" }}
+                            bg="var(--button-bg)"
+                            color="var(--button-text)"
+                            _hover={{ bg: "var(--button-hover-bg)" }}
                             onClick={() => navigate("/create-publication")}
                             borderRadius="1rem"
                         >
@@ -83,16 +83,16 @@ function PreviewPublication() {
                     </Box>
                     <Box w="50%" textAlign="end">
                         <Button
-                            bg="white"
-                            color="black"
-                            _hover={{ bg: "gray.200" }}
+                            bg="var(--button-bg)"
+                            color="var(--button-text)"
+                            _hover={{ bg: "var(--button-hover-bg)" }}
                             onClick={handleValidatePublicationPublicate}
                             borderRadius="1rem"
                         >
                             {!isSendingForm ? "Publicar" : (
                                 <Flex justify="center" align="center">
                                     <Text mr={3}>Publicando...</Text>
-                                    <Spinner size="sm" color="black" />
+                                    <Spinner size="sm" color="var(--button-text)" />
                                 </Flex>
                             )}
                         </Button>

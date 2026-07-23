@@ -70,10 +70,17 @@ function Notifications() {
 
     const hasNotificaciones = notificaciones.length > 0;
 
+    const getNotificationTarget = (noti: any) => {
+        if (noti.urlDestino) return noti.urlDestino;
+
+        const post = encodeURIComponent(noti.publicationId || "");
+        const comment = noti.commentId ? `&comment=${encodeURIComponent(noti.commentId)}` : "";
+        return `/publication?post=${post}${comment}`;
+    };
     return (
         <Flex direction="column" minH="100vh" textAlign="center">
             <Flex w={["90%", "75%"]} mx="auto" mb={4} justify="space-between" align="center" mt={3}>
-                <Heading as="h1" size="4xl" color="white" textAlign="left">Notificaciones</Heading>
+                <Heading as="h1" size="4xl" color="var(--text-color)" textAlign="left">Notificaciones</Heading>
                 {hasNotificaciones && (
                     <Button
                         size="sm"
@@ -102,7 +109,7 @@ function Notifications() {
             )}
 
             {!isLoading && !hasNotificaciones && (
-                <Text color="white" textAlign="center">No tienes notificaciones</Text>
+                <Text color="var(--text-color)" textAlign="center">No tienes notificaciones</Text>
             )}
 
             {!isLoading && hasNotificaciones && (
@@ -114,14 +121,14 @@ function Notifications() {
                                 p={1}
                                 mb={3}
                                 w="100%"
-                                color="white"
+                                color="var(--text-color)"
                                 justify="space-between"
                                 bg="#8A8A8A"
                                 borderRadius="md"
                                 cursor="pointer"
                                 onClick={() => {
                                     leerNotificacion(noti.id);
-                                    navigate("/publication?post=" + noti.publicationId);
+                                    navigate(getNotificationTarget(noti));
                                 }}
                             >
                                 <Flex mb={2} align="center">

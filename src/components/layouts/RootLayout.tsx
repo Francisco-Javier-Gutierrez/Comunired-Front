@@ -5,14 +5,15 @@ import Footer from "../Footer";
 import NavBar from "../NavBar";
 
 export default function RootLayout({ isDesktop, pathsState }: any) {
+  const shouldShowTopNav = pathsState.showNavBar && (!isDesktop || pathsState.showLogoOnly);
+  const shouldShowSideNav = isDesktop && pathsState.showSideNav && !pathsState.showLogoOnly;
+
   return (
     <Flex direction="column" minH="100dvh">
-      {/* Mobile-only Nav */}
-      {!isDesktop && pathsState.showNavBar && <NavBar />}
+      {shouldShowTopNav && <NavBar logoOnly={pathsState.showLogoOnly} showNavBar={pathsState.showNavBar} />}
 
       <Flex flexGrow={1} minH="0">
-        {/* Desktop-only Sidebar */}
-        {isDesktop && pathsState.showSideNav && <SideNav />}
+        {shouldShowSideNav && <SideNav />}
 
         <Box flexGrow={1} w="100%" overflowY="auto">
           <ComuniRed />

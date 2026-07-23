@@ -70,7 +70,7 @@ function SetupMFA() {
 
     if (isLoading) {
         return (
-            <Flex direction="column" align="center" justify="center" minH="100vh" color="white">
+            <Flex direction="column" align="center" justify="center" minH="100vh" color="var(--text-color)">
                 <Spinner size="xl" boxSize="15rem" borderWidth="8px" mb={4} />
                 <Heading as="h3" mt={4}>Configurando MFA...</Heading>
             </Flex>
@@ -85,7 +85,7 @@ function SetupMFA() {
             flexDirection="column"
             justifyContent="center"
             alignItems="center"
-            color="white"
+            color="var(--text-color)"
             mt={10}
         >
             <Flex w={{ base: "90%", md: "50%" }} mb={2}>
@@ -101,15 +101,15 @@ function SetupMFA() {
                 </Text>
             </Flex>
 
-            <Heading as="h1" size="4xl" textAlign="center" color="white" mb={4}>Configurar Autenticación de Dos Factores (MFA)</Heading>
+            <Heading as="h1" size="4xl" textAlign="center" color="var(--text-color)" mb={4}>Configurar Autenticación de Dos Factores (MFA)</Heading>
 
             <Box w={{ base: "90%", md: "50%" }} mx="auto" px={4}>
                 <Box mb={4}>
-                    <Heading as="h4" color="white" mb={3} size="md">Paso 1: Configura el identificador (Opcional)</Heading>
-                    <Text color="white" mb={2}>Este nombre aparecerá en tu aplicación de autenticación:</Text>
+                    <Heading as="h4" color="var(--text-color)" mb={3} size="md">Paso 1: Configura el identificador (Opcional)</Heading>
+                    <Text color="var(--text-color)" mb={2}>Este nombre aparecerá en tu aplicación de autenticación:</Text>
                     <Input
-                        bg="#454545"
-                        color="white"
+                        bg="var(--input-bg)"
+                        color="var(--text-color)"
                         borderColor="inherit"
                         borderRadius="1rem"
                         _placeholder={{ color: "gray.400" }}
@@ -121,32 +121,32 @@ function SetupMFA() {
                         _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                     />
 
-                    <Heading as="h4" color="white" mb={3} size="md">Paso 2: Escanea el código QR</Heading>
-                    <Text color="white" mb={3}>
+                    <Heading as="h4" color="var(--text-color)" mb={3} size="md">Paso 2: Escanea el código QR</Heading>
+                    <Text color="var(--text-color)" mb={3}>
                         Usa una aplicación de autenticación como Google Authenticator, Microsoft Authenticator o Authy
                         para escanear el siguiente código QR:
                     </Text>
 
                     {qrCodeUrl && (
-                        <Flex justify="center" mb={3} bg="white" p={3} borderRadius="md">
+                        <Flex justify="center" mb={3} bg="var(--button-bg)" p={3} borderRadius="md">
                             <QRCodeSVG value={qrCodeUrl} size={200} />
                         </Flex>
                     )}
                 </Box>
 
                 <Box mb={4}>
-                    <Heading as="h4" color="white" mb={3} size="md">Paso 3: Clave de configuración manual (opcional)</Heading>
-                    <Text color="white" mb={2}>
+                    <Heading as="h4" color="var(--text-color)" mb={3} size="md">Paso 3: Clave de configuración manual (opcional)</Heading>
+                    <Text color="var(--text-color)" mb={2}>
                         Si no puedes escanear el código QR, ingresa esta clave manualmente en tu aplicación:
                     </Text>
-                    <Box bg="gray.800" color="white" p={3} borderRadius="md" textAlign="center">
-                        <Code fontSize="16px" wordBreak="break-word" letterSpacing="2px" bg="transparent" color="white" userSelect="text">{secretKey}</Code>
+                    <Box bg="var(--card-bg)" color="var(--text-color)" p={3} borderRadius="md" textAlign="center">
+                        <Code fontSize="16px" wordBreak="break-word" letterSpacing="2px" bg="transparent" color="var(--text-color)" userSelect="text">{secretKey}</Code>
                     </Box>
                 </Box>
 
                 <Box mb={4}>
-                    <Heading as="h4" color="white" mb={3} size="md">Paso 4: Verifica el código</Heading>
-                    <Text color="white" mb={3}>
+                    <Heading as="h4" color="var(--text-color)" mb={3} size="md">Paso 4: Verifica el código</Heading>
+                    <Text color="var(--text-color)" mb={3}>
                         Ingresa el código de 6 dígitos que aparece en tu aplicación de autenticación:
                     </Text>
 
@@ -154,8 +154,8 @@ function SetupMFA() {
                     {isSuccess && <Text color="green.500" mb={3} textAlign="center" fontWeight="bold">¡MFA configurado exitosamente!</Text>}
 
                     <Input
-                        bg="#454545"
-                        color="white"
+                        bg="var(--input-bg)"
+                        color="var(--text-color)"
                         borderColor="inherit"
                         borderRadius="1rem"
                         _placeholder={{ color: "gray.400" }}
@@ -177,11 +177,11 @@ function SetupMFA() {
                 </Box>
 
                 <Button
-                    bg="white"
-                    color="black"
+                    bg="var(--button-bg)"
+                    color="var(--button-text)"
                     w="100%"
                     mb={3}
-                    _hover={{ bg: "gray.200" }}
+                    _hover={{ bg: "var(--button-hover-bg)" }}
                     onClick={handleVerifyCode}
                     disabled={isVerifying || totpCode.length !== 6 || isSuccess}
                     borderRadius="1rem"
@@ -193,16 +193,16 @@ function SetupMFA() {
                     ) : (
                         <Flex justify="center" align="center">
                             <Text mr={3}>Verificando...</Text>
-                            <Spinner size="sm" color="black" />
+                            <Spinner size="sm" color="var(--button-text)" />
                         </Flex>
                     )}
                 </Button>
 
                 <Button
-                    bg="white"
-                    color="black"
+                    bg="var(--button-bg)"
+                    color="var(--button-text)"
                     w="100%"
-                    _hover={{ bg: "gray.200" }}
+                    _hover={{ bg: "var(--button-hover-bg)" }}
                     onClick={() => navigate("/my-profile")}
                     borderRadius="1rem"
                 >

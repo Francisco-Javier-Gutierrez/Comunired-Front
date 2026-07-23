@@ -19,10 +19,11 @@ function ViewPublication() {
 
     const searchParams = useSearchParamsGlobal();
     const publicationId = searchParams.get("post");
+    const targetCommentId = searchParams.get("comment");
 
     useEffect(() => {
         if (!publicationId) {
-            setError("No se proporcionó un ID de publicación.");
+            setError("No se proporciono un ID de publicacion.");
             return;
         }
 
@@ -33,7 +34,7 @@ function ViewPublication() {
                 const data = await api.publications.get(publicationId);
                 setPublication(data);
             } catch {
-                setError("Error al obtener la publicación");
+                setError("Error al obtener la publicacion");
             } finally {
                 setIsLoading(false);
             }
@@ -42,7 +43,7 @@ function ViewPublication() {
         loadPublication();
     }, [publicationId]);
 
-    const handleCommentAdded = () => {
+    const handleCommentAdded = (count: number = 1) => {
         setPublication((prev: any) => {
             if (!prev) return prev;
             const prevComentarios = prev.comments ?? { total: 0, list: [] };
@@ -50,13 +51,13 @@ function ViewPublication() {
                 ...prev,
                 comments: {
                     ...prevComentarios,
-                    total: prevComentarios.total + 1
+                    total: prevComentarios.total + count
                 }
             };
         });
     };
 
-    const handleCommentDeleted = () => {
+    const handleCommentDeleted = (count: number = 1) => {
         setPublication((prev: any) => {
             if (!prev) return prev;
             const prevComentarios = prev.comments ?? { total: 0, list: [] };
@@ -64,7 +65,7 @@ function ViewPublication() {
                 ...prev,
                 comments: {
                     ...prevComentarios,
-                    total: Math.max(0, prevComentarios.total - 1)
+                    total: Math.max(0, prevComentarios.total - count)
                 }
             };
         });
@@ -77,7 +78,7 @@ function ViewPublication() {
     );
 
     if (error) return <Flex minH="100vh" justify="center" align="center"><Heading color="red.500">{error}</Heading></Flex>;
-    if (!publication) return <Flex minH="100vh" justify="center" align="center"><Heading color="white">No hay publicación para mostrar</Heading></Flex>;
+    if (!publication) return <Flex minH="100vh" justify="center" align="center"><Heading color="var(--text-color)">No hay publicacion para mostrar</Heading></Flex>;
 
     return (
         <Flex direction="column" w={["90%", "75%"]} mx="auto" minH="100vh" py={4}>
@@ -87,9 +88,9 @@ function ViewPublication() {
                 onClickComent={() => setShowCommentInput(prev => !prev)}
             />
 
-            <Box as="hr" borderColor="white" mt={3} mb={0} />
-            <Heading as="h6" size="sm" color="white" my={2}>Comentarios</Heading>
-            <Box as="hr" borderColor="white" mb={3} mt={0} />
+            <Box as="hr" borderColor="var(--text-color)" mt={3} mb={0} />
+            <Heading as="h6" size="sm" color="var(--text-color)" my={2}>Comentarios</Heading>
+            <Box as="hr" borderColor="var(--text-color)" mb={3} mt={0} />
 
             <PublicationComments
                 publication={publication}
@@ -98,6 +99,7 @@ function ViewPublication() {
                 onImageClick={setImagenSeleccionada}
                 onCommentAdded={handleCommentAdded}
                 onCommentDeleted={handleCommentDeleted}
+                targetCommentId={targetCommentId}
             />
 
             <ImageModal

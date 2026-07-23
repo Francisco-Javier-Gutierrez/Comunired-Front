@@ -15,10 +15,17 @@ interface PublicationHeaderProps {
 
 export default function PublicationHeader({ post, isPreview, onImageClick, onShowDeleteModal, onShowEditModal }: PublicationHeaderProps) {
     const navigate = useNavigate();
-    const { role: globalRole } = useUserData();
+    const { email: currentEmail, name: currentName, role: globalRole, profilePictureUrl } = useUserData();
     const isBannedUser = globalRole === "banned";
     const [showOptions, setShowOptions] = useState(false);
     const optionsRef = useRef<HTMLDivElement>(null);
+    const authorEmail = post.user?.email || post.userEmail;
+    const isCurrentUserPost = !!authorEmail && !!currentEmail && authorEmail.toLowerCase() === currentEmail.toLowerCase();
+    const backendAuthorName = post.user?.username && post.user.username !== "Usuario" ? post.user.username : null;
+    const authorName = backendAuthorName || (isCurrentUserPost && currentName ? currentName : "Usuario");
+    const authorImage = post.user?.profilePicUrl || (isCurrentUserPost ? profilePictureUrl : null) || "/Profile.svg";
+    const canOpenUserProfile = !isPreview && authorEmail;
+    const canToggleOptions = !isPreview;
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -36,20 +43,23 @@ export default function PublicationHeader({ post, isPreview, onImageClick, onSho
         <Flex justify="space-between" mb={3}>
             <Flex align="center" gap={3}>
                 <Image
-                    src={post.user?.profilePicUrl ?? "/Profile.svg"}
+                    src={authorImage}
                     cursor="pointer"
                     borderRadius="full"
                     boxSize="1.5rem"
-                    onClick={e => { e.stopPropagation(); onImageClick(post.user?.profilePicUrl ?? "/Profile.svg"); }}
+                    onClick={e => { e.stopPropagation(); onImageClick(authorImage); }}
                 />
                 <Text
                     as="a"
                     color="var(--text-color)"
                     fontWeight="bold"
                     cursor={isPreview ? "default" : "pointer"}
-                    onClick={(e: React.MouseEvent) => { e.stopPropagation(); !isPreview && navigate("/profile?user=" + post.user?.email); }}
+                    onClick={(e: React.MouseEvent) => {
+                        e.stopPropagation();
+                        if (canOpenUserProfile) navigate("/profile?user=" + authorEmail);
+                    }}
                 >
-                    {post.user?.username}
+                    {authorName}
                 </Text>
             </Flex>
             <Flex align="center" position="relative" ref={optionsRef}>
@@ -62,7 +72,10 @@ export default function PublicationHeader({ post, isPreview, onImageClick, onSho
                             cursor="pointer"
                             height="1.2rem"
                             alt="Opciones"
-                            onClick={e => { e.stopPropagation(); !isPreview && setShowOptions(!showOptions); }}
+                            onClick={e => {
+                                e.stopPropagation();
+                                if (canToggleOptions) setShowOptions(!showOptions);
+                            }}
                         />
                         {showOptions && !isPreview && (
                             <Flex

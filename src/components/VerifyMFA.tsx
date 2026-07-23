@@ -12,7 +12,9 @@ function VerifyMFA() {
     const {
         setEmail: setGlobalEmail,
         setName: setGlobalName,
+        setRole: setGlobalRole,
         setProfilePictureUrl,
+        resetUser,
     } = useUserData();
 
     const handleVerifyCode = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -31,12 +33,15 @@ function VerifyMFA() {
             const session = await fetchAuthSession();
             const idToken = session.tokens?.idToken;
 
-            if (idToken) {
-                const claims = idToken.payload;
-                setGlobalEmail(claims.email as string);
-                setGlobalName((claims.name as string) ?? "");
-                setProfilePictureUrl(null);
-            }
+            if (!idToken) throw new Error("No se pudo completar el inicio de sesion");
+
+            const claims = idToken.payload;
+            const groups = claims["cognito:groups"] as string[] | undefined;
+            const primaryRole = groups && groups.length > 0 ? groups[0] : "user";
+            setGlobalEmail(claims.email as string);
+            setGlobalName((claims.name as string) ?? "");
+            setGlobalRole(primaryRole === "moderators" ? "moderator" : primaryRole);
+            setProfilePictureUrl((claims.picture as string) ?? null);
 
             navigate("/");
         } catch (err: any) {
@@ -58,6 +63,7 @@ function VerifyMFA() {
             await signOut();
         } catch {
         }
+        resetUser();
         navigate("/login");
     };
 
@@ -69,7 +75,7 @@ function VerifyMFA() {
                 flexDirection="column"
                 justifyContent="center"
                 alignItems="center"
-                color="white"
+                color="var(--text-color)"
                 mt={10}
             >
                 <Flex w={{ base: "90%", md: "50%" }} mb={2}>
@@ -85,17 +91,17 @@ function VerifyMFA() {
                     </Text>
                 </Flex>
 
-                <Heading as="h1" size="4xl" color="white" mb={4}>Verificación de Dos Factores</Heading>
+                <Heading as="h1" size="4xl" color="var(--text-color)" mb={4}>Verificación de Dos Factores</Heading>
 
                 <Box w={{ base: "90%", md: "50%" }} mx="auto" px={4}>
-                    <Text color="white" mb={4}>
+                    <Text color="var(--text-color)" mb={4}>
                         Abre tu aplicación de autenticación (Google Authenticator, Microsoft Authenticator, o Authy)
                         e ingresa el código de 6 dígitos que aparece.
                     </Text>
 
                     {error && <Text color="red.500" mb={3}>{error}</Text>}
 
-                    <Text color="white" mb={2}>Código de verificación</Text>
+                    <Text color="var(--text-color)" mb={2}>Código de verificación</Text>
 
                     <Input
                         w="100%"
@@ -112,22 +118,22 @@ function VerifyMFA() {
                         textAlign="center"
                         fontSize="24px"
                         letterSpacing="8px"
-                        bg="#454545"
-                        color="white"
+                        bg="var(--input-bg)"
+                        color="var(--text-color)"
                         borderRadius="1rem"
-                        borderColor="white"
+                        borderColor="var(--text-color)"
                         _placeholder={{ color: "gray.400" }}
                         _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                     />
 
                     <Button
-                        bg="white"
-                        color="black"
+                        bg="var(--button-bg)"
+                        color="var(--button-text)"
                         w="100%"
                         mb={3}
                         type="submit"
                         disabled={isVerifying || totpCode.length !== 6}
-                        _hover={{ bg: "gray.200" }}
+                        _hover={{ bg: "var(--button-hover-bg)" }}
                         borderRadius="1rem"
                     >
                         {!isVerifying ? (
@@ -135,7 +141,7 @@ function VerifyMFA() {
                         ) : (
                             <Flex justify="center" align="center">
                                 <Text mr={3}>Verificando...</Text>
-                                <Spinner size="sm" color="black" />
+                                <Spinner size="sm" color="var(--button-text)" />
                             </Flex>
                         )}
                     </Button>

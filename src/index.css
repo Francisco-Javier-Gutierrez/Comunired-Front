@@ -3,6 +3,12 @@
   --text-color: #ffffff;
   --input-bg: #454545;
   --input-border: #ffffff;
+  --border-color: #303030;
+  --muted-color: #a3a3a3;
+  --surface-hover: rgba(255, 255, 255, 0.1);
+  --button-hover-bg: #e5e5e5;
+  --tooltip-bg: #111111;
+  --tooltip-text: #ffffff;
   --input-text: #ffffff;
   --svg-filter: none;
   --loader-border: #000000;
@@ -18,6 +24,12 @@
   --text-color: #1a1a1a;
   --input-bg: #ffffff;
   --input-border: #cccccc;
+  --border-color: #d4d4d4;
+  --muted-color: #666666;
+  --surface-hover: rgba(0, 0, 0, 0.06);
+  --button-hover-bg: #333333;
+  --tooltip-bg: #ffffff;
+  --tooltip-text: #1a1a1a;
   --input-text: #1a1a1a;
   --svg-filter: invert(1);
   --loader-border: #cccccc;
@@ -26,6 +38,10 @@
   --button-bg: #1a1a1a;
   --button-text: #ffffff;
   --modal-bg: #ffffff;
+}
+
+html {
+  background-color: var(--bg-color);
 }
 
 body {
@@ -156,13 +172,16 @@ img[src$=".svg"]:not(.no-filter) {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  transition: background-color 0.3s ease;
-  font-size: 1.5rem;
+  border-radius: 999px;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  background-color: var(--card-bg);
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  font-size: 1.2rem;
 }
 
 .theme-toggle:hover {
-  background-color: rgba(128, 128, 128, 0.2);
+  background-color: var(--surface-hover);
 }
 
 @keyframes pulse-glow {
@@ -177,5 +196,21 @@ img[src$=".svg"]:not(.no-filter) {
   100% {
     box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
     transform: scale(0.95);
+  }
+}
+
+.comment-highlight-blink {
+  animation: comment-target-blink 0.8s ease-in-out 3;
+  background: rgba(59, 130, 246, 0.18);
+}
+
+@keyframes comment-target-blink {
+  0%, 100% {
+    background: rgba(59, 130, 246, 0.08);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+  50% {
+    background: rgba(59, 130, 246, 0.28);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.28);
   }
 }

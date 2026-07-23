@@ -1,4 +1,4 @@
-# Logs
+﻿# Logs
 logs
 *.log
 npm-debug.log*
@@ -32,13 +32,9 @@ aws-exports.js
 awsconfiguration.json
 amplify/
 
-# Android / iOS Native Projects (Capacitor)
-# Ignorando las librerías/carpetas nativas autogeneradas por Capacitor
-android/
-ios/
-
-# Misceláneos
+# MiscelÃ¡neos
 coverage/
 build/
 *.DS_Store
 .aws/
+

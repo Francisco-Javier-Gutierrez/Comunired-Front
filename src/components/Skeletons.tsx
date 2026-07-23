@@ -45,7 +45,7 @@ export function SkeletonProfileHeader({ isMyProfile = false }: { isMyProfile?: b
             <VStack w={["90%", "75%"]} maxW="container.md" gap={4} align="stretch" mt={4}>
                 <Box textAlign="center">
                     {isMyProfile ? (
-                        <Heading as="h1" size="4xl" color="white" mb={4}>Tu perfil</Heading>
+                        <Heading as="h1" size="4xl" color="var(--text-color)" mb={4}>Tu perfil</Heading>
                     ) : (
                         <Flex justify="center" mb={4}>
                             <Skeleton height="40px" width="300px" />
@@ -72,7 +72,7 @@ export function SkeletonProfileHeader({ isMyProfile = false }: { isMyProfile?: b
                     </>
                 )}
 
-                <Box as="hr" borderColor="white" my={4} />
+                <Box as="hr" borderColor="var(--text-color)" my={4} />
 
                 <Flex justify="center" mb={5}>
                     <Skeleton height="28px" width="200px" />

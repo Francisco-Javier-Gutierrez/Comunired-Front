@@ -182,13 +182,13 @@ function EditProfile() {
                     </Text>
                 </Flex>
 
-                <Heading as="h1" textAlign="center" size="4xl" color="white" mb={4}>
+                <Heading as="h1" textAlign="center" size="4xl" color="var(--text-color)" mb={4}>
                     {isAdminEdit ? `Editar perfil de ${originalName}` : "Actualizar mis datos"}
                 </Heading>
 
                 {errorMessage && <Heading as="h6" size="sm" color="red.500">{errorMessage}</Heading>}
 
-                <Text color={!isValidImage ? "red.500" : { base: "black", _dark: "white" }}>
+                <Text color={!isValidImage ? "red.500" : { base: "black", _dark: "var(--input-border)" }}>
                     {imageError || "Foto de perfil"}
                 </Text>
 
@@ -196,7 +196,7 @@ function EditProfile() {
                     textAlign="center"
                     mb={4}
                     border="0.05rem solid"
-                    borderColor="#ffffff"
+                    borderColor="var(--input-border)"
                     borderRadius="0.5rem"
                     w="100%"
                     cursor="pointer"
@@ -204,15 +204,15 @@ function EditProfile() {
                     onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                     onDragLeave={() => setIsDragging(false)}
                     onDrop={handleDropImage}
-                    bg={isDragging ? (false ? "rgba(0,0,0,0.1)" : "rgba(255, 255, 255, 0.1)") : { base: "gray.100", _dark: "#454545" }}
+                    bg={isDragging ? "var(--hover-bg)" : { base: "gray.100", _dark: "var(--input-bg)" }}
                     borderStyle={isDragging ? "dashed" : "solid"}
                     borderWidth={isDragging ? "2px" : "0.05rem"}
                     transition="0.2s ease-in-out"
                 >
                     {isUploadingImage ? (
                         <Flex direction="column" align="center" py={4}>
-                            <Spinner mb={2} color="white" />
-                            <Text color="white">Subiendo imagen...</Text>
+                            <Spinner mb={2} color="var(--text-color)" />
+                            <Text color="var(--text-color)">Subiendo imagen...</Text>
                         </Flex>
                     ) : (
                         previewImage ? (
@@ -228,7 +228,7 @@ function EditProfile() {
                             />
                         ) : (
                             <>
-                                <Text display="block" color="white">Haz click o arrastra una imagen aquí</Text>
+                                <Text display="block" color="var(--text-color)">Haz click o arrastra una imagen aquí</Text>
                                 <Image src="/AddImage.svg" alt="Agregar imagen" w="4rem" mb={2} mx="auto" filter="none" />
                             </>
                         )
@@ -243,7 +243,7 @@ function EditProfile() {
                     display="none"
                 />
 
-                <Text color="white">Nombre</Text>
+                <Text color="var(--text-color)">Nombre</Text>
                 <Input
                     w="100%"
                     mb={4}
@@ -251,10 +251,10 @@ function EditProfile() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder={originalName || "Nombre de usuario"}
-                    bg="#454545"
-                    color="white"
+                    bg="var(--input-bg)"
+                    color="var(--text-color)"
                     _placeholder={{ color: "gray.400" }}
-                    borderColor="white"
+                    borderColor="var(--text-color)"
                     borderRadius="1rem"
                     _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                 />
@@ -263,9 +263,9 @@ function EditProfile() {
                     {!isAdminEdit && (
                         <Box w="50%" textAlign="start">
                             <Button
-                                bg="white"
-                                color="black"
-                                _hover={{ bg: "gray.200" }}
+                                bg="var(--button-bg)"
+                                color="var(--button-text)"
+                                _hover={{ bg: "var(--button-hover-bg)" }}
                                 onClick={() => navigate("/edit-password")}
                                 borderRadius="1rem"
                             >
@@ -275,9 +275,9 @@ function EditProfile() {
                     )}
                     <Box w={isAdminEdit ? "100%" : "50%"} textAlign="end">
                         <Button
-                            bg="white"
-                            color="black"
-                            _hover={{ bg: "gray.200" }}
+                            bg="var(--button-bg)"
+                            color="var(--button-text)"
+                            _hover={{ bg: "var(--button-hover-bg)" }}
                             onClick={handleSave}
                             disabled={isFormDisabled}
                             borderRadius="1rem"
@@ -287,7 +287,7 @@ function EditProfile() {
                             ) : (
                                 <Flex justify="center" align="center">
                                     <Text mr={3}>Actualizando...</Text>
-                                    <Spinner size="sm" color="black" />
+                                    <Spinner size="sm" color="var(--button-text)" />
                                 </Flex>
                             )}
                         </Button>

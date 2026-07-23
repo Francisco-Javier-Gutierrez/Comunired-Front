@@ -1,5 +1,14 @@
 import { api } from "../services/api";
 
+const allowedFileTypes = new Set([
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "video/mp4",
+    "video/webm",
+    "video/quicktime",
+]);
+
 export const sanitizeFileName = (fileName: string): string => {
     return fileName
         .normalize("NFD")
@@ -8,24 +17,28 @@ export const sanitizeFileName = (fileName: string): string => {
         .toLowerCase();
 };
 
-export const uploadFile = async (file: File, type: "publications" | "profile"): Promise<string | null> => {
-    try {
-        const { uploadUrl, fileUrl } = await api.media.getPresignedUrl(
-            sanitizeFileName(file.name),
-            file.type,
-            type
-        );
-
-        await fetch(uploadUrl, {
-            method: "PUT",
-            body: file,
-            headers: {
-                "Content-Type": file.type,
-            },
-        });
-
-        return fileUrl;
-    } catch (err) {
-        throw err;
+export const uploadFile = async (file: File, type: "publications" | "profile"): Promise<string> => {
+    if (!allowedFileTypes.has(file.type)) {
+        throw new Error("Tipo de archivo no permitido");
     }
+
+    const { uploadUrl, fileUrl } = await api.media.getPresignedUrl(
+        sanitizeFileName(file.name),
+        file.type,
+        type
+    );
+
+    const response = await fetch(uploadUrl, {
+        method: "PUT",
+        body: file,
+        headers: {
+            "Content-Type": file.type,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(`No se pudo subir el archivo (${response.status})`);
+    }
+
+    return fileUrl;
 };

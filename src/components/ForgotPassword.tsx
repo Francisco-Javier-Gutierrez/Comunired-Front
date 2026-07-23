@@ -65,7 +65,7 @@ function ForgotPassword() {
                 flexDirection="column"
                 justifyContent="center"
                 alignItems="center"
-                color="white"
+                color="var(--text-color)"
                 mt={10}
             >
                 <Flex w={{ base: "90%", md: "50%" }} mb={2}>
@@ -81,7 +81,7 @@ function ForgotPassword() {
                     </Text>
                 </Flex>
 
-                <Heading as="h1" size="4xl" color="white" mb={4}>Recuperar contraseña</Heading>
+                <Heading as="h1" size="4xl" color="var(--text-color)" mb={4}>Recuperar contraseña</Heading>
 
                 {requestMessage && (
                     <Heading as="h3" size="md" color="yellow.400" textAlign="center" mb={4}>
@@ -106,10 +106,10 @@ function ForgotPassword() {
                             }
                         }}
                         w="100%"
-                        bg="#454545"
-                        color="white"
+                        bg="var(--input-bg)"
+                        color="var(--text-color)"
                         border="solid 0.05rem"
-                        borderColor={isValidEmail === false ? "red.500" : { base: "gray.300", _dark: "#ffffff" }}
+                        borderColor={isValidEmail === false ? "red.500" : { base: "gray.300", _dark: "var(--input-border)" }}
                         borderRadius="1rem"
                         _placeholder={{ color: "gray.400" }}
                         mb={4}
@@ -118,17 +118,17 @@ function ForgotPassword() {
 
                     <Button
                         type="submit"
-                        bg="white"
-                        color="black"
+                        bg="var(--button-bg)"
+                        color="var(--button-text)"
                         w="100%"
                         my={4}
-                        _hover={{ bg: "gray.200" }}
+                        _hover={{ bg: "var(--button-hover-bg)" }}
                         borderRadius="1rem"
                     >
                         {!isSendingForm ? "Enviar código" : (
                             <Flex justify="center" align="center">
                                 <Text mr={3}>Enviando correo...</Text>
-                                <Spinner size="sm" color="black" />
+                                <Spinner size="sm" color="var(--button-text)" />
                             </Flex>
                         )}
                     </Button>

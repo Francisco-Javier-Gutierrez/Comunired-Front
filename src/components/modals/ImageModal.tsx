@@ -23,8 +23,8 @@ export default function ImageModal({ image, onClose }: Props) {
               onClick={onClose}
               zIndex={1000}
               bg="gray.100"
-              _hover={{ bg: "gray.200" }}
-              color="black"
+              _hover={{ bg: "var(--button-hover-bg)" }}
+              color="var(--button-text)"
             >X</Button>
           </Dialog.Body>
         </Dialog.Content>

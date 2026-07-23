@@ -33,10 +33,10 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
                     boxShadow="0 20px 60px rgba(0,0,0,0.6)"
                     borderRadius="20px"
                     p={6}
-                    color="white"
+                    color="var(--text-color)"
                     textAlign="center"
                 >
-                    <Dialog.Header color="white" fontWeight="700" textAlign="center" fontSize="2xl" p={0} mb={3}>
+                    <Dialog.Header color="var(--text-color)" fontWeight="700" textAlign="center" fontSize="2xl" p={0} mb={3}>
                         <Dialog.Title>{title}</Dialog.Title>
                     </Dialog.Header>
                     <Dialog.Body p={0}>
@@ -45,8 +45,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
                             <Button
                                 w="100%"
                                 py={3}
-                                bg="white"
-                                color="black"
+                                bg="var(--button-bg)"
+                                color="var(--button-text)"
                                 borderRadius="12px"
                                 fontSize="15px"
                                 fontWeight="700"

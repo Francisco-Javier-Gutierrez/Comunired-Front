@@ -14,7 +14,8 @@ function ConfirmSignUp() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const Correo_electronico = useUserData.getState().email;
+    const locationState = location.state as { email?: string; autoResend?: boolean } | null;
+    const Correo_electronico = (locationState?.email || useUserData.getState().email || "").trim().toLowerCase();
 
     const validateCode = (): boolean => {
         if (!/^\d{6}$/.test(code)) {
@@ -44,7 +45,10 @@ function ConfirmSignUp() {
             });
 
             setRequestMessage("Cuenta confirmada correctamente");
-            navigate("/login");
+            navigate("/login", {
+                replace: true,
+                state: { notice: "Cuenta confirmada. Ya puedes iniciar sesion." }
+            });
         } catch (error: any) {
             switch (error.name) {
                 case "CodeMismatchException":
@@ -78,7 +82,7 @@ function ConfirmSignUp() {
             await resendSignUpCode({ username: Correo_electronico });
             setRequestMessage("Se ha enviado un nuevo código a tu correo");
             setIsValidCode(null);
-        } catch (error: any) {
+        } catch {
             setRequestMessage("Error al reenviar el código. Inténtalo más tarde.");
         } finally {
             setIsResending(false);
@@ -86,11 +90,11 @@ function ConfirmSignUp() {
     }, [Correo_electronico]);
 
     useEffect(() => {
-        if (location.state?.autoResend && Correo_electronico) {
+        if (locationState?.autoResend && Correo_electronico) {
             handleResendCode();
             window.history.replaceState({}, document.title);
         }
-    }, [location.state, Correo_electronico, handleResendCode]);
+    }, [locationState?.autoResend, Correo_electronico, handleResendCode]);
 
     return (
         <Box
@@ -100,7 +104,7 @@ function ConfirmSignUp() {
             flexDirection="column"
             justifyContent="center"
             alignItems="center"
-            color="white"
+            color="var(--text-color)"
             mt={10}
         >
 
@@ -117,7 +121,7 @@ function ConfirmSignUp() {
                 </Text>
             </Flex>
 
-            <Heading as="h1" size="4xl" color="white" mb={4}>Verificar código</Heading>
+            <Heading as="h1" size="4xl" color="var(--text-color)" mb={4}>Verificar código</Heading>
 
             {requestMessage && (
                 <Heading as="h3" size="md" textAlign="center" mb={4} color={isValidCode === false ? "red.500" : "yellow.400"}>
@@ -135,34 +139,34 @@ function ConfirmSignUp() {
                     onChange={(e) => setCode(e.target.value)}
                     placeholder="Ingresa tu código de 6 dígitos"
                     borderColor={isValidCode === false ? "red.500" : { base: "gray.300", _dark: "inherit" }}
-                    bg="#454545"
-                    color="white"
+                    bg="var(--input-bg)"
+                    color="var(--text-color)"
                     _placeholder={{ color: "gray.400" }}
                     borderRadius="1rem"
                     _focus={{ border: "solid 0.05rem #7e7e7e", boxShadow: "none", outline: "none" }}
                 />
 
                 <Button
-                    bg="white"
-                    color="black"
+                    bg="var(--button-bg)"
+                    color="var(--button-text)"
                     w="100%"
                     my={4}
                     onClick={sendCode}
                     disabled={isSendingForm || isResending}
-                    _hover={{ bg: "gray.200" }}
+                    _hover={{ bg: "var(--button-hover-bg)" }}
                     borderRadius="1rem"
                 >
                     {!isSendingForm ? "Verificar código" : (
                         <Flex justify="center" align="center">
                             <Text mr={3}>Verificando...</Text>
-                            <Spinner size="sm" color="black" />
+                            <Spinner size="sm" color="var(--button-text)" />
                         </Flex>
                     )}
                 </Button>
 
                 <Flex justify="center" mt={2}>
                     {isResending ? (
-                        <Spinner size="sm" color="white" />
+                        <Spinner size="sm" color="var(--text-color)" />
                     ) : (
                         <Text
                             color="gray.400"

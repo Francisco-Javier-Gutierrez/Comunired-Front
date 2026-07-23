@@ -13,7 +13,7 @@ export type AuthContext = {
 
 export default function LoggedLayout() {
     const navigate = useNavigate();
-    const { name, email, profilePictureUrl, setName, setEmail, setProfilePictureUrl } = useUserData();
+    const { name, email, profilePictureUrl, setName, setEmail, setRole, setProfilePictureUrl, resetUser } = useUserData();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -25,18 +25,23 @@ export default function LoggedLayout() {
                 const idToken = tokens?.idToken;
 
                 if (!idToken) {
+                    resetUser();
                     setIsAuthenticated(false);
                     setShowModal(true);
                     return;
                 }
 
                 const payload = idToken.payload;
+                const groups = payload["cognito:groups"] as string[] | undefined;
+                const primaryRole = groups && groups.length > 0 ? groups[0] : "user";
 
                 setName((payload.name as string) ?? null);
                 setEmail((payload.email as string) ?? null);
+                setRole(primaryRole === "moderators" ? "moderator" : primaryRole);
                 setProfilePictureUrl((payload.picture as string) ?? null);
                 setIsAuthenticated(true);
             } catch {
+                resetUser();
                 setIsAuthenticated(false);
                 setShowModal(true);
             } finally {
@@ -45,7 +50,7 @@ export default function LoggedLayout() {
         };
 
         checkAuth();
-    }, []);
+    }, [resetUser, setEmail, setName, setProfilePictureUrl, setRole]);
 
     if (isLoading) return null;
 
@@ -64,7 +69,7 @@ export default function LoggedLayout() {
                     setShowModal(false);
                     navigate("/");
                 }}
-                message="Esta página es exclusiva para usuarios registrados. Por favor inicia sesión para continuar."
+                message="Esta pÃƒÂ¡gina es exclusiva para usuarios registrados. Por favor inicia sesiÃƒÂ³n para continuar."
             />
         );
     }
